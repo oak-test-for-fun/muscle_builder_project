@@ -1845,10 +1845,18 @@ function renderProgress(){
     <div class="result-row"><span class="result-label">今後の1日目標（再計算）</span><span class="result-val ${onTrack?'green':'red'}">${newDailyTargetCapped} kcal</span></div>
     <div class="result-row"><span class="result-label">現ペース達成予測</span><span class="result-val">${recordedDays>0?goalDateStr:'記録を積み重ねると表示されます'}</span></div>
     ${!onTrack?'<div style="font-size:11px;color:var(--red-dark);margin-top:6px">⚠️ 赤字が大きすぎます。目標期間の延長を検討してください。</div>':''}
+    ${remaining>0&&recordedDays>0?`<button onclick="applyNewDailyTarget(${newDailyTargetCapped})" style="margin-top:10px;width:100%;padding:10px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">この目標（${newDailyTargetCapped}kcal）を適用する</button>`:''}
   `;
-  if(remaining>0&&recordedDays>0){
-    const goals=loadGoals();goals.cal=newDailyTargetCapped;localStorage.setItem('diet_goals',JSON.stringify(goals));
-  }
+}
+
+function applyNewDailyTarget(kcal){
+  const goals=loadGoals();
+  goals.cal=kcal;
+  localStorage.setItem('diet_goals',JSON.stringify(goals));
+  // 設定タブの入力欄も更新
+  const el=document.getElementById('g_cal');
+  if(el)el.value=kcal;
+  alert(`1日目標を ${kcal} kcal に更新しました`);
 }
 
 /* ---- stamp / streak system ---- */
@@ -2327,11 +2335,14 @@ function renderWorkoutTab(){
   const prof=loadProfileData();const bw=prof&&prof.weight?prof.weight:70;
   const totalCal=calcWorkoutCal(data,bw);
   const goals=loadGoals();const foodCal=calcTotals(loadDay(currentDay)).cal;
-  const effectiveRemain=goals.cal-foodCal+totalCal;
+  const wkBonus=Math.round(totalCal*0.5);
+  const effectiveGoal=goals.cal+wkBonus;
+  const effectiveRemain=effectiveGoal-foodCal;
   const calCard=document.getElementById('workoutCalCard');
   if(totalCal>0){
     calCard.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">🏋️ 今日の筋トレ消費</div>
-      <div class="result-row"><span class="result-label">推定消費カロリー</span><span class="result-val" style="color:var(--amber)">${totalCal} kcal</span></div>
+      <div class="result-row"><span class="result-label">筋トレ消費</span><span class="result-val" style="color:var(--amber)">${totalCal} kcal</span></div>
+      <div class="result-row"><span class="result-label">ボーナス加算（×0.5）</span><span class="result-val" style="color:#7C3AED">+${wkBonus} kcal</span></div>
       <div class="result-row"><span class="result-label">食事摂取</span><span class="result-val">${foodCal} kcal</span></div>
       <div class="result-row"><span class="result-label">実質残りカロリー</span><span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span></div>`;
   }else{

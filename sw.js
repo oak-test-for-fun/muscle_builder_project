@@ -1,5 +1,5 @@
-const CACHE = 'diet-tracker-v3';
-const ASSETS = ['/', '/index.html', '/chart.min.js', '/manifest.json'];
+const CACHE = 'diet-tracker-v4';
+const ASSETS = ['./index.html', './chart.min.js', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -24,7 +24,7 @@ self.addEventListener('fetch', e => {
         const clone = res.clone();
         caches.open(CACHE).then(cache => cache.put(e.request, clone));
         return res;
-      }).catch(() => caches.match('/index.html'))
+      }).catch(() => caches.match('./index.html'))
     );
     return;
   }
@@ -35,6 +35,6 @@ self.addEventListener('fetch', e => {
         caches.open(CACHE).then(cache => cache.put(e.request, clone));
       }
       return res;
-    }).catch(() => caches.match('/index.html')))
+    }).catch(() => caches.match('./index.html')))
   );
 });

@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-title" content="食事記録">
 <meta name="theme-color" content="#1D9E75">
 <meta name="description" content="毎日の食事とカロリーを記録するアプリ">
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="./manifest.json">
 <title>食事記録</title>
-<script src="/chart.min.js"></script>
+<script src="./chart.min.js"></script>
 
 <style>
   :root{
@@ -2462,7 +2462,7 @@ render();
 
 // Service Worker登録（オフライン対応）
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
 </script>
 

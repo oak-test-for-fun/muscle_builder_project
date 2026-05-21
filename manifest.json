@@ -1,17 +1,18 @@
 {
-  "name": "食事記録トラッカー",
-  "short_name": "食事記録",
-  "description": "毎日の食事とカロリーを記録するアプリ",
-  "start_url": "/",
+  "name": "筋肉飯記録",
+  "short_name": "筋肉飯",
+  "description": "食事・筋トレ・ダイエットを一元管理するアプリ",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#F5F5F0",
-  "theme_color": "#1D9E75",
+  "background_color": "#F2F2EE",
+  "theme_color": "#D97706",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%231D9E75'/><text x='96' y='130' font-size='100' text-anchor='middle'>🥗</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><rect width='80' height='80' rx='18' fill='%23D97706'/><rect x='10' y='36' width='60' height='8' rx='4' fill='%231a1a1a'/><rect x='8' y='28' width='12' height='24' rx='5' fill='%231a1a1a'/><rect x='60' y='28' width='12' height='24' rx='5' fill='%231a1a1a'/><path d='M32 53 Q40 45 48 53' stroke='%231a1a1a' stroke-width='2.5' fill='none' stroke-linecap='round'/><path d='M30 57 L50 57' stroke='%231a1a1a' stroke-width='2' stroke-linecap='round'/></svg>",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }

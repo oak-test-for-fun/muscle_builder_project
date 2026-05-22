@@ -2416,12 +2416,12 @@ function renderWorkoutGraph(){
       labels.push(`${d.getMonth()+1}/${d.getDate()}`);
       if(workoutGraphMode==='best'){
         const best=getBestSet(found.sets,isBW);
-        vals.push(isBW?best.reps||0:best.weight||0);
+        vals.push(isBW?best.reps||0:Math.round((best.weight||0)*10)/10);
       }else{
         // 総負荷量
         const vol=found.sets.reduce((s,st)=>
           isBW?s+(st.reps||0):s+(st.weight||0)*(st.reps||0),0);
-        vals.push(Math.round(vol));
+        vals.push(Math.round(vol*10)/10);
       }
     }
   }
@@ -2442,7 +2442,7 @@ function renderWorkoutGraph(){
       borderWidth:2,pointRadius:4,pointBackgroundColor:lineColor,tension:0.3,fill:true
     }]},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{display:false}},scales:{
-      y:{ticks:{font:{size:10},color:'#999',callback:v=>isBestMode?(isBW?`${v}回`:`${v}kg`):`${v}kg`},grid:{color:'rgba(128,128,128,0.1)'}},
+      y:{ticks:{font:{size:10},color:'#999',callback:v=>isBestMode?(isBW?`${Math.round(v)}次`:`${Math.round(v*10)/10}kg`):`${Math.round(v)}kg`},grid:{color:'rgba(128,128,128,0.1)'}},
       x:{ticks:{font:{size:9},color:'#999',maxRotation:30,autoSkip:true},grid:{display:false}}
     }}
   });

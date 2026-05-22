@@ -254,6 +254,27 @@
   .workout-stat{font-size:11px;color:var(--text2)}
   .workout-stat span{font-weight:600;color:var(--text)}
 
+  /* ---- Date picker ---- */
+  .date-center{text-align:center;cursor:pointer;padding:4px 12px;border-radius:var(--radius-sm);transition:background .15s}
+  .date-center:active{background:var(--bg)}
+  .date-center-hint{font-size:9px;color:var(--text3);margin-top:1px}
+  .datepick-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:250}
+  .datepick-overlay.open{display:flex;align-items:flex-end;justify-content:center}
+  .datepick-sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px))}
+  .datepick-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px}
+  .datepick-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .datepick-title{font-size:15px;font-weight:600;color:var(--text)}
+  .datepick-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .datepick-dow{text-align:center;font-size:10px;font-weight:600;color:var(--text3);padding:3px 0}
+  .datepick-day{display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;border-radius:8px;font-size:12px;font-weight:500;color:var(--text2);background:none;border:none;cursor:pointer;font-family:inherit;min-height:36px;position:relative}
+  .datepick-day:active{opacity:0.6}
+  .datepick-day.today{background:var(--green-light);color:var(--green-dark);font-weight:700}
+  .datepick-day.selected{background:var(--green);color:white;font-weight:700}
+  .datepick-day.has-record::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--green);opacity:0.6}
+  .datepick-day.selected::after{background:white}
+  .datepick-day.other-month{opacity:0.3}
+  .datepick-day.future{opacity:0.25;pointer-events:none}
+
   /* ---- Export status ---- */
   .export-status{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:var(--radius-sm);margin-bottom:10px;border:0.5px solid transparent}
   .export-status-icon{font-size:20px;flex-shrink:0;line-height:1}
@@ -268,9 +289,10 @@
   <div class="header">
     <div class="date-nav">
       <button class="nav-btn" onclick="chgDay(-1)">‹</button>
-      <div class="date-center">
+      <div class="date-center" onclick="openDatePicker()">
         <div class="date-main" id="dateMain"></div>
         <div class="date-sub" id="dateSub"></div>
+        <div class="date-center-hint">点击选择日期</div>
       </div>
       <button class="nav-btn" onclick="chgDay(1)">›</button>
     </div>
@@ -580,6 +602,21 @@
 
     </div><!-- /tab-stamp -->
 
+  </div>
+</div>
+
+<!-- 日付選択カレンダー -->
+<div class="datepick-overlay" id="datepickOverlay" onclick="if(event.target===this)closeDatePicker()">
+  <div class="datepick-sheet">
+    <div class="datepick-handle"></div>
+    <div class="datepick-header">
+      <button class="nav-btn" onclick="datepickPrevMonth()">‹</button>
+      <div class="datepick-title" id="datepickTitle"></div>
+      <button class="nav-btn" onclick="datepickNextMonth()">›</button>
+    </div>
+    <div class="datepick-grid" id="datepickDow"></div>
+    <div class="datepick-grid" id="datepickGrid"></div>
+    <button onclick="selectToday()" style="width:100%;margin-top:12px;padding:11px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">返回今天</button>
   </div>
 </div>
 

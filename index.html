@@ -254,6 +254,27 @@
   .workout-stat{font-size:11px;color:var(--text2)}
   .workout-stat span{font-weight:600;color:var(--text)}
 
+  /* ---- Date picker ---- */
+  .date-center{text-align:center;cursor:pointer;padding:4px 12px;border-radius:var(--radius-sm);transition:background .15s}
+  .date-center:active{background:var(--bg)}
+  .date-center-hint{font-size:9px;color:var(--text3);margin-top:1px}
+  .datepick-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:250}
+  .datepick-overlay.open{display:flex;align-items:flex-end;justify-content:center}
+  .datepick-sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px))}
+  .datepick-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px}
+  .datepick-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .datepick-title{font-size:15px;font-weight:600;color:var(--text)}
+  .datepick-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .datepick-dow{text-align:center;font-size:10px;font-weight:600;color:var(--text3);padding:3px 0}
+  .datepick-day{display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;border-radius:8px;font-size:12px;font-weight:500;color:var(--text2);background:none;border:none;cursor:pointer;font-family:inherit;min-height:36px;position:relative}
+  .datepick-day:active{opacity:0.6}
+  .datepick-day.today{background:var(--green-light);color:var(--green-dark);font-weight:700}
+  .datepick-day.selected{background:var(--green);color:white;font-weight:700}
+  .datepick-day.has-record::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--green);opacity:0.6}
+  .datepick-day.selected::after{background:white}
+  .datepick-day.other-month{opacity:0.3}
+  .datepick-day.future{opacity:0.25;pointer-events:none}
+
   /* ---- Export status ---- */
   .export-status{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:var(--radius-sm);margin-bottom:10px;border:0.5px solid transparent}
   .export-status-icon{font-size:20px;flex-shrink:0;line-height:1}
@@ -268,9 +289,10 @@
   <div class="header">
     <div class="date-nav">
       <button class="nav-btn" onclick="chgDay(-1)">‹</button>
-      <div class="date-center">
+      <div class="date-center" onclick="openDatePicker()">
         <div class="date-main" id="dateMain"></div>
         <div class="date-sub" id="dateSub"></div>
+        <div class="date-center-hint">タップで日付選択</div>
       </div>
       <button class="nav-btn" onclick="chgDay(1)">›</button>
     </div>
@@ -583,6 +605,21 @@
   </div>
 </div>
 
+<!-- 日付選択カレンダー -->
+<div class="datepick-overlay" id="datepickOverlay" onclick="if(event.target===this)closeDatePicker()">
+  <div class="datepick-sheet">
+    <div class="datepick-handle"></div>
+    <div class="datepick-header">
+      <button class="nav-btn" onclick="datepickPrevMonth()">‹</button>
+      <div class="datepick-title" id="datepickTitle"></div>
+      <button class="nav-btn" onclick="datepickNextMonth()">›</button>
+    </div>
+    <div class="datepick-grid" id="datepickDow"></div>
+    <div class="datepick-grid" id="datepickGrid"></div>
+    <button onclick="selectToday()" style="width:100%;margin-top:12px;padding:11px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">今日に戻る</button>
+  </div>
+</div>
+
 <!-- カスタム種目登録モーダル -->
 <div class="sheet-overlay" id="customExOverlay" style="z-index:300" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="sheet">
@@ -848,16 +885,67 @@ function calcTotals(data){
   (data.snacks||[]).forEach(slot=>slot.forEach(i=>{cal+=i.k||0;p+=i.p||0;f+=i.f||0;c+=i.c||0;}));
   return{cal:Math.round(cal),p:Math.round(p*10)/10,f:Math.round(f*10)/10,c:Math.round(c*10)/10};
 }
+/* ---- date picker ---- */
+let dpYear=new Date().getFullYear(),dpMonth=new Date().getMonth();
+
+function openDatePicker(){
+  const cur=new Date();cur.setDate(cur.getDate()+currentDay);
+  dpYear=cur.getFullYear();dpMonth=cur.getMonth();
+  renderDatePicker();
+  document.getElementById('datepickOverlay').classList.add('open');
+}
+function closeDatePicker(){document.getElementById('datepickOverlay').classList.remove('open');}
+function datepickPrevMonth(){dpMonth--;if(dpMonth<0){dpMonth=11;dpYear--;}renderDatePicker();}
+function datepickNextMonth(){dpMonth++;if(dpMonth>11){dpMonth=0;dpYear++;}renderDatePicker();}
+
+function selectToday(){currentDay=0;closeDatePicker();render();refreshActiveTab();}
+function selectDate(y,m,d){
+  const target=new Date(y,m,d);target.setHours(0,0,0,0);
+  const today=new Date();today.setHours(0,0,0,0);
+  currentDay=Math.round((target-today)/(1000*60*60*24));
+  closeDatePicker();render();refreshActiveTab();
+}
+function refreshActiveTab(){
+  const tabs=['diary','graph','workout','stamp','foods','settings'];
+  const activeIdx=[...document.querySelectorAll('.tab')].findIndex(b=>b.classList.contains('active'));
+  const t=tabs[activeIdx]||'diary';
+  if(t==='graph'){renderCharts();renderExportStatus();}
+  else if(t==='workout')renderWorkoutTab();
+  else if(t==='stamp')renderStamp();
+}
+
+function renderDatePicker(){
+  document.getElementById('datepickTitle').textContent=`${dpYear}年${dpMonth+1}月`;
+  document.getElementById('datepickDow').innerHTML=
+    ['日','月','火','水','木','金','土'].map(d=>`<div class="datepick-dow">${d}</div>`).join('');
+  const today=new Date();today.setHours(0,0,0,0);
+  const curDate=new Date();curDate.setDate(curDate.getDate()+currentDay);curDate.setHours(0,0,0,0);
+  const firstDay=new Date(dpYear,dpMonth,1).getDay();
+  const daysInMonth=new Date(dpYear,dpMonth+1,0).getDate();
+  const prevDays=new Date(dpYear,dpMonth,0).getDate();
+  let html='';
+  for(let i=firstDay-1;i>=0;i--)html+=`<button class="datepick-day other-month" disabled>${prevDays-i}</button>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(dpYear,dpMonth,d);date.setHours(0,0,0,0);
+    const key=`${dpYear}-${String(dpMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=date.getTime()===today.getTime();
+    const isSelected=date.getTime()===curDate.getTime();
+    const isFuture=date>today;
+    const hasRecord=!!localStorage.getItem('diet_day_'+key)||!!localStorage.getItem('diet_workout_'+key);
+    let cls='datepick-day';
+    if(isSelected)cls+=' selected';
+    else if(isToday)cls+=' today';
+    if(isFuture)cls+=' future';
+    if(hasRecord&&!isFuture)cls+=' has-record';
+    html+=`<button class="${cls}" onclick="selectDate(${dpYear},${dpMonth},${d})">${d}</button>`;
+  }
+  document.getElementById('datepickGrid').innerHTML=html;
+}
+
 function chgDay(d){
   currentDay+=d;
   render();
-  // アクティブなタブに応じて再描画
-  const tabs=['diary','graph','workout','stamp','foods','settings'];
-  const activeIdx=[...document.querySelectorAll('.tab')].findIndex(b=>b.classList.contains('active'));
-  const activeTab=tabs[activeIdx]||'diary';
-  if(activeTab==='graph'){renderCharts();renderExportStatus();}
-  else if(activeTab==='workout'){renderWorkoutTab();}
-  else if(activeTab==='stamp'){renderStamp();}
+  refreshActiveTab();
 }
 
 /* ---- tabs ---- */

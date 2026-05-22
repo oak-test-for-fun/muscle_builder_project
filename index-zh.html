@@ -286,9 +286,9 @@
 
   <div class="content">
 
-    <!-- ======= 記録タブ ======= -->
+    <!-- ======= 记录标签 ======= -->
     <div id="tab-diary">
-      <!-- 体重 + カロリー統合カード -->
+      <!-- 体重 + 热量卡片 -->
       <div class="top-card">
         <div class="weight-row">
           <span class="weight-label">今日体重</span>
@@ -308,7 +308,7 @@
               <div class="cal-remain-label" id="remainLabel">剩余</div>
             </div>
           </div>
-          <!-- プログレスバー（縦線マーカー付き） -->
+          <!-- 进度条 -->
           <div class="progress-track" style="position:relative;overflow:hidden">
             <div class="progress-fill ok" id="calBar" style="width:0%;position:relative;z-index:1"></div>
             <div id="bonusBar" style="width:0%;height:100%;background:#7C3AED;opacity:0.5;position:absolute;right:0;top:0;transition:width 0.5s cubic-bezier(.4,0,.2,1);z-index:1"></div>
@@ -323,18 +323,18 @@
         </div>
       </div>
 
-      <!-- マクログリッド -->
+      <!-- 营养素网格 -->
       <div class="macro-grid" id="macroGrid"></div>
 
-      <!-- アラート -->
+      <!-- 警告 -->
       <div id="alertBox" style="display:none"></div>
 
-      <!-- 食事ブロック -->
+      <!-- 饮食块 -->
       <div id="mealsContainer"></div>
       <button class="add-snack-btn" onclick="addSnack()">＋ 添加加餐</button>
     </div>
 
-    <!-- ======= グラフタブ ======= -->
+    <!-- ======= 图表标签 ======= -->
     <div id="tab-graph" style="display:none">
       <div class="chart-card">
         <div class="chart-title">热量趋势</div>
@@ -347,7 +347,7 @@
         <div class="chart-legend">
           <span class="leg"><span class="leg-sq" style="background:var(--green)"></span>摄入</span>
           <span class="leg"><span class="leg-sq" style="background:var(--border);border:1px dashed var(--blue)"></span>目标</span>
-          <span class="leg"><span style="font-size:12px">🏋️</span>筋トレ実施日</span>
+          <span class="leg"><span style="font-size:12px">🏋️</span>健身日</span>
         </div>
         <div style="position:relative;" id="calChartWrap"><canvas id="calChart"></canvas></div>
       </div>
@@ -371,7 +371,7 @@
         <div id="calLog"></div>
       </div>
 
-      <!-- データ管理 -->
+      <!-- 数据管理 -->
       <div class="section-title">数据管理</div>
       <div class="form-card">
         <div class="form-card-title">备份与恢复</div>
@@ -394,7 +394,7 @@
       </div>
     </div>
 
-    <!-- ======= 食品タブ ======= -->
+    <!-- ======= 食品标签 ======= -->
     <div id="tab-foods" style="display:none">
       <div class="section-title">自定义食品</div>
       <button class="save-btn" style="margin-bottom:10px" onclick="openCustomFoodModal(null)">＋ 添加新食品</button>
@@ -403,7 +403,7 @@
       <div class="card" id="builtinFoodList"></div>
     </div>
 
-    <!-- ======= 設定タブ ======= -->
+    <!-- ======= 设置标签 ======= -->
     <div id="tab-settings" style="display:none">
 
       <!-- 目標値 -->
@@ -420,8 +420,8 @@
         <button class="save-btn" onclick="saveGoals()">保存</button>
       </div>
 
-      <!-- プロフィール -->
-      <div class="section-title">个人信息・减肥目标</div>
+      <!-- 个人信息 -->
+      <div class="section-title">个人信息 · 减肥目标</div>
       <div class="prof-section">
         <div class="prof-section-title">基本信息</div>
         <div class="num-grid">
@@ -439,9 +439,9 @@
         <div id="sec_wt" style="display:none;margin-top:12px">
           <div class="field-label" style="margin-top:0">强度</div>
           <div class="radio-group">
-            <label class="radio-btn"><input type="radio" name="wt_int" value="light" checked><span>轻度<small>练习动作・轻负荷</small></span></label>
+            <label class="radio-btn"><input type="radio" name="wt_int" value="light" checked><span>轻度<small>练习动作·轻负荷</small></span></label>
             <label class="radio-btn"><input type="radio" name="wt_int" value="mid"><span>中等<small>一般训练</small></span></label>
-            <label class="radio-btn"><input type="radio" name="wt_int" value="hard"><span>高强度<small>高强度・大重量</small></span></label>
+            <label class="radio-btn"><input type="radio" name="wt_int" value="hard"><span>高强度<small>高强度·大重量</small></span></label>
           </div>
           <div class="field-label">频率</div>
           <div class="radio-group">
@@ -457,10 +457,10 @@
         <div id="sec_cardio" style="display:none;margin-top:12px">
           <div class="field-label" style="margin-top:0">種類</div>
           <div class="radio-group">
-            <label class="radio-btn"><input type="radio" name="cardio_type" value="light" checked><span>軽め<small>步行・轻松骑行</small></span></label>
-            <label class="radio-btn"><input type="radio" name="cardio_type" value="weighted"><span>负重步行<small>穿重量背心・背包</small></span></label>
-            <label class="radio-btn"><input type="radio" name="cardio_type" value="mid"><span>中程度<small>慢跑・游泳</small></span></label>
-            <label class="radio-btn"><input type="radio" name="cardio_type" value="hard"><span>ハード<small>跑步・HIIT</small></span></label>
+            <label class="radio-btn"><input type="radio" name="cardio_type" value="light" checked><span>轻度<small>步行·轻松骑行</small></span></label>
+            <label class="radio-btn"><input type="radio" name="cardio_type" value="weighted"><span>负重步行<small>穿重量背心·背包</small></span></label>
+            <label class="radio-btn"><input type="radio" name="cardio_type" value="mid"><span>中等<small>慢跑·游泳</small></span></label>
+            <label class="radio-btn"><input type="radio" name="cardio_type" value="hard"><span>高强度<small>跑步·HIIT</small></span></label>
           </div>
           <div class="field-label">频率</div>
           <div class="radio-group">
@@ -476,9 +476,9 @@
         <div id="sec_sport" style="display:none;margin-top:12px">
           <div class="field-label" style="margin-top:0">强度</div>
           <div class="radio-group">
-            <label class="radio-btn"><input type="radio" name="sport_int" value="low" checked><span>低强度<small>高尔夫・轻松传球</small></span></label>
-            <label class="radio-btn"><input type="radio" name="sport_int" value="mid"><span>中强度<small>网球・羽毛球</small></span></label>
-            <label class="radio-btn"><input type="radio" name="sport_int" value="high"><span>高强度<small>篮球・足球・格斗</small></span></label>
+            <label class="radio-btn"><input type="radio" name="sport_int" value="low" checked><span>低强度<small>高尔夫·轻松传球</small></span></label>
+            <label class="radio-btn"><input type="radio" name="sport_int" value="mid"><span>中强度<small>网球·羽毛球</small></span></label>
+            <label class="radio-btn"><input type="radio" name="sport_int" value="high"><span>高强度<small>篮球·足球·格斗</small></span></label>
           </div>
           <div class="field-label">频率</div>
           <div class="radio-group">
@@ -512,13 +512,13 @@
 
     </div><!-- /tab-settings -->
 
-    <!-- ======= 筋トレタブ ======= -->
+    <!-- ======= 健身标签 ======= -->
     <div id="tab-workout" style="display:none">
 
-      <!-- 今日の消費カロリーサマリー -->
+      <!-- 今日热量消耗 -->
       <div class="card card-pad" id="workoutCalCard" style="margin-bottom:8px"></div>
 
-      <!-- 種目別グラフ（上部） -->
+      <!-- 项目趋势图（上方） -->
       <div class="section-title" style="margin-top:4px">项目趋势图</div>
       <div class="chart-card">
         <select id="workoutGraphSelect" onchange="renderWorkoutGraph()" style="margin-bottom:8px"></select>
@@ -530,39 +530,39 @@
         <div id="workoutGraphStats" style="margin-top:8px"></div>
       </div>
 
-      <!-- 種目追加ボタン -->
+      <!-- 添加项目按钮 -->
       <button class="save-btn" style="margin-bottom:10px" onclick="openWorkoutModal()">＋ 添加项目</button>
 
-      <!-- 今日のトレーニング -->
+      <!-- 今日训练 -->
       <div class="section-title">今日训练</div>
       <div id="workoutList"></div>
 
     </div><!-- /tab-workout -->
 
-    <!-- ======= スタンプタブ ======= -->
+    <!-- ======= 成就标签 ======= -->
     <div id="tab-stamp" style="display:none">
 
-      <!-- ストリーク状況カード -->
+      <!-- 连续达成卡片 -->
       <div class="card card-pad" id="streakCard" style="margin-bottom:8px"></div>
 
-      <!-- チートデイカード -->
+      <!-- 欺骗日卡片 -->
       <div class="card card-pad" id="cheatCard" style="margin-bottom:8px"></div>
 
-      <!-- カレンダー -->
+      <!-- 日历 -->
       <div class="card card-pad">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
           <button class="nav-btn" onclick="calPrevMonth()">‹</button>
           <div style="font-size:14px;font-weight:600;color:var(--text)" id="calMonthLabel"></div>
           <button class="nav-btn" onclick="calNextMonth()">›</button>
         </div>
-        <!-- 曜日ヘッダー -->
+        <!-- 星期标题 -->
         <div class="stamp-cal-grid" style="margin-bottom:4px">
-          <div class="cal-dow">日</div><div class="cal-dow">月</div><div class="cal-dow">火</div>
-          <div class="cal-dow">水</div><div class="cal-dow">木</div><div class="cal-dow">金</div>
-          <div class="cal-dow">土</div>
+          <div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div>
+          <div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div>
+          <div class="cal-dow">六</div>
         </div>
         <div class="stamp-cal-grid" id="stampCalGrid"></div>
-        <!-- 凡例 -->
+        <!-- 图例 -->
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
           <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">⭐</span>完美达成</span>
           <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">🌸</span>普通达成</span>
@@ -573,9 +573,9 @@
         </div>
       </div>
 
-      <!-- チートデイ使用モーダルトリガー -->
+      <!-- 欺骗日使用按钮 -->
       <div id="cheatUseSection" style="display:none;margin-top:8px">
-        <button class="save-btn" style="background:var(--amber)" onclick="openCheatModal()">🍕 今日チートデイを使う</button>
+        <button class="save-btn" style="background:var(--amber)" onclick="openCheatModal()">🍕 使用欺骗日</button>
       </div>
 
     </div><!-- /tab-stamp -->
@@ -583,7 +583,7 @@
   </div>
 </div>
 
-<!-- カスタム種目登録モーダル -->
+<!-- 自定义项目注册弹窗 -->
 <div class="sheet-overlay" id="customExOverlay" style="z-index:300" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -617,7 +617,7 @@
   </div>
 </div>
 
-<!-- 筋トレ追加モーダル -->
+<!-- 健身添加弹窗 -->
 <div class="sheet-overlay" id="workoutOverlay" style="z-index:200" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -625,19 +625,19 @@
       <div class="sheet-title" style="margin-bottom:0">🏋️ 添加项目</div>
       <button onclick="document.getElementById('workoutOverlay').classList.remove('open')" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:0 4px;line-height:1">×</button>
     </div>
-    <!-- 部位選択 -->
+    <!-- 部位选择 -->
     <div class="section-sep">部位</div>
     <div class="quick-wrap" id="muscleGroupWrap"></div>
-    <!-- 種目選択 -->
+    <!-- 项目选择 -->
     <div class="section-sep">项目</div>
     <div class="quick-wrap" id="exerciseWrap"></div>
     <button onclick="openCustomExerciseModal()" style="font-size:12px;color:var(--green);font-weight:500;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;margin-bottom:4px">＋ 添加自定义项目</button>
-    <!-- 入力フォーム -->
+    <!-- 输入表单 -->
     <div id="workoutForm" style="display:none">
       <div style="font-size:13px;font-weight:600;color:var(--text);margin:10px 0 6px" id="selectedExerciseLabel"></div>
-      <!-- 前回記録 -->
+      <!-- 上次记录 -->
       <div id="prevWorkoutInfo" style="font-size:11px;color:var(--text3);margin-bottom:10px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-xs);line-height:1.6"></div>
-      <!-- 片手種目トグル -->
+      <!-- 单手项目切换 -->
       <div id="unilateralRow" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:9px 12px;background:var(--bg);border-radius:var(--radius-xs)">
         <div>
           <div style="font-size:12px;color:var(--text);font-weight:500">单手项目</div>
@@ -645,9 +645,9 @@
         </div>
         <label class="toggle"><input type="checkbox" id="wk_unilateral" onchange="updateSetCalHint()"><span class="toggle-slider"></span></label>
       </div>
-      <!-- セットリスト -->
+      <!-- 组数列表 -->
       <div id="setList" style="margin-bottom:8px"></div>
-      <!-- セット追加行 -->
+      <!-- 添加组数行 -->
       <div id="setAddRow" style="display:flex;gap:7px;align-items:flex-end;margin-bottom:6px">
         <div id="setWeightWrap" style="flex:1">
           <div class="field-label" style="margin-top:0">重量 (kg) <span style="font-size:9px;color:var(--text3)">单手重量</span></div>
@@ -665,20 +665,20 @@
   </div>
 </div>
 
-<!-- チートデイモーダル -->
+<!-- 欺骗日弹窗 -->
 <div class="sheet-overlay" id="cheatOverlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div class="sheet-title" style="margin-bottom:0">🍕 チートデイを使用</div>
+      <div class="sheet-title" style="margin-bottom:0">🍕 使用欺骗日</div>
       <button onclick="document.getElementById('cheatOverlay').classList.remove('open')" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:0 4px;line-height:1">×</button>
     </div>
     <div id="cheatModalBody"></div>
-    <button class="add-btn" style="background:var(--amber)" onclick="useCheatDay()">今日をチートデイにする</button>
+    <button class="add-btn" style="background:var(--amber)" onclick="useCheatDay()">设为今日欺骗日</button>
   </div>
 </div>
 
-<!-- 食事追加モーダル -->
+<!-- 添加饮食弹窗 -->
 <div class="sheet-overlay" id="overlay" onclick="overlayClick(event)">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -688,7 +688,7 @@
     </div>
     <div class="meal-chips" id="mealChips"></div>
 
-    <!-- 食事コピー -->
+    <!-- 复制饮食 -->
     <div id="copySection" style="margin-bottom:10px">
       <div class="section-sep">从其他餐次复制</div>
       <div class="quick-wrap" id="copyWrap"></div>
@@ -696,10 +696,10 @@
 
     <div class="field-label" style="margin-top:0">食品名称</div>
     <input type="text" id="inp_name" placeholder="例：米饭、鸡胸肉...">
-    <div class="section-sep">よく食べるもの <span style="font-weight:400;color:var(--green);font-size:10px">●緑=自分登録</span></div>
+    <div class="section-sep">常用食品 <span style="font-weight:400;color:var(--green);font-size:10px">●绿=自定义</span></div>
     <div class="quick-wrap" id="quickWrap"></div>
 
-    <!-- 単位切り替え -->
+    <!-- 单位切换 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
       <div style="font-size:11px;color:var(--text3)">营养素输入方式</div>
       <div style="display:flex;gap:4px">
@@ -749,7 +749,7 @@
   </div>
 </div>
 
-<!-- カスタム食品モーダル -->
+<!-- 自定义食品弹窗 -->
 <div class="sheet-overlay" id="customOverlay" onclick="customOverlayClick(event)">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -803,22 +803,22 @@
 
 <script>
 const BUILTIN=[
-  {n:'白米ご飯',k:130,p:2.7,f:0.3,c:28},
-  {n:'馒头(マントウ)',k:223,p:7,f:1,c:47},
+  {n:'白米饭',k:130,p:2.7,f:0.3,c:28},
+  {n:'馒头',k:223,p:7,f:1,c:47},
   {n:'花卷',k:211,p:6,f:2,c:43},
-  {n:'粉丝(春雨)',k:335,p:0.1,f:0.1,c:84},
-  {n:'中华面(茹で)',k:149,p:5,f:0.6,c:31},
-  {n:'猪五花肉(豚バラ)',k:395,p:14,f:37,c:0},
-  {n:'鸡胸肉(蒸し)',k:108,p:22,f:1.5,c:0},
-  {n:'鲤鱼(煮)',k:109,p:17,f:4,c:0},
-  {n:'豆腐(木綿)',k:72,p:7,f:4,c:2},
-  {n:'鸡蛋(卵)',k:151,p:12,f:10,c:1},
+  {n:'粉丝',k:335,p:0.1,f:0.1,c:84},
+  {n:'中华面',k:149,p:5,f:0.6,c:31},
+  {n:'猪五花肉',k:395,p:14,f:37,c:0},
+  {n:'蒸鸡胸肉',k:108,p:22,f:1.5,c:0},
+  {n:'鲤鱼(炖)',k:109,p:17,f:4,c:0},
+  {n:'豆腐',k:72,p:7,f:4,c:2},
+  {n:'鸡蛋',k:151,p:12,f:10,c:1},
   {n:'白菜',k:16,p:1.2,f:0.2,c:3},
-  {n:'菠菜(ほうれん草)',k:24,p:2.9,f:0.5,c:3},
-  {n:'豆芽(もやし)',k:15,p:1.7,f:0.1,c:2},
-  {n:'黄瓜(きゅうり)',k:14,p:0.7,f:0.1,c:3},
-  {n:'苹果(りんご)',k:54,p:0.2,f:0.1,c:14},
-  {n:'香蕉(バナナ)',k:86,p:1.1,f:0.2,c:23},
+  {n:'菠菜',k:24,p:2.9,f:0.5,c:3},
+  {n:'豆芽',k:15,p:1.7,f:0.1,c:2},
+  {n:'黄瓜',k:14,p:0.7,f:0.1,c:3},
+  {n:'苹果',k:54,p:0.2,f:0.1,c:14},
+  {n:'香蕉',k:86,p:1.1,f:0.2,c:23},
 ];
 const BASE_MEALS=['早餐','午餐','晚餐'];
 let currentDay=0, selMealKey='早餐', graphPeriod=7, calChartInst=null, pfcChartInst=null, weightChartInst=null, unitMode='g', cUnitMode='g';
@@ -837,7 +837,7 @@ function getBuiltin(){const ov=loadBuiltinOverrides();return BUILTIN.map((f,i)=>
 function getKey(offset){const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function getDateStr(offset){
   const d=new Date();d.setDate(d.getDate()+offset);
-  const w=['日','月','火','水','木','金','土'][d.getDay()];
+  const w=['日','一','二','三','四','五','六'][d.getDay()];
   return{main:offset===0?'今日':offset===-1?'昨日':`${d.getMonth()+1}月${d.getDate()}日`,sub:`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}（${w}）`};
 }
 function loadDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_day_'+k);if(s)return JSON.parse(s);return{meals:{早餐:[],午餐:[],晚餐:[]},snacks:[],comment:'',weight:null};}
@@ -857,7 +857,7 @@ function calcTotals(data){
 function chgDay(d){
   currentDay+=d;
   render();
-  // アクティブなタブに応じて再描画
+  // 根据当前标签重新渲染
   const tabs=['diary','graph','workout','stamp','foods','settings'];
   const activeIdx=[...document.querySelectorAll('.tab')].findIndex(b=>b.classList.contains('active'));
   const activeTab=tabs[activeIdx]||'diary';
@@ -881,11 +881,11 @@ function switchTab(tab,btn){
 function render(){
   const data=loadDay(currentDay),ds=getDateStr(currentDay);
   const goals=loadGoals();
-  const baseGoal=goals.cal; // 筋トレ加算前の元の目標を保持
-  // チートデイの一時的なカロリー上限を適用
+  const baseGoal=goals.cal; // 保存健身加算前的原始目标
+  // 应用欺骗日临时热量上限
   if(data.cheatDay==='unlimited')goals.cal=9999;
   else if(data.cheatDay==='cheat'&&data.cheatCalLimit)goals.cal=data.cheatCalLimit;
-  // 筋トレ消費×0.5を目標に加算（動的目標）
+  // 健身消耗×0.5加到目标（动态目标）
   const prof=loadProfileData();
   const bw=prof&&prof.weight?prof.weight:70;
   const wkData=loadWorkoutDay(currentDay);
@@ -902,21 +902,21 @@ function render(){
   const rc=document.getElementById('remainCal');
   rc.textContent=(rem>=0?rem:'+'+Math.abs(rem))+' kcal';
   rc.className='cal-remain '+(rem<0?'over':'ok');
-  document.getElementById('remainLabel').textContent=rem>=0?'残り':'超過';
-  const totalGoal=goals.cal; // 動的目標（筋トレ加算後）
+  document.getElementById('remainLabel').textContent=rem>=0?'剩余':'超出';
+  const totalGoal=goals.cal; // 动态目标（健身加算后）
   const bar=document.getElementById('calBar');
   const bonusBar=document.getElementById('bonusBar');
   const goalMarker=document.getElementById('goalMarker');
 
   if(wkBonus>0){
-    // 筋トレあり日
-    // 縦線：設定目標の位置（totalGoalに対するbaseGoalの割合）
+    // 健身日
+    // 竖线：设定目标位置
     const markerPct=Math.min(99,Math.round(baseGoal/totalGoal*100));
     goalMarker.style.display='block';
     goalMarker.style.left=markerPct+'%';
 
     const foodPct=Math.min(100,Math.round(t.cal/totalGoal*100));
-    // ボーナスバー：食事が設定目標超えた分だけ紫が削られる
+    // 奖励条：饮食超出设定目标部分
     const bonusPct=Math.max(0,Math.round((totalGoal-Math.max(t.cal,baseGoal))/totalGoal*100));
     bonusBar.style.width=bonusPct+'%';
 
@@ -926,7 +926,7 @@ function render(){
       bar.className='progress-fill over';
       bonusBar.style.width='0%';
     }else if(t.cal>totalGoal){
-      // ボーナスも超過：オレンジ
+      // 超出奖励：橙色
       bar.style.width='100%';
       bar.className='progress-fill warn';
       bonusBar.style.width='0%';
@@ -943,7 +943,7 @@ function render(){
     bar.style.width=pct+'%';
     bar.className='progress-fill '+(t.cal>totalGoal*1.2?'over':t.cal>totalGoal?'warn':'ok');
   }
-  const macros=[{label:'たんぱく質',val:t.p,goal:goals.protein,unit:'g',color:'#185FA5'},{label:'脂質',val:t.f,goal:goals.fat,unit:'g',color:'#BA7517'},{label:'炭水化物',val:t.c,goal:goals.carb,unit:'g',color:'#3B6D11'}];
+  const macros=[{label:'蛋白质',val:t.p,goal:goals.protein,unit:'g',color:'#185FA5'},{label:'脂肪',val:t.f,goal:goals.fat,unit:'g',color:'#BA7517'},{label:'碳水',val:t.c,goal:goals.carb,unit:'g',color:'#3B6D11'}];
   document.getElementById('macroGrid').innerHTML=macros.map(m=>{
     const cls=m.val<m.goal?'under':m.val>m.goal*1.1?'over':'ok';
     const arrow=m.val<m.goal?' ↑':m.val>m.goal*1.1?' ↓':'';
@@ -953,7 +953,7 @@ function render(){
   const ab=document.getElementById('alertBox');
   if(t.cal>goals.cal*1.2){
     ab.style.display='block';
-    ab.innerHTML=`<div class="alert"><div class="alert-title">⚠️ 目標カロリーの120%を超えています</div><div class="alert-text">食べ過ぎた理由や気づきをメモしましょう</div><textarea rows="2" placeholder="例：外食で食べ過ぎた..." id="commentTA">${data.comment||''}</textarea><button class="alert-save" onclick="saveComment()">メモを保存</button></div>`;
+    ab.innerHTML=`<div class="alert"><div class="alert-title">⚠️ 已超过热量目标120%</div><div class="alert-text">记录一下原因或感想吧</div><textarea rows="2" placeholder="例：外出就餐吃多了..." id="commentTA">${data.comment||''}</textarea><button class="alert-save" onclick="saveComment()">保存备注</button></div>`;
   }else{ab.style.display='none';}
   renderMeals(data);
   renderWorkoutBonus();
@@ -974,7 +974,7 @@ function makeMealBlock(label,items,isSnack,snackIdx){
     h+=`<div class="food-row"><div><div class="food-name">${safeName}</div><div class="food-macros">P:${item.p}g F:${item.f}g C:${item.c}g</div></div><div class="food-right"><span class="food-kcal">${Math.round(item.k)} kcal</span><button class="food-del" data-key="${dk}" data-idx="${idx}" onclick="delFood(this.dataset.key,parseInt(this.dataset.idx))">×</button></div></div>`;
   });
   const mealKey=isSnack?'snack_'+snackIdx:label;
-  h+=`<button class="add-to-meal" data-meal="${mealKey}" onclick="openModal(this.dataset.meal)">＋ ${label}に追加</button>`;
+  h+=`<button class="add-to-meal" data-meal="${mealKey}" onclick="openModal(this.dataset.meal)">＋ 添加到${label}</button>`;
   div.innerHTML=h;return div;
 }
 function delFood(key,idx){
@@ -1111,7 +1111,7 @@ function calcPreview(){
   const c=+document.getElementById('inp_c').value||0;
   const g=+document.getElementById('inp_g').value;
   const hint=document.getElementById('calcHint');
-  if(g&&k>0){const r=g/100;hint.textContent=`→ ${Math.round(k*r)} kcal / P:${Math.round(p*r*10)/10}g F:${Math.round(f*r*10)/10}g C:${Math.round(c*r*10)/10}g（${g}g換算）`;}
+  if(g&&k>0){const r=g/100;hint.textContent=`→ ${Math.round(k*r)} kcal / P:${Math.round(p*r*10)/10}g F:${Math.round(f*r*10)/10}g C:${Math.round(c*r*10)/10}g（${g}g换算）`;}
   else hint.textContent='';
 }
 function calcPreviewCount(){
@@ -1122,7 +1122,7 @@ function calcPreviewCount(){
   const cnt=+document.getElementById('inp_count').value||1;
   const unit=document.getElementById('inp_unit_name').value;
   const hint=document.getElementById('calcHint');
-  if(k>0)hint.textContent=`→ ${Math.round(k*cnt)} kcal / P:${Math.round(p*cnt*10)/10}g F:${Math.round(f*cnt*10)/10}g C:${Math.round(c*cnt*10)/10}g（${cnt}${unit}分）`;
+  if(k>0)hint.textContent=`→ ${Math.round(k*cnt)} kcal / P:${Math.round(p*cnt*10)/10}g F:${Math.round(f*cnt*10)/10}g C:${Math.round(c*cnt*10)/10}g（${cnt}${unit}份）`;
   else hint.textContent='';
 }
 function selChip(btn,key){selMealKey=key;document.querySelectorAll('.chip').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
@@ -1162,7 +1162,7 @@ function renderCustomFoodList(){
   const el=document.getElementById('customFoodList');
   if(!customs.length){el.innerHTML='<div class="empty-state">尚未登录任何食品</div>';return;}
   el.innerHTML=customs.map((f,i)=>{
-    const unitLabel=f.unitMode==='count'?`1${f.unitName||'個'}あたり`:'100gあたり';
+    const unitLabel=f.unitMode==='count'?`每每1${f.unitName||'个'}`:'每100g';
     return`<div class="custom-food-row"><div><div class="custom-food-name">${f.n}</div><div class="custom-food-detail">${f.k}kcal / P:${f.p}g F:${f.f}g C:${f.c}g（${unitLabel}）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openCustomFoodModal(${i})" style="color:var(--blue)">编辑</button><button class="icon-btn" onclick="deleteCustomFood(${i})" style="color:var(--red)">删除</button></div></div>`;
   }).join('');
 }
@@ -1173,14 +1173,14 @@ function renderBuiltinFoodList(){
   el.innerHTML=BUILTIN.map((f,i)=>{
     const cur=ov[i]?{...f,...ov[i]}:f;
     const edited=!!ov[i];
-    return`<div class="custom-food-row"><div><div class="custom-food-name">${cur.n}${edited?'<span style="font-size:10px;color:var(--green);margin-left:6px">編集済</span>':''}</div><div class="custom-food-detail">${cur.k}kcal / P:${cur.p}g F:${cur.f}g C:${cur.c}g（100gあたり）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openBuiltinEditModal(${i})" style="color:var(--blue)">编辑</button>${edited?`<button class="icon-btn" onclick="resetBuiltin(${i})" style="color:var(--text3)">戻す</button>`:''}</div></div>`;
+    return`<div class="custom-food-row"><div><div class="custom-food-name">${cur.n}${edited?'<span style="font-size:10px;color:var(--green);margin-left:6px">編集済</span>':''}</div><div class="custom-food-detail">${cur.k}kcal / P:${cur.p}g F:${cur.f}g C:${cur.c}g（每100g）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openBuiltinEditModal(${i})" style="color:var(--blue)">编辑</button>${edited?`<button class="icon-btn" onclick="resetBuiltin(${i})" style="color:var(--text3)">戻す</button>`:''}</div></div>`;
   }).join('');
 }
 function openBuiltinEditModal(idx){
   const ov=loadBuiltinOverrides();
   const f=ov[idx]?{...BUILTIN[idx],...ov[idx]}:BUILTIN[idx];
   document.getElementById('customEditIdx').value='builtin_'+idx;
-  document.getElementById('customSheetTitle').textContent='プリセットを編集';
+  document.getElementById('customSheetTitle').textContent='编辑预设';
   ['c_name','c_cal','c_p','c_f','c_c','c_cal_cnt','c_p_cnt','c_f_cnt','c_c_cnt'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('c_name').value=f.n;
   const isCount=f.unitMode==='count';
@@ -1200,14 +1200,14 @@ function openBuiltinEditModal(idx){
   document.getElementById('customOverlay').classList.add('open');
 }
 function resetBuiltin(idx){
-  if(!confirm('この食品を初期値に戻しますか？'))return;
+  if(!confirm('确定恢复默认吗？'))return;
   const ov=loadBuiltinOverrides();delete ov[idx];saveBuiltinOverrides(ov);renderCustomFoodList();
 }
 function openCustomFoodModal(editIdx){
   const customs=loadCustomFoods();
   document.getElementById('customEditIdx').value=editIdx===null?-1:editIdx;
-  document.getElementById('customSheetTitle').textContent=editIdx===null?'食品を登録':'食品を編集';
-  // フィールドをリセット
+  document.getElementById('customSheetTitle').textContent=editIdx===null?'添加食品':'编辑食品';
+  // フィールドをリ组
   ['c_name','c_cal','c_p','c_f','c_c','c_cal_cnt','c_p_cnt','c_f_cnt','c_c_cnt'].forEach(id=>document.getElementById(id).value='');
   if(editIdx!==null&&editIdx>=0){
     const f=customs[editIdx];
@@ -1259,7 +1259,7 @@ function saveCustomFood(){
   renderCustomFoodList();
 }
 function deleteCustomFood(idx){
-  if(!confirm('この食品を削除しますか？'))return;
+  if(!confirm('确定删除此食品吗？'))return;
   const customs=loadCustomFoods();customs.splice(idx,1);saveCustomFoods(customs);renderCustomFoodList();
 }
 
@@ -1276,7 +1276,7 @@ function renderCharts(){
   const labels=[],calVals=[],colors=[],hasWorkout=[];
   for(let i=graphPeriod-1;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
-    const w=['日','月','火','水','木','金','土'][d.getDay()];
+    const w=['日','一','二','三','四','五','六'][d.getDay()];
     const lbl=graphPeriod<=14?`${d.getMonth()+1}/${d.getDate()}(${w})`:`${d.getMonth()+1}/${d.getDate()}`;
     labels.push(lbl);
     const t=calcTotals(loadDay(-i));calVals.push(t.cal);
@@ -1325,11 +1325,11 @@ function renderCharts(){
   if(pfcChartInst)pfcChartInst.destroy();
   pfcChartInst=new Chart(document.getElementById('pfcChart'),{
     type:'doughnut',
-    data:{labels:['たんぱく質','脂質','炭水化物'],datasets:[{data:pfcData.some(v=>v>0)?pfcData:[1,1,1],backgroundColor:['#185FA5','#BA7517','#3B6D11'],borderWidth:0,hoverOffset:4}]},
+    data:{labels:['蛋白质','脂肪','碳水'],datasets:[{data:pfcData.some(v=>v>0)?pfcData:[1,1,1],backgroundColor:['#185FA5','#BA7517','#3B6D11'],borderWidth:0,hoverOffset:4}]},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:'easeInOutQuart'},plugins:{legend:{position:'right',labels:{font:{size:11},color:'#888',boxWidth:10,padding:12}}}}
   });
 
-  document.getElementById('logTitle').textContent=`過去${graphPeriod}日間の記録`;
+  document.getElementById('logTitle').textContent=`过去${graphPeriod}天的记录`;
   let logHtml='';
   for(let i=graphPeriod-1;i>=0;i--){
     const data=loadDay(-i),t=calcTotals(data);
@@ -1338,7 +1338,7 @@ function renderCharts(){
     const wStr=data.weight!=null?`<span style="font-size:11px;color:var(--text3);margin-left:4px">${data.weight}kg</span>`:'';
     logHtml+=`<div class="log-row"><span class="log-date">${ds.main}</span><span class="log-cal ${cls}">${t.cal} kcal${wStr}</span>${data.comment?`<span class="log-comment">${data.comment}</span>`:'<span></span>'}</div>`;
   }
-  document.getElementById('calLog').innerHTML=logHtml||'<div style="font-size:12px;color:var(--text3);padding:8px 0">この期間に記録はありません</div>';
+  document.getElementById('calLog').innerHTML=logHtml||'<div style="font-size:12px;color:var(--text3);padding:8px 0">此期间暂无记录</div>';
 
   // 体重グラフ
   const prof=loadProfileData();
@@ -1348,7 +1348,7 @@ function renderCharts(){
     wLabels.push(`${d.getMonth()+1}/${d.getDate()}`);
     const day=loadDay(-i);
     wActual.push(day.weight!=null?day.weight:null);
-    // 理論値：開始体重 - (開始からの累計赤字 / 7200)
+    // 理論値：開始体重 - (開始からの累计赤字 / 7200)
     if(prof&&prof.startDate&&prof.weight){
       const sp=prof.startDate.split('-').map(Number);
       const startDate=new Date(sp[0],sp[1]-1,sp[2]);
@@ -1386,7 +1386,7 @@ function renderCharts(){
 
 /* ---- export / import ---- */
 function buildExportData(){
-  // バックアップ・復元専用：インポートに必要なデータのみ
+  // バックアップ·復元専用：インポートに必要なデータのみ
   const goals=loadGoals();
   const customFoods=loadCustomFoods();
   const dayKeys=[];
@@ -1469,16 +1469,16 @@ function exportMarkdown(){
     Math.round(recorded.reduce((s,r)=>{const d=prof.maintenance-r.kcal;return s+(d>0?d:0);},0)/7200*100)/100:null;
 
   // 運動習慣
-  const intMap={light:'軽め',mid:'中程度',hard:'ハード'};
-  const freqMap={low:'週1〜2回',mid:'週3〜4回',high:'週5回以上'};
-  const cardioMap={light:'ウォーキング',weighted:'加重ウォーキング',mid:'ジョギング・水泳',hard:'ランニング・HIIT'};
-  const sportMap={low:'低強度',mid:'中強度',high:'高強度'};
+  const intMap={light:'轻度',mid:'中等',hard:'高强度'};
+  const freqMap={low:'每周1-2次',mid:'每周3-4次',high:'每周5次以上'};
+  const cardioMap={light:'步行',weighted:'负重步行',mid:'慢跑·游泳',hard:'跑步·HIIT'};
+  const sportMap={low:'低强度',mid:'中强度',high:'高强度'};
   const exerciseLines=[];
   if(prof){
-    if(prof.wt_on)exerciseLines.push(`- 筋トレ：${intMap[prof.wt_int]||''}・${freqMap[prof.wt_freq]||''}`);
-    if(prof.cardio_on)exerciseLines.push(`- 有酸素：${cardioMap[prof.cardio_type]||''}・${freqMap[prof.cardio_freq]||''}`);
-    if(prof.sport_on)exerciseLines.push(`- スポーツ：${sportMap[prof.sport_int]||''}・${freqMap[prof.sport_freq]||''}`);
-    if(!prof.wt_on&&!prof.cardio_on&&!prof.sport_on)exerciseLines.push('- 運動習慣なし');
+    if(prof.wt_on)exerciseLines.push(`- 力量训练：${intMap[prof.wt_int]||''}·${freqMap[prof.wt_freq]||''}`);
+    if(prof.cardio_on)exerciseLines.push(`- 有氧运动：${cardioMap[prof.cardio_type]||''}·${freqMap[prof.cardio_freq]||''}`);
+    if(prof.sport_on)exerciseLines.push(`- 运动：${sportMap[prof.sport_int]||''}·${freqMap[prof.sport_freq]||''}`);
+    if(!prof.wt_on&&!prof.cardio_on&&!prof.sport_on)exerciseLines.push('- 无运动习惯');
   }
 
   if(!dayKeys.length){alert('暂无记录');return;}
@@ -1487,55 +1487,55 @@ function exportMarkdown(){
   const to=dayKeys[dayKeys.length-1];
   const dateStr=new Date().toISOString().slice(0,10);
 
-  let md=`# 食事・体重記録データ（${from} 〜 ${to}）
-エクスポート日：${dateStr}
+  let md=`# 饮食·体重记录数据（${from} ~ ${to}）
+导出日期：${dateStr}
 
-以下のデータを分析し、①カロリー管理の状況、②PFCバランスの評価、③体重変化の考察、④具体的な改善アドバイスを教えてください。
+请分析以下数据，并提供：①热量管理情况、②PFC比例评估、③体重变化分析、④具体改善建议。
 
 ---
 
-## ユーザー情報
+## 用户信息
 `;
   if(prof){
-    md+=`- ${prof.age}歳・${prof.sex==='male'?'男性':'女性'}・身長${prof.height}cm
-- 現在体重：${prof.weight}kg　目標体重：${prof.goalWeight}kg（${prof.goalMonths}ヶ月で達成予定）
-- メンテナンスカロリー：${prof.maintenance||'未設定'}kcal　1日摂取目標：${Math.max(1000,prof.dailyTarget||goals.cal)}kcal
+    md+=`- ${prof.age}歳·${prof.sex==='male'?'男性':'女性'}·身長${prof.height}cm
+- 当前体重：${prof.weight}kg　目标体重：${prof.goalWeight}kg（${prof.goalMonths}个月达成）
+- 维持热量：${prof.maintenance||'未设定'}kcal　每日摄入目标：${Math.max(1000,prof.dailyTarget||goals.cal)}kcal
 `;
-    if(exerciseLines.length){md+=`**運動習慣：**\n${exerciseLines.join('\n')}\n`;}
+    if(exerciseLines.length){md+=`**运动习惯：**\n${exerciseLines.join('\n')}\n`;}
   }else{
-    md+=`- プロフィール未設定\n`;
+    md+=`- 个人信息未设定\n`;
   }
 
   md+=`
-## 目標値
-- カロリー：${goals.cal}kcal　たんぱく質：${goals.protein}g　脂質：${goals.fat}g　炭水化物：${goals.carb}g
+## 目标值
+- 热量：${goals.cal}kcal　蛋白质：${goals.protein}g　脂肪：${goals.fat}g　碳水：${goals.carb}g
 
-## 期間サマリー（記録${recorded.length}日）
+## 期间摘要（记录${recorded.length}天）
 - 平均摂取：${avgKcal}kcal（目標${goals.cal}kcal）
 - 平均PFC：P ${avgP}g / F ${avgF}g / C ${avgC}g
-- 目標達成日：${goalAchieved}日 / ${recorded.length}日（達成率${recorded.length?Math.round(goalAchieved/recorded.length*100):0}%）
-- 目標120%超過日：${over120}日
+- 目标达成日：${goalAchieved}天 / ${recorded.length}日（達成率${recorded.length?Math.round(goalAchieved/recorded.length*100):0}%）
+- 目標120%超出日：${over120}日
 `;
   if(firstW!=null){
     md+=`- 体重変化：${firstW}kg → ${lastW}kg（${wChange!=null?(wChange>0?'+':'')+wChange:'不明'}kg）\n`;
-    if(theorLoss!=null)md+=`- 理論上の減量：${theorLoss}kg（実測との差：${wChange!=null?Math.round((Math.abs(wChange)-theorLoss)*100)/100:'不明'}kg）\n`;
+    if(theorLoss!=null)md+=`- 理论减重：${theorLoss}kg（与实测差异：${wChange!=null?Math.round((Math.abs(wChange)-theorLoss)*100)/100:'未知'}kg）\n`;
   }
 
   md+=`
-## 日別記録
-| 日付 | kcal | P(g) | F(g) | C(g) | 体重(kg) | メモ |
+## 每日记录
+| 日期 | kcal | P(g) | F(g) | C(g) | 体重(kg) | 备注 |
 |------|-----:|-----:|-----:|-----:|-------:|------|
 `;
   rows.forEach(r=>{
     if(r.kcal===0&&r.weight==null)return;
     const over=r.kcal>goals.cal*1.2?'⚠️':r.kcal>goals.cal?'↑':'';
     const wkData=localStorage.getItem('diet_workout_'+r.date);
-    const wkStr=wkData?JSON.parse(wkData).map(e=>e.name).join('・'):'';
+    const wkStr=wkData?JSON.parse(wkData).map(e=>e.name).join('·'):'';
     md+=`| ${r.date} | ${r.kcal}${over} | ${r.p} | ${r.f} | ${r.c} | ${r.weight!=null?r.weight:'-'} | ${wkStr||r.comment||''} |\n`;
   });
 
   md+=`
-## 食事詳細（直近10日）
+## 食事詳細（直近10天）
 `;
   const recent=rows.filter(r=>r.kcal>0).slice(-10);
   recent.forEach(r=>{
@@ -1559,7 +1559,7 @@ function exportMarkdown(){
     if(wkData){
       const wkList=JSON.parse(wkData);
       if(wkList.length){
-        md+=`**筋トレ：** `;
+        md+=`**健身：** `;
         md+=wkList.map(ex=>{
           const isBW=isBodyweightEx(ex.name);
           const sets=ex.sets.map((s,i)=>isBW?`S${i+1}:${s.reps}回`:`S${i+1}:${s.weight}kg×${s.reps}回`).join(' ');
@@ -1582,7 +1582,7 @@ function renderExportStatus(){
   if(!el)return;
   const last=localStorage.getItem('diet_last_export');
   if(!last){
-    el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--red-light);border:0.5px solid #F09595;border-radius:var(--radius-sm)"><span style="font-size:20px">⚠️</span><div><div style="font-size:13px;font-weight:600;color:var(--red-dark)">まだエクスポートしていません</div><div style="font-size:11px;color:var(--red-dark);margin-top:2px">データ消失に備えて定期的に保存してください</div></div></div>`;
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--red-light);border:0.5px solid #F09595;border-radius:var(--radius-sm)"><span style="font-size:20px">⚠️</span><div><div style="font-size:13px;font-weight:600;color:var(--red-dark)">尚未导出</div><div style="font-size:11px;color:var(--red-dark);margin-top:2px">请定期保存以防数据丢失</div></div></div>`;
     return;
   }
   const lastDate=new Date(last);
@@ -1601,7 +1601,7 @@ function renderExportStatus(){
     bg='var(--red-light)';border='#F09595';titleColor='var(--red-dark)';icon='🚨';
     dayText=`${days}天未导出`;
   }
-  el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:${bg};border:0.5px solid ${border};border-radius:var(--radius-sm)"><span style="font-size:20px">${icon}</span><div><div style="font-size:13px;font-weight:600;color:${titleColor}">${dayText}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">最終：${lastStr} ${timeStr}</div></div></div>`;
+  el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:${bg};border:0.5px solid ${border};border-radius:var(--radius-sm)"><span style="font-size:20px">${icon}</span><div><div style="font-size:13px;font-weight:600;color:${titleColor}">${dayText}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">最后：${lastStr} ${timeStr}</div></div></div>`;
 }
 
 function importData(event){
@@ -1653,14 +1653,14 @@ function importData(event){
       document.getElementById('importSuccess').style.display='block';
       setTimeout(()=>document.getElementById('importSuccess').style.display='none',3000);
       render();
-    }catch(err){alert('ファイルの読み込みに失敗しました。正しいJSONファイルか確認してください。');}
+    }catch(err){alert('文件读取失败，请确认是否为正确的JSON文件。');}
     event.target.value='';
   };
   reader.readAsText(file);
 }
 
 function resetData(){
-  if(!confirm('删除所有记录和设置。此操作不可撤销。本当によろしいですか？'))return;
+  if(!confirm('删除所有记录和设置。此操作不可撤销。确定吗？'))return;
   const keysToRemove=[];
   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('diet_')))keysToRemove.push(k);}
   keysToRemove.forEach(k=>localStorage.removeItem(k));
@@ -1696,9 +1696,9 @@ function saveProfile(){
   const sex=document.getElementById('pf_sex').value;
   const goalWeight=parseFloat(document.getElementById('pf_goal_weight').value);
   const goalMonths=parseFloat(document.getElementById('pf_goal_months').value);
-  if(!age||!weight||!height||!goalWeight||!goalMonths){alert('すべての項目を入力してください');return;}
-  if(goalWeight>=weight){alert('目標体重は現在の体重より軽い値を入力してください');return;}
-  if(goalWeight<=0){alert('目標体重が不正です');return;}
+  if(!age||!weight||!height||!goalWeight||!goalMonths){alert('请填写所有项目');return;}
+  if(goalWeight>=weight){alert('目标体重须小于当前体重');return;}
+  if(goalWeight<=0){alert('目标体重无效');return;}
 
   // 既存のstartDateがあれば保持する
   const existing=loadProfileData();
@@ -1721,9 +1721,9 @@ function saveProfile(){
   const dailyTarget=maintenance-dailyDeficit;
   const warn=document.getElementById('prof_warning');
   const warnings=[];
-  if(dailyDeficit>750)warnings.push(`1日の赤字が${dailyDeficit}kcalと大きめです。推奨上限は750kcal（筋トレあり：500kcal）です。`);
-  if(dailyTarget<1200&&sex==='female')warnings.push('目標カロリーが女性の最低推奨値（1,200kcal）を下回っています。');
-  if(dailyTarget<1500&&sex==='male')warnings.push('目標カロリーが男性の最低推奨値（1,500kcal）を下回っています。');
+  if(dailyDeficit>750)warnings.push(`每日赤字${dailyDeficit}kcal偏大，推荐上限750kcal（有健身：500kcal）。`);
+  if(dailyTarget<1200&&sex==='female')warnings.push('热量目标低于女性最低推荐值（1,200kcal）。');
+  if(dailyTarget<1500&&sex==='male')warnings.push('热量目标低于男性最低推荐值（1,500kcal）。');
   warn.style.display=warnings.length?'block':'none';
   if(warnings.length)warn.innerHTML='⚠️ '+warnings.join('<br>⚠️ ')+'<br><span style="font-size:11px;margin-top:4px;display:block">このまま設定することもできます。</span>';
   p.maintenance=maintenance;p.dailyTarget=dailyTarget;p.dailyDeficit=dailyDeficit;p.totalDeficit=totalDeficit;p.totalDays=totalDays;
@@ -1731,8 +1731,8 @@ function saveProfile(){
 
   // カロリー目標とPFCを自動計算して反映
   const targetKcal=Math.max(1000,dailyTarget);
-  const proteinG=Math.round(weight*(p.wt_on?2.0:1.6)); // 筋トレありなら体重×2g
-  const fatG=Math.round(targetKcal*0.25/9);             // 総カロリーの25%
+  const proteinG=Math.round(weight*(p.wt_on?2.0:1.6)); // 有健身则体重×2g
+  const fatG=Math.round(targetKcal*0.25/9);             // 总热量的25%
   const carbG=Math.round((targetKcal-proteinG*4-fatG*9)/4); // 残り
   const goals=loadGoals();
   goals.cal=targetKcal;
@@ -1744,19 +1744,19 @@ function saveProfile(){
   const safeMonths=Math.ceil(totalDeficit/(500*30.4));
   document.getElementById('prof_result').style.display='block';
   document.getElementById('prof_result_body').innerHTML=`
-    <div class="result-row"><span class="result-label">基礎代謝（BMR）</span><span class="result-val">${bmr} kcal</span></div>
-    <div class="result-row"><span class="result-label">活動係数</span><span class="result-val">${af}</span></div>
-    <div class="result-row"><span class="result-label">メンテナンスカロリー</span><span class="result-val">${maintenance} kcal</span></div>
-    <div class="result-row"><span class="result-label">目標減量</span><span class="result-val">${loseKg} kg</span></div>
-    <div class="result-row"><span class="result-label">期間</span><span class="result-val">${goalMonths}ヶ月（${totalDays}日）</span></div>
+    <div class="result-row"><span class="result-label">基础代谢（BMR）</span><span class="result-val">${bmr} kcal</span></div>
+    <div class="result-row"><span class="result-label">活动系数</span><span class="result-val">${af}</span></div>
+    <div class="result-row"><span class="result-label">维持热量</span><span class="result-val">${maintenance} kcal</span></div>
+    <div class="result-row"><span class="result-label">目标减重</span><span class="result-val">${loseKg} kg</span></div>
+    <div class="result-row"><span class="result-label">期間</span><span class="result-val">${goalMonths}个月（${totalDays}天）</span></div>
     <div class="result-row"><span class="result-label">必要赤字（累計）</span><span class="result-val">${totalDeficit.toLocaleString()} kcal</span></div>
-    <div class="result-row"><span class="result-label">1日の赤字目標</span><span class="result-val ${dailyDeficit>750?'red':''}">${dailyDeficit} kcal</span></div>
-    <div class="result-row"><span class="result-label">1日の摂取目標</span><span class="result-val green">${targetKcal} kcal</span></div>
-    <div class="result-row"><span class="result-label">たんぱく質目標（自動）</span><span class="result-val green">${proteinG}g</span></div>
-    <div class="result-row"><span class="result-label">脂質目標（自動）</span><span class="result-val">${fatG}g</span></div>
-    <div class="result-row"><span class="result-label">炭水化物目標（自動）</span><span class="result-val">${Math.max(50,carbG)}g</span></div>
-    ${dailyDeficit>500?`<div style="font-size:11px;color:var(--text3);margin-top:8px">安全なペース（500kcal赤字）だと約${safeMonths}ヶ月かかります</div>`:''}
-    <div style="font-size:11px;color:var(--text3);margin-top:6px">PFC目標は「目標設定」タブに自動反映されました</div>
+    <div class="result-row"><span class="result-label">每日赤字目标</span><span class="result-val ${dailyDeficit>750?'red':''}">${dailyDeficit} kcal</span></div>
+    <div class="result-row"><span class="result-label">每日摄入目标</span><span class="result-val green">${targetKcal} kcal</span></div>
+    <div class="result-row"><span class="result-label">蛋白质目标（自动）</span><span class="result-val green">${proteinG}g</span></div>
+    <div class="result-row"><span class="result-label">脂肪目标（自动）</span><span class="result-val">${fatG}g</span></div>
+    <div class="result-row"><span class="result-label">碳水目标（自动）</span><span class="result-val">${Math.max(50,carbG)}g</span></div>
+    ${dailyDeficit>500?`<div style="font-size:11px;color:var(--text3);margin-top:8px">安全なペース（500kcal赤字）だと約${safeMonths}个月かかります</div>`:''}
+    <div style="font-size:11px;color:var(--text3);margin-top:6px">PFC目标已自动更新到目标设置</div>
   `;
   renderProgress();
 }
@@ -1783,12 +1783,12 @@ function loadProfileForm(){
     document.getElementById('prof_result').style.display='block';
     const bmr=Math.round(calcBMR(p)),af=calcActivityFactor(p).toFixed(2),loseKg=(p.weight-p.goalWeight).toFixed(1);
     document.getElementById('prof_result_body').innerHTML=`
-      <div class="result-row"><span class="result-label">基礎代謝（BMR）</span><span class="result-val">${bmr} kcal</span></div>
-      <div class="result-row"><span class="result-label">活動係数</span><span class="result-val">${af}</span></div>
-      <div class="result-row"><span class="result-label">メンテナンスカロリー</span><span class="result-val">${p.maintenance} kcal</span></div>
-      <div class="result-row"><span class="result-label">目標減量</span><span class="result-val">${loseKg} kg</span></div>
-      <div class="result-row"><span class="result-label">期間</span><span class="result-val">${p.goalMonths}ヶ月（${p.totalDays}日）</span></div>
-      <div class="result-row"><span class="result-label">1日の摂取目標</span><span class="result-val green">${Math.max(1000,p.dailyTarget)} kcal</span></div>
+      <div class="result-row"><span class="result-label">基础代谢（BMR）</span><span class="result-val">${bmr} kcal</span></div>
+      <div class="result-row"><span class="result-label">活动系数</span><span class="result-val">${af}</span></div>
+      <div class="result-row"><span class="result-label">维持热量</span><span class="result-val">${p.maintenance} kcal</span></div>
+      <div class="result-row"><span class="result-label">目标减重</span><span class="result-val">${loseKg} kg</span></div>
+      <div class="result-row"><span class="result-label">期間</span><span class="result-val">${p.goalMonths}个月（${p.totalDays}天）</span></div>
+      <div class="result-row"><span class="result-label">每日摄入目标</span><span class="result-val green">${Math.max(1000,p.dailyTarget)} kcal</span></div>
     `;
   }
 }
@@ -1843,16 +1843,16 @@ function renderProgress(){
       <div class="progress-label"><span>赤字進捗</span><span>${pct}%</span></div>
       <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${pct>=100?'var(--green)':'var(--blue)'}"></div></div>
     </div>
-    <div class="result-row"><span class="result-label">開始からの経過</span><span class="result-val">${elapsed}日 / ${p.totalDays}日</span></div>
-    <div class="result-row"><span class="result-label">累計赤字</span><span class="result-val">${Math.round(deficitSoFar).toLocaleString()} / ${p.totalDeficit.toLocaleString()} kcal</span></div>
-    <div class="result-row"><span class="result-label">理論上の減量</span><span class="result-val">${(deficitSoFar/7200).toFixed(2)} kg</span></div>
-    ${actualWeightLoss!==null?`<div class="result-row"><span class="result-label">実際の減量</span><span class="result-val ${actualWeightLoss>=theoreticalLoss*0.8?'green':'red'}">${actualWeightLoss.toFixed(1)} kg</span></div><div class="result-row"><span class="result-label">理論値との差</span><span class="result-val ${diff>=0?'green':'red'}">${diff>=0?'+':''}${diff.toFixed(1)} kg <span style="font-size:10px;color:var(--text3)">${diff>=0?'比理论值减少更多':'比理论值减少更少'}</span></span></div>`:''}
-    <div class="result-row"><span class="result-label">今日の摂取</span><span class="result-val">${calcTotals(loadDay(0)).cal} kcal</span></div>
-    <div class="result-row"><span class="result-label">残り日数</span><span class="result-val">${remaining}日</span></div>
-    <div class="result-row"><span class="result-label">今後の1日目標（再計算）</span><span class="result-val ${onTrack?'green':'red'}">${newDailyTargetCapped} kcal</span></div>
-    <div class="result-row"><span class="result-label">現ペース達成予測</span><span class="result-val">${recordedDays>0?goalDateStr:'記録を積み重ねると表示されます'}</span></div>
-    ${!onTrack?'<div style="font-size:11px;color:var(--red-dark);margin-top:6px">⚠️ 赤字が大きすぎます。目標期間の延長を検討してください。</div>':''}
-    ${remaining>0&&recordedDays>0?`<button onclick="applyNewDailyTarget(${newDailyTargetCapped})" style="margin-top:10px;width:100%;padding:10px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">この目標（${newDailyTargetCapped}kcal）を適用する</button>`:''}
+    <div class="result-row"><span class="result-label">开始至今</span><span class="result-val">${elapsed}天 / ${p.totalDays}日</span></div>
+    <div class="result-row"><span class="result-label">累计赤字</span><span class="result-val">${Math.round(deficitSoFar).toLocaleString()} / ${p.totalDeficit.toLocaleString()} kcal</span></div>
+    <div class="result-row"><span class="result-label">理论减重</span><span class="result-val">${(deficitSoFar/7200).toFixed(2)} kg</span></div>
+    ${actualWeightLoss!==null?`<div class="result-row"><span class="result-label">实际减重</span><span class="result-val ${actualWeightLoss>=theoreticalLoss*0.8?'green':'red'}">${actualWeightLoss.toFixed(1)} kg</span></div><div class="result-row"><span class="result-label">与理论值差异</span><span class="result-val ${diff>=0?'green':'red'}">${diff>=0?'+':''}${diff.toFixed(1)} kg <span style="font-size:10px;color:var(--text3)">${diff>=0?'比理论值减少更多':'比理论值减少更少'}</span></span></div>`:''}
+    <div class="result-row"><span class="result-label">今日摄入</span><span class="result-val">${calcTotals(loadDay(0)).cal} kcal</span></div>
+    <div class="result-row"><span class="result-label">剩余天数</span><span class="result-val">${remaining}日</span></div>
+    <div class="result-row"><span class="result-label">今后每日目标（重新计算）</span><span class="result-val ${onTrack?'green':'red'}">${newDailyTargetCapped} kcal</span></div>
+    <div class="result-row"><span class="result-label">按当前进度预计达成</span><span class="result-val">${recordedDays>0?goalDateStr:'积累记录后显示'}</span></div>
+    ${!onTrack?'<div style="font-size:11px;color:var(--red-dark);margin-top:6px">⚠️ 赤字过大，请考虑延长目标期限。</div>':''}
+    ${remaining>0&&recordedDays>0?`<button onclick="applyNewDailyTarget(${newDailyTargetCapped})" style="margin-top:10px;width:100%;padding:10px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">此目标（${newDailyTargetCapped}kcal）已应用</button>`:''}
   `;
 }
 
@@ -1879,7 +1879,7 @@ function getDayStatusByKey(dateKey){
   const goals=loadGoals();
   if(data.cheatDay==='unlimited')return 'unlimited';
   if(data.cheatDay==='cheat')return 'cheat';
-  // 筋トレ消費×0.5を目標に加算（動的目標）
+  // 健身消耗×0.5加到目标（动态目标）
   const prof=loadProfileData();
   const bw=prof&&prof.weight?prof.weight:70;
   const wkS=localStorage.getItem('diet_workout_'+dateKey);
@@ -1902,7 +1902,7 @@ function calcStreak(){
     if(status==='failed')break;
     streak++;
     if(status==='perfect')perfectStreak++;
-    else if(status==='achieved')perfectStreak=0; // cheat/unlimitedはリセットしない
+    else if(status==='achieved')perfectStreak=0; // cheat/unlimitedはリ组しない
     i++;
   }
   return{streak,perfectStreak};
@@ -1953,12 +1953,12 @@ function openCheatModal(){
   const limits=calcCheatCalLimit();
   let html='';
   if(rewards.cheat===0&&rewards.bonusCheat===0&&rewards.unlimited===0){
-    html='<div style="font-size:13px;color:var(--text3);text-align:center;padding:16px">チートデイはまだ獲得していません。<br>6日連続達成で獲得できます！</div>';
+    html='<div style="font-size:13px;color:var(--text3);text-align:center;padding:16px">还未获得欺骗日。<br>目标连续6天达成！</div>';
     document.getElementById('cheatModalBody').innerHTML=html;
     document.getElementById('cheatOverlay').classList.add('open');
     return;
   }
-  html='<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">今日のカロリー目標が一時的に引き上げられます。</div>';
+  html='<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">今日热量目标临时提高。</div>';
   if(rewards.cheat>0)html+=`<div class="result-row"><span class="result-label">🍕 チートデイ残数</span><span class="result-val">${rewards.cheat}日</span></div>`;
   if(rewards.bonusCheat>0)html+=`<div class="result-row"><span class="result-label">🌟 ボーナスチートデイ残数</span><span class="result-val">${rewards.bonusCheat}日</span></div>`;
   if(rewards.unlimited>0)html+=`<div class="result-row"><span class="result-label">🎉 無制限デイ残数</span><span class="result-val green">${rewards.unlimited}日</span></div>`;
@@ -2008,9 +2008,9 @@ function renderStamp(){
   if(rewards.cheat===0&&rewards.bonusCheat===0&&rewards.unlimited===0){
     cheatHtml+='<div style="font-size:12px;color:var(--text3)">まだ報酬はありません。6日連続達成を目指しましょう！</div>';
   }else{
-    if(rewards.cheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🍕 チートデイ</span><span class="streak-val" style="color:var(--amber)">${rewards.cheat}日分</span></div>`;
-    if(rewards.bonusCheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🌟 ボーナスチートデイ</span><span class="streak-val" style="color:var(--amber)">${rewards.bonusCheat}日分</span></div>`;
-    if(rewards.unlimited>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🎉 無制限デイ</span><span class="streak-val green">${rewards.unlimited}日分</span></div>`;
+    if(rewards.cheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🍕 チートデイ</span><span class="streak-val" style="color:var(--amber)">${rewards.cheat}天</span></div>`;
+    if(rewards.bonusCheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🌟 ボーナスチートデイ</span><span class="streak-val" style="color:var(--amber)">${rewards.bonusCheat}天</span></div>`;
+    if(rewards.unlimited>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🎉 無制限デイ</span><span class="streak-val green">${rewards.unlimited}天</span></div>`;
     if(limits)cheatHtml+=`<div class="streak-row"><span class="streak-label">チートデイ上限</span><span class="streak-val">${limits.normal.toLocaleString()} kcal</span></div>`;
   }
   document.getElementById('cheatCard').innerHTML=cheatHtml;
@@ -2074,9 +2074,9 @@ const EXERCISES={
   '腿':['哑铃深蹲','保加利亚分腿蹲'],
   '核心':['腹轮'],
 };
-// プリセットの体重種目
+// プリ组の体重種目
 const PRESET_BODYWEIGHT=['双杠臂屈伸','引体向上','腹轮'];
-// プリセットのデフォルト片手種目
+// プリ组のデフォルト片手種目
 const PRESET_UNILATERAL=['单手哑铃划船','哑铃弯举','上斜哑铃弯举','锤式弯举','侧平举','俯身飞鸟','保加利亚分腿蹲','上斜哑铃飞鸟'];
 
 // カスタム種目のCRUD
@@ -2098,7 +2098,7 @@ function isUnilateralEx(name){
   return found?found.unilateral||false:false;
 }
 
-// 全種目リスト（プリセット＋カスタム）をEXERCISES形式で返す
+// 全種目リスト（プリ组＋カスタム）をEXERCISES形式で返す
 function getAllExercises(){
   const all=JSON.parse(JSON.stringify(EXERCISES));
   const custom=loadCustomExercises();
@@ -2165,7 +2165,7 @@ function renderWorkoutModalExercises(){
       renderSetList();
     }
   }
-} // モーダル内で積み上げ中のセット
+} // モーダル内で積み上げ中の组
 
 function loadWorkoutDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_workout_'+k);return s?JSON.parse(s):[];}
 function saveWorkoutDay(offset,data){localStorage.setItem('diet_workout_'+getKey(offset),JSON.stringify(data));}
@@ -2187,7 +2187,7 @@ function calcWorkoutCal(exercises,bw){
   return Math.round(total);
 }
 
-// 種目のベストセット（総負荷量が最大のセット）
+// 種目のベスト组（総負荷量が最大の组）
 function getBestSet(sets,isBW){
   if(!sets||!sets.length)return sets[0];
   if(isBW)return sets.reduce((best,s)=>(s.reps||0)>(best.reps||0)?s:best,sets[0]);
@@ -2233,14 +2233,14 @@ function selectExercise(btn,ex){
   if(prev){
     const lines=prev.sets.map((s,i)=>{
       const txt=isBW?`${s.reps}回`:`${s.weight}kg × ${s.reps}回`;
-      return`セット${i+1}：${txt}`;
+      return`组${i+1}：${txt}`;
     }).join('　');
-    prevEl.textContent=`前回（${prev.date}）　${lines}`;
+    prevEl.textContent=`上次（${prev.date}） ${lines}`;
     const s=prev.sets[0];
     if(!isBW)document.getElementById('wk_weight').value=s.weight||'';
     document.getElementById('wk_reps').value=s.reps||'';
   }else{
-    prevEl.textContent='前回の記録なし（初記録）';
+    prevEl.textContent='无上次记录（首次）';
     document.getElementById('wk_weight').value='';
     document.getElementById('wk_reps').value='';
   }
@@ -2259,7 +2259,7 @@ function renderSetList(){
     html+=`<div class="set-list-row"><span class="set-list-num">S${i+1}</span><span class="set-list-info">${txt}<span style="font-size:10px;color:var(--text3);margin-left:6px">${cal}kcal</span></span><button class="set-list-del" onclick="removeSet(${i})">×</button></div>`;
   });
   document.getElementById('setList').innerHTML=html;
-  // 前のセットの値を次のデフォルトに引き継ぐ
+  // 前の组の値を次のデフォルトに引き継ぐ
   if(pendingSets.length>0){
     const last=pendingSets[pendingSets.length-1];
     const isBW=isBodyweightEx(selExercise);
@@ -2295,8 +2295,8 @@ function updateSetCalHint(){
   const currentCal=reps>0?(isBW?Math.round(reps*bw*0.03):Math.round(effectiveWeight*reps*0.05)):0;
   const hint=document.getElementById('workoutCalHint');
   const parts=[];
-  if(pendingSets.length>0)parts.push(`${pendingSets.length}セット記録済（${pendingCal}kcal）`);
-  if(currentCal>0)parts.push(`このセット推定 ${currentCal}kcal${isUni?' (×2)':''}`);
+  if(pendingSets.length>0)parts.push(`${pendingSets.length}组記録済（${pendingCal}kcal）`);
+  if(currentCal>0)parts.push(`この组推定 ${currentCal}kcal${isUni?' (×2)':''}`);
   hint.textContent=parts.length?'→ '+parts.join('　'):'';
 }
 
@@ -2314,7 +2314,7 @@ function saveWorkout(){
   render();renderWorkoutTab();
 }
 
-// 旧addWorkout・updateWorkoutCalHint は削除（saveWorkoutに統合）
+// 旧addWorkout·updateWorkoutCalHint は削除（saveWorkoutに統合）
 
 function toggleSets(id,hdr){
   const wrap=document.getElementById(id);
@@ -2347,11 +2347,11 @@ function renderWorkoutTab(){
   const effectiveRemain=effectiveGoal-foodCal;
   const calCard=document.getElementById('workoutCalCard');
   if(totalCal>0){
-    calCard.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">🏋️ 今日の筋トレ消費</div>
+    calCard.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">🏋️ 今日健身消耗</div>
       <div class="result-row"><span class="result-label">筋トレ消費</span><span class="result-val" style="color:var(--amber)">${totalCal} kcal</span></div>
       <div class="result-row"><span class="result-label">ボーナス加算（×0.5）</span><span class="result-val" style="color:#7C3AED">+${wkBonus} kcal</span></div>
       <div class="result-row"><span class="result-label">食事摂取</span><span class="result-val">${foodCal} kcal</span></div>
-      <div class="result-row"><span class="result-label">実質残りカロリー</span><span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span></div>`;
+      <div class="result-row"><span class="result-label">实际残りカロリー</span><span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span></div>`;
   }else{
     calCard.innerHTML='<div style="font-size:12px;color:var(--text3)">種目を追加するとカロリーが表示されます</div>';
   }
@@ -2362,7 +2362,7 @@ function renderWorkoutTab(){
       const isBW=isBodyweightEx(ex.name);
       const exCal=calcWorkoutCal([ex],bw);
       const best=getBestSet(ex.sets,isBW);
-      // 前回比：ベストセットで比較
+      // 前回比：ベスト组で比較
       const prev=getPrevWorkout(ex.name);
       let badge='';
       if(prev&&prev.sets.length){
@@ -2373,14 +2373,14 @@ function renderWorkoutTab(){
         const unit=isBW?'回':'kg';
         badge=diff>0?`<span class="set-badge up">↑ +${diff}${unit}</span>`:diff<0?`<span class="set-badge down">↓ ${diff}${unit}</span>`:`<span class="set-badge same">→ 同じ</span>`;
       }else badge='<span class="set-badge new">初記録</span>';
-      // セット明細
+      // 组明細
       const setsHtml=ex.sets.map((s,si)=>{
         const txt=isBW?`${s.reps}回`:`${s.weight}kg × ${s.reps}回`;
         const sCal=isBW?Math.round(s.reps*bw*0.03):Math.round((s.weight||0)*s.reps*0.05);
         return`<div class="set-row"><div><div class="set-info">S${si+1}：${txt}</div><div class="set-detail">${sCal} kcal</div></div><button class="food-del" onclick="deleteSet(${exIdx},${si})">×</button></div>`;
       }).join('');
       const collapseId=`sets-${exIdx}`;
-      return`<div class="workout-block"><div class="workout-header" onclick="toggleSets('${collapseId}',this)"><div><div class="workout-title">${ex.name}</div><div class="workout-muscle">${ex.muscle}　${ex.sets.length}セット・${exCal}kcal</div></div><div style="display:flex;align-items:center;gap:6px">${badge}<span class="wk-collapse-icon open">▼</span><button class="workout-del" onclick="event.stopPropagation();deleteWorkout(${exIdx})">×</button></div></div><div class="wk-sets-wrap" id="${collapseId}">${setsHtml}</div></div>`;
+      return`<div class="workout-block"><div class="workout-header" onclick="toggleSets('${collapseId}',this)"><div><div class="workout-title">${ex.name}</div><div class="workout-muscle">${ex.muscle}　${ex.sets.length}组·${exCal}kcal</div></div><div style="display:flex;align-items:center;gap:6px">${badge}<span class="wk-collapse-icon open">▼</span><button class="workout-del" onclick="event.stopPropagation();deleteWorkout(${exIdx})">×</button></div></div><div class="wk-sets-wrap" id="${collapseId}">${setsHtml}</div></div>`;
     }).join('');
   }
   // グラフセレクト
@@ -2437,7 +2437,7 @@ function renderWorkoutGraph(){
   workoutChartInst=new Chart(document.getElementById('workoutChart'),{
     type:'line',
     data:{labels,datasets:[{
-      label:isBestMode?(isBW?'最大レップ数（ベストセット）':'最高重量（ベストセット）'):'総負荷量（kg）',
+      label:isBestMode?(isBW?'最大レップ数（ベスト组）':'最高重量（ベスト组）'):'総負荷量（kg）',
       data:vals,borderColor:lineColor,backgroundColor:fillColor,
       borderWidth:2,pointRadius:4,pointBackgroundColor:lineColor,tension:0.3,fill:true
     }]},
@@ -2476,7 +2476,7 @@ function renderWorkoutBonus(){
     const remain=effectiveGoal-foodCal;
     bonusRemain.style.display='block';
     bonusRemain.style.color=remain>=0?'var(--green-dark)':'var(--red-dark)';
-    bonusRemain.textContent=remain>=0?`実質残り ${remain} kcal`:`実質 ${Math.abs(remain)} kcal 超過`;
+    bonusRemain.textContent=remain>=0?`实际残り ${remain} kcal`:`实际 ${Math.abs(remain)} kcal 超出`;
   }else{
     bonusRow.style.cssText='display:none';
     bonusDetail&&(bonusDetail.style.display='none');

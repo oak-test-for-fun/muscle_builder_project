@@ -1173,7 +1173,7 @@ function renderBuiltinFoodList(){
   el.innerHTML=BUILTIN.map((f,i)=>{
     const cur=ov[i]?{...f,...ov[i]}:f;
     const edited=!!ov[i];
-    return`<div class="custom-food-row"><div><div class="custom-food-name">${cur.n}${edited?'<span style="font-size:10px;color:var(--green);margin-left:6px">編集済</span>':''}</div><div class="custom-food-detail">${cur.k}kcal / P:${cur.p}g F:${cur.f}g C:${cur.c}g（每100g）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openBuiltinEditModal(${i})" style="color:var(--blue)">编辑</button>${edited?`<button class="icon-btn" onclick="resetBuiltin(${i})" style="color:var(--text3)">戻す</button>`:''}</div></div>`;
+    return`<div class="custom-food-row"><div><div class="custom-food-name">${cur.n}${edited?'<span style="font-size:10px;color:var(--green);margin-left:6px">已编辑</span>':''}</div><div class="custom-food-detail">${cur.k}kcal / P:${cur.p}g F:${cur.f}g C:${cur.c}g（每100g）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openBuiltinEditModal(${i})" style="color:var(--blue)">编辑</button>${edited?`<button class="icon-btn" onclick="resetBuiltin(${i})" style="color:var(--text3)">恢复</button>`:''}</div></div>`;
   }).join('');
 }
 function openBuiltinEditModal(idx){
@@ -1725,7 +1725,7 @@ function saveProfile(){
   if(dailyTarget<1200&&sex==='female')warnings.push('热量目标低于女性最低推荐值（1,200kcal）。');
   if(dailyTarget<1500&&sex==='male')warnings.push('热量目标低于男性最低推荐值（1,500kcal）。');
   warn.style.display=warnings.length?'block':'none';
-  if(warnings.length)warn.innerHTML='⚠️ '+warnings.join('<br>⚠️ ')+'<br><span style="font-size:11px;margin-top:4px;display:block">このまま設定することもできます。</span>';
+  if(warnings.length)warn.innerHTML='⚠️ '+warnings.join('<br>⚠️ ')+'<br><span style="font-size:11px;margin-top:4px;display:block">也可以按此设置继续。</span>';
   p.maintenance=maintenance;p.dailyTarget=dailyTarget;p.dailyDeficit=dailyDeficit;p.totalDeficit=totalDeficit;p.totalDays=totalDays;
   saveProfileData(p);
 
@@ -1733,7 +1733,7 @@ function saveProfile(){
   const targetKcal=Math.max(1000,dailyTarget);
   const proteinG=Math.round(weight*(p.wt_on?2.0:1.6)); // 有健身则体重×2g
   const fatG=Math.round(targetKcal*0.25/9);             // 总热量的25%
-  const carbG=Math.round((targetKcal-proteinG*4-fatG*9)/4); // 残り
+  const carbG=Math.round((targetKcal-proteinG*4-fatG*9)/4); // 剩余
   const goals=loadGoals();
   goals.cal=targetKcal;
   goals.protein=proteinG;
@@ -1755,7 +1755,7 @@ function saveProfile(){
     <div class="result-row"><span class="result-label">蛋白质目标（自动）</span><span class="result-val green">${proteinG}g</span></div>
     <div class="result-row"><span class="result-label">脂肪目标（自动）</span><span class="result-val">${fatG}g</span></div>
     <div class="result-row"><span class="result-label">碳水目标（自动）</span><span class="result-val">${Math.max(50,carbG)}g</span></div>
-    ${dailyDeficit>500?`<div style="font-size:11px;color:var(--text3);margin-top:8px">安全なペース（500kcal赤字）だと約${safeMonths}个月かかります</div>`:''}
+    ${dailyDeficit>500?`<div style="font-size:11px;color:var(--text3);margin-top:8px">以安全进度（500kcal赤字）约需${safeMonths}个月</div>`:''}
     <div style="font-size:11px;color:var(--text3);margin-top:6px">PFC目标已自动更新到目标设置</div>
   `;
   renderProgress();
@@ -1902,7 +1902,7 @@ function calcStreak(){
     if(status==='failed')break;
     streak++;
     if(status==='perfect')perfectStreak++;
-    else if(status==='achieved')perfectStreak=0; // cheat/unlimitedはリ组しない
+    else if(status==='achieved')perfectStreak=0; // cheat/unlimited不重置
     i++;
   }
   return{streak,perfectStreak};
@@ -1959,11 +1959,11 @@ function openCheatModal(){
     return;
   }
   html='<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">今日热量目标临时提高。</div>';
-  if(rewards.cheat>0)html+=`<div class="result-row"><span class="result-label">🍕 チートデイ残数</span><span class="result-val">${rewards.cheat}日</span></div>`;
-  if(rewards.bonusCheat>0)html+=`<div class="result-row"><span class="result-label">🌟 ボーナスチートデイ残数</span><span class="result-val">${rewards.bonusCheat}日</span></div>`;
-  if(rewards.unlimited>0)html+=`<div class="result-row"><span class="result-label">🎉 無制限デイ残数</span><span class="result-val green">${rewards.unlimited}日</span></div>`;
-  if(limits)html+=`<div class="result-row"><span class="result-label">チートデイ上限</span><span class="result-val" style="color:var(--amber)">${limits.normal.toLocaleString()} kcal</span></div>`;
-  if(limits&&rewards.bonusCheat>0)html+=`<div class="result-row"><span class="result-label">ボーナス上限</span><span class="result-val" style="color:var(--amber)">${limits.bonus.toLocaleString()} kcal</span></div>`;
+  if(rewards.cheat>0)html+=`<div class="result-row"><span class="result-label">🍕 欺骗日残数</span><span class="result-val">${rewards.cheat}日</span></div>`;
+  if(rewards.bonusCheat>0)html+=`<div class="result-row"><span class="result-label">🌟 奖励欺骗日残数</span><span class="result-val">${rewards.bonusCheat}日</span></div>`;
+  if(rewards.unlimited>0)html+=`<div class="result-row"><span class="result-label">🎉 无限日残数</span><span class="result-val green">${rewards.unlimited}日</span></div>`;
+  if(limits)html+=`<div class="result-row"><span class="result-label">欺骗日上限</span><span class="result-val" style="color:var(--amber)">${limits.normal.toLocaleString()} kcal</span></div>`;
+  if(limits&&rewards.bonusCheat>0)html+=`<div class="result-row"><span class="result-label">奖励上限</span><span class="result-val" style="color:var(--amber)">${limits.bonus.toLocaleString()} kcal</span></div>`;
   document.getElementById('cheatModalBody').innerHTML=html;
   document.getElementById('cheatOverlay').classList.add('open');
 }
@@ -1990,28 +1990,28 @@ function useCheatDay(){
 
 function renderStamp(){
   const rewards=checkAndGrantRewards(); // calcStreak内包
-  const {streak,perfectStreak}=calcStreak(); // 1回だけ呼ぶ
+  const {streak,perfectStreak}=calcStreak(); // 只调用一次
   const limits=calcCheatCalLimit();
   const todayStatus=getDayStatusByKey(getKey(0));
   const nextCheat=streak%6===0&&streak>0?6:6-(streak%6);
   const nextPerfect=perfectStreak%6===0&&perfectStreak>0?6:6-(perfectStreak%6);
   const next31=streak%31===0&&streak>0?31:31-(streak%31);
   document.getElementById('streakCard').innerHTML=`
-    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🔥 連続達成ストリーク</div>
-    <div class="streak-row"><span class="streak-label">現在の連続達成</span><span class="streak-val green">${streak}日</span></div>
-    <div class="streak-row"><span class="streak-label">完全達成の連続</span><span class="streak-val ${perfectStreak>=3?'green':''}">⭐ ${perfectStreak}日</span></div>
-    <div class="streak-row"><span class="streak-label">次のチートデイまで</span><span class="streak-val" style="color:var(--amber)">あと${nextCheat}日</span></div>
-    <div class="streak-row"><span class="streak-label">次のボーナスまで</span><span class="streak-val">⭐ あと${nextPerfect}日</span></div>
-    <div class="streak-row"><span class="streak-label">次の無制限デイまで</span><span class="streak-val">🎉 あと${next31}日</span></div>
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🔥 连续达成</div>
+    <div class="streak-row"><span class="streak-label">当前连续达成</span><span class="streak-val green">${streak}天</span></div>
+    <div class="streak-row"><span class="streak-label">完美达成连续</span><span class="streak-val ${perfectStreak>=3?'green':''}">⭐ ${perfectStreak}天</span></div>
+    <div class="streak-row"><span class="streak-label">距下次欺骗日</span><span class="streak-val" style="color:var(--amber)">还需${nextCheat}天</span></div>
+    <div class="streak-row"><span class="streak-label">距下次奖励</span><span class="streak-val">⭐ 还需${nextPerfect}天</span></div>
+    <div class="streak-row"><span class="streak-label">距无限日</span><span class="streak-val">🎉 还需${next31}天</span></div>
   `;
-  let cheatHtml='<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🎁 獲得した報酬</div>';
+  let cheatHtml='<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🎁 已获奖励</div>';
   if(rewards.cheat===0&&rewards.bonusCheat===0&&rewards.unlimited===0){
-    cheatHtml+='<div style="font-size:12px;color:var(--text3)">まだ報酬はありません。6日連続達成を目指しましょう！</div>';
+    cheatHtml+='<div style="font-size:12px;color:var(--text3)">暂无奖励，目标连续6天达成！</div>';
   }else{
-    if(rewards.cheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🍕 チートデイ</span><span class="streak-val" style="color:var(--amber)">${rewards.cheat}天</span></div>`;
-    if(rewards.bonusCheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🌟 ボーナスチートデイ</span><span class="streak-val" style="color:var(--amber)">${rewards.bonusCheat}天</span></div>`;
-    if(rewards.unlimited>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🎉 無制限デイ</span><span class="streak-val green">${rewards.unlimited}天</span></div>`;
-    if(limits)cheatHtml+=`<div class="streak-row"><span class="streak-label">チートデイ上限</span><span class="streak-val">${limits.normal.toLocaleString()} kcal</span></div>`;
+    if(rewards.cheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🍕 欺骗日</span><span class="streak-val" style="color:var(--amber)">${rewards.cheat}天</span></div>`;
+    if(rewards.bonusCheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🌟 奖励欺骗日</span><span class="streak-val" style="color:var(--amber)">${rewards.bonusCheat}天</span></div>`;
+    if(rewards.unlimited>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🎉 无限日</span><span class="streak-val green">${rewards.unlimited}天</span></div>`;
+    if(limits)cheatHtml+=`<div class="streak-row"><span class="streak-label">欺骗日上限</span><span class="streak-val">${limits.normal.toLocaleString()} kcal</span></div>`;
   }
   document.getElementById('cheatCard').innerHTML=cheatHtml;
   const hasDays=rewards.cheat>0||rewards.bonusCheat>0||rewards.unlimited>0;
@@ -2111,7 +2111,7 @@ function getAllExercises(){
 
 let selMuscle='',selExercise='',workoutChartInst=null,workoutGraphMode='best';
 let pendingSets=[];
-let cexMuscle='胸'; // カスタム種目登録時の選択部位
+let cexMuscle='胸'; // 自定义项目注册时的选择部位
 
 function openCustomExerciseModal(){
   document.getElementById('cex_name').value='';
@@ -2165,7 +2165,7 @@ function renderWorkoutModalExercises(){
       renderSetList();
     }
   }
-} // モーダル内で積み上げ中の组
+} // 弹窗内累积中的组
 
 function loadWorkoutDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_workout_'+k);return s?JSON.parse(s):[];}
 function saveWorkoutDay(offset,data){localStorage.setItem('diet_workout_'+getKey(offset),JSON.stringify(data));}
@@ -2296,7 +2296,7 @@ function updateSetCalHint(){
   const hint=document.getElementById('workoutCalHint');
   const parts=[];
   if(pendingSets.length>0)parts.push(`${pendingSets.length}组記録済（${pendingCal}kcal）`);
-  if(currentCal>0)parts.push(`この组推定 ${currentCal}kcal${isUni?' (×2)':''}`);
+  if(currentCal>0)parts.push(`本组预估 ${currentCal}kcal${isUni?' (×2)':''}`);
   hint.textContent=parts.length?'→ '+parts.join('　'):'';
 }
 
@@ -2348,15 +2348,15 @@ function renderWorkoutTab(){
   const calCard=document.getElementById('workoutCalCard');
   if(totalCal>0){
     calCard.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">🏋️ 今日健身消耗</div>
-      <div class="result-row"><span class="result-label">筋トレ消費</span><span class="result-val" style="color:var(--amber)">${totalCal} kcal</span></div>
-      <div class="result-row"><span class="result-label">ボーナス加算（×0.5）</span><span class="result-val" style="color:#7C3AED">+${wkBonus} kcal</span></div>
+      <div class="result-row"><span class="result-label">健身消耗</span><span class="result-val" style="color:var(--amber)">${totalCal} kcal</span></div>
+      <div class="result-row"><span class="result-label">奖励加算（×0.5）</span><span class="result-val" style="color:#7C3AED">+${wkBonus} kcal</span></div>
       <div class="result-row"><span class="result-label">食事摂取</span><span class="result-val">${foodCal} kcal</span></div>
-      <div class="result-row"><span class="result-label">实际残りカロリー</span><span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span></div>`;
+      <div class="result-row"><span class="result-label">实际剩余热量</span><span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span></div>`;
   }else{
-    calCard.innerHTML='<div style="font-size:12px;color:var(--text3)">種目を追加するとカロリーが表示されます</div>';
+    calCard.innerHTML='<div style="font-size:12px;color:var(--text3)">添加项目后将显示热量</div>';
   }
   const list=document.getElementById('workoutList');
-  if(!data.length){list.innerHTML='<div class="empty-state">今日のトレーニングはまだありません</div>';
+  if(!data.length){list.innerHTML='<div class="empty-state">今日还没有训练</div>';
   }else{
     list.innerHTML=data.map((ex,exIdx)=>{
       const isBW=isBodyweightEx(ex.name);
@@ -2370,9 +2370,9 @@ function renderWorkoutTab(){
         const diff=isBW
           ?(best.reps||0)-(prevBest.reps||0)
           :Math.round(((best.weight||0)-(prevBest.weight||0))*10)/10;
-        const unit=isBW?'回':'kg';
-        badge=diff>0?`<span class="set-badge up">↑ +${diff}${unit}</span>`:diff<0?`<span class="set-badge down">↓ ${diff}${unit}</span>`:`<span class="set-badge same">→ 同じ</span>`;
-      }else badge='<span class="set-badge new">初記録</span>';
+        const unit=isBW?'次':'kg';
+        badge=diff>0?`<span class="set-badge up">↑ +${diff}${unit}</span>`:diff<0?`<span class="set-badge down">↓ ${diff}${unit}</span>`:`<span class="set-badge same">→ 相同</span>`;
+      }else badge='<span class="set-badge new">首次记录</span>';
       // 组明細
       const setsHtml=ex.sets.map((s,si)=>{
         const txt=isBW?`${s.reps}回`:`${s.weight}kg × ${s.reps}回`;
@@ -2427,7 +2427,7 @@ function renderWorkoutGraph(){
   }
   if(workoutChartInst)workoutChartInst.destroy();
   if(!labels.length){
-    document.getElementById('workoutGraphStats').innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">まだ記録がありません</div>';
+    document.getElementById('workoutGraphStats').innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">暂无记录</div>';
     return;
   }
   const isBestMode=workoutGraphMode==='best';
@@ -2437,7 +2437,7 @@ function renderWorkoutGraph(){
   workoutChartInst=new Chart(document.getElementById('workoutChart'),{
     type:'line',
     data:{labels,datasets:[{
-      label:isBestMode?(isBW?'最大レップ数（ベスト组）':'最高重量（ベスト组）'):'総負荷量（kg）',
+      label:isBestMode?(isBW?'最大次数（最佳组）':'最高重量（最佳组）'):'总负荷量（kg）',
       data:vals,borderColor:lineColor,backgroundColor:fillColor,
       borderWidth:2,pointRadius:4,pointBackgroundColor:lineColor,tension:0.3,fill:true
     }]},
@@ -2470,13 +2470,13 @@ function renderWorkoutBonus(){
     bonusRow.style.cssText='display:flex;margin-top:8px;align-items:center;justify-content:space-between';
     document.getElementById('workoutBonusCal').textContent=`+${bonus} kcal`;
     bonusDetail.style.display='block';
-    bonusDetail.textContent=`筋トレ消費 ${wCal} kcal`;
+    bonusDetail.textContent=`健身消耗 ${wCal} kcal`;
     const goals=loadGoals();const foodCal=calcTotals(loadDay(currentDay)).cal;
     const effectiveGoal=goals.cal+bonus;
     const remain=effectiveGoal-foodCal;
     bonusRemain.style.display='block';
     bonusRemain.style.color=remain>=0?'var(--green-dark)':'var(--red-dark)';
-    bonusRemain.textContent=remain>=0?`实际残り ${remain} kcal`:`实际 ${Math.abs(remain)} kcal 超出`;
+    bonusRemain.textContent=remain>=0?`实际剩余 ${remain} kcal`:`实际超出 ${Math.abs(remain)} kcal`;
   }else{
     bonusRow.style.cssText='display:none';
     bonusDetail&&(bonusDetail.style.display='none');

@@ -600,7 +600,7 @@
           <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">🍕</span>チートデイ</span>
           <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">🎉</span>無制限デイ</span>
           <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">💔</span>未達成</span>
-          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:13px">🏋️</span>筋トレ実施</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:13px">🏋️</span>筋トレ／<span style="font-size:13px">🏃</span>有酸素</span>
         </div>
       </div>
 
@@ -1394,27 +1394,37 @@ function renderCharts(){
     labels.push(lbl);
     const t=calcTotals(loadDay(-i));calVals.push(t.cal);
     colors.push(t.cal>goals.cal*1.2?'#E24B4A':t.cal>goals.cal?'#BA7517':'#1D9E75');
-    // 筋トレ実施チェック
+    // 運動実施チェック
     const wkKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const wkData=localStorage.getItem('diet_workout_'+wkKey);
-    hasWorkout.push(wkData&&JSON.parse(wkData).length>0);
+    const wkList=wkData?JSON.parse(wkData):[];
+    hasWorkout.push({weight:wkList.some(e=>e.type!=='cardio'),cardio:wkList.some(e=>e.type==='cardio')});
   }
   const h=graphPeriod<=14?200:220;
   document.getElementById('calChartWrap').style.height=h+'px';
   if(calChartInst)calChartInst.destroy();
 
-  // 🏋️アイコン描画プラグイン
+  // 運動アイコン描画プラグイン
   const workoutIconPlugin={
     id:'workoutIcon',
     afterDraw(chart){
       const ctx=chart.ctx;
       const meta=chart.getDatasetMeta(0);
-      ctx.font=graphPeriod<=30?'11px serif':'9px serif';
+      const fontSize=graphPeriod<=30?'11px':'9px';
       ctx.textAlign='center';
       ctx.textBaseline='bottom';
       meta.data.forEach((bar,i)=>{
-        if(hasWorkout[i]){
-          ctx.fillText('🏋️',bar.x,bar.y-2);
+        const w=hasWorkout[i];
+        if(!w||(!w.weight&&!w.cardio))return;
+        if(w.weight&&w.cardio){
+          // 両方：🏋️🏃を横並び（少し小さく）
+          const smallFont=graphPeriod<=30?'9px serif':'8px serif';
+          ctx.font=smallFont;
+          ctx.fillText('🏋️',bar.x-5,bar.y-2);
+          ctx.fillText('🏃',bar.x+5,bar.y-2);
+        }else{
+          ctx.font=`${fontSize} serif`;
+          ctx.fillText(w.weight?'🏋️':'🏃',bar.x,bar.y-2);
         }
       });
     }
@@ -1527,6 +1537,12 @@ function buildExportData(){
     builtin_overrides:loadBuiltinOverrides(),
     profile:loadProfileData(),
     custom_exercises:loadCustomExercises(),
+    rewards:loadRewards(),
+    streak_meta:{
+      last_cheat:localStorage.getItem('diet_last_cheat_streak')||'0',
+      last_perfect:localStorage.getItem('diet_last_perfect_streak')||'0',
+      last_31:localStorage.getItem('diet_last_31_streak')||'0',
+    },
     daily_records:dailyRecords,
     workout_records:dayKeys.map(dateKey=>{
       const s=localStorage.getItem('diet_workout_'+dateKey);
@@ -1667,17 +1683,23 @@ function exportMarkdown(){
         md+=slot.map(i=>`${i.n}（${Math.round(i.k)}kcal）`).join('、')+'\n';
       }
     });
-    // 筋トレ記録
+    // 筋トレ・有酸素記録
     const wkData=localStorage.getItem('diet_workout_'+r.date);
     if(wkData){
       const wkList=JSON.parse(wkData);
-      if(wkList.length){
+      const weightEx=wkList.filter(e=>e.type!=='cardio');
+      const cardioEx=wkList.filter(e=>e.type==='cardio');
+      if(weightEx.length){
         md+=`**筋トレ：** `;
-        md+=wkList.map(ex=>{
+        md+=weightEx.map(ex=>{
           const isBW=isBodyweightEx(ex.name);
-          const sets=ex.sets.map((s,i)=>isBW?`S${i+1}:${s.reps}回`:`S${i+1}:${s.weight}kg×${s.reps}回`).join(' ');
+          const sets=(ex.sets||[]).map((s,i)=>isBW?`S${i+1}:${s.reps}回`:`S${i+1}:${s.weight}kg×${s.reps}回`).join(' ');
           return`${ex.name}（${sets}）`;
         }).join('　')+'\n';
+      }
+      if(cardioEx.length){
+        md+=`**有酸素：** `;
+        md+=cardioEx.map(ex=>`${ex.name}${ex.extraWeight?`（荷重${ex.extraWeight}kg）`:''}${ex.minutes}分・${ex.cal}kcal`).join('　')+'\n';
       }
     }
   });
@@ -1737,6 +1759,12 @@ function importData(event){
       // profile
       if(data.profile){localStorage.setItem('diet_profile',JSON.stringify(data.profile));}
       if(data.custom_exercises){saveCustomExercises(data.custom_exercises);}
+      if(data.rewards){saveRewards(data.rewards);}
+      if(data.streak_meta){
+        if(data.streak_meta.last_cheat)localStorage.setItem('diet_last_cheat_streak',data.streak_meta.last_cheat);
+        if(data.streak_meta.last_perfect)localStorage.setItem('diet_last_perfect_streak',data.streak_meta.last_perfect);
+        if(data.streak_meta.last_31)localStorage.setItem('diet_last_31_streak',data.streak_meta.last_31);
+      }
       // daily records — reconstruct raw format
       if(data.daily_records){
         data.daily_records.forEach(rec=>{
@@ -1983,17 +2011,23 @@ function applyNewDailyTarget(kcal){
 let stampCalYear=new Date().getFullYear();
 let stampCalMonth=new Date().getMonth();
 
+// getDayStatusByKey用キャッシュ（同一レンダリング内で使い回す）
+let _statusCache={goals:null,prof:null};
+function clearStatusCache(){_statusCache={goals:null,prof:null};}
+
 function getDayStatusByKey(dateKey){
   const s=localStorage.getItem('diet_day_'+dateKey);
   if(!s)return 'none';
   const data=JSON.parse(s);
   const t=calcTotals(data);
   if(t.cal===0)return 'none';
-  const goals=loadGoals();
   if(data.cheatDay==='unlimited')return 'unlimited';
   if(data.cheatDay==='cheat')return 'cheat';
-  // 筋トレ消費×0.5を目標に加算（動的目標）
-  const prof=loadProfileData();
+  // キャッシュからgoals/profを取得（ループ内の重複localStorage読み込みを防ぐ）
+  if(!_statusCache.goals)_statusCache.goals=loadGoals();
+  if(!_statusCache.prof)_statusCache.prof=loadProfileData();
+  const goals=_statusCache.goals;
+  const prof=_statusCache.prof;
   const bw=prof&&prof.weight?prof.weight:70;
   const wkS=localStorage.getItem('diet_workout_'+dateKey);
   const wkBonus=wkS?calcWorkoutCal(JSON.parse(wkS),bw)*0.5:0;
@@ -2006,6 +2040,7 @@ function getDayStatusByKey(dateKey){
 }
 
 function calcStreak(){
+  clearStatusCache(); // ループ前にキャッシュリセット
   let streak=0,perfectStreak=0,perfectDone=false,i=0;
   while(i<365){
     const d=new Date();d.setDate(d.getDate()-i);
@@ -2104,8 +2139,8 @@ function useCheatDay(){
 }
 
 function renderStamp(){
-  const rewards=checkAndGrantRewards(); // calcStreak内包
-  const {streak,perfectStreak}=calcStreak(); // 1回だけ呼ぶ
+  const rewards=checkAndGrantRewards();
+  const {streak,perfectStreak}=calcStreak();
   const limits=calcCheatCalLimit();
   const todayStatus=getDayStatusByKey(getKey(0));
   const nextCheat=streak%6===0&&streak>0?6:6-(streak%6);
@@ -2136,6 +2171,7 @@ function renderStamp(){
 }
 
 function renderStampCalendar(){
+  clearStatusCache(); // カレンダー描画前にキャッシュリセット
   const y=stampCalYear,m=stampCalMonth;
   document.getElementById('calMonthLabel').textContent=`${y}年${m+1}月`;
   const firstDay=new Date(y,m,1).getDay();
@@ -2159,11 +2195,17 @@ function renderStampCalendar(){
       else if(status==='cheat'){cls+=' cheat';stamp='🍕';}
       else if(status==='unlimited'){cls+=' unlimited';stamp='🎉';}
       else if(status==='failed'){cls+=' failed';stamp='💔';}
-      // 筋トレ実施チェック
+      // 運動実施チェック
       const wkS=localStorage.getItem('diet_workout_'+key);
-      const hasWorkout=wkS&&JSON.parse(wkS).length>0;
-      if(hasWorkout){
-        html+=`<div class="${cls}" style="position:relative"><div class="day-num">${d}</div><div class="day-stamp">${stamp}</div><span style="position:absolute;bottom:1px;right:2px;font-size:8px;line-height:1">🏋️</span></div>`;
+      const wkList=wkS?JSON.parse(wkS):[];
+      const hasWeight=wkList.some(e=>e.type!=='cardio');
+      const hasCardio=wkList.some(e=>e.type==='cardio');
+      if(hasWeight||hasCardio){
+        const icon=hasWeight&&hasCardio?'🏋️🏃':hasWeight?'🏋️':'🏃';
+        const iconStyle=hasWeight&&hasCardio
+          ?'position:absolute;bottom:1px;right:1px;font-size:6px;line-height:1;letter-spacing:-1px'
+          :'position:absolute;bottom:1px;right:2px;font-size:8px;line-height:1';
+        html+=`<div class="${cls}" style="position:relative"><div class="day-num">${d}</div><div class="day-stamp">${stamp}</div><span style="${iconStyle}">${icon}</span></div>`;
         continue;
       }
     }
@@ -2720,7 +2762,7 @@ function renderWorkoutBonus(){
     bonusRow.style.cssText='display:flex;margin-top:8px;align-items:center;justify-content:space-between';
     document.getElementById('workoutBonusCal').textContent=`+${bonus} kcal`;
     bonusDetail.style.display='block';
-    bonusDetail.textContent=`筋トレ消費 ${wCal} kcal`;
+    bonusDetail.textContent=`運動消費 ${wCal} kcal`;
     const goals=loadGoals();const foodCal=calcTotals(loadDay(currentDay)).cal;
     const effectiveGoal=goals.cal+bonus;
     const remain=effectiveGoal-foodCal;

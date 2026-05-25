@@ -1340,6 +1340,9 @@ function deleteCustomFood(idx){
 function renderWeekSummary(){
   const goals=loadGoals();
   const dailyGoal=goals.cal||0;
+  const prof=loadProfileData();
+  const maintenance=prof&&prof.maintenance?prof.maintenance:null;
+  const bw=prof&&prof.weight?prof.weight:70;
   const today=new Date();
   const weeksToShow=graphPeriod<=14?2:graphPeriod<=30?4:8;
 
@@ -1355,7 +1358,7 @@ function renderWeekSummary(){
     mon.setDate(thisMonday.getDate()-w*7);
     const sun=new Date(mon);sun.setDate(mon.getDate()+6);
 
-    let totalCal=0,recordedDays=0;
+    let totalCal=0,totalDynamicGoal=0,recordedDays=0;
     const dayDetails=[];
     for(let d=0;d<7;d++){
       const dd=new Date(mon);dd.setDate(mon.getDate()+d);
@@ -1364,33 +1367,42 @@ function renderWeekSummary(){
       const s=localStorage.getItem('diet_day_'+key);
       const dayData=s?JSON.parse(s):{meals:{早餐:[],午餐:[],晚餐:[]},snacks:[],comment:'',weight:null};
       const t=calcTotals(dayData);
+      const wkS=localStorage.getItem('diet_workout_'+key);
+      const wkBonus=wkS?Math.round(calcWorkoutCal(JSON.parse(wkS),bw)*0.5):0;
+      const dynamicGoal=dailyGoal+wkBonus;
       if(t.cal>0){totalCal+=t.cal;recordedDays++;}
-      dayDetails.push({date:dd,cal:t.cal,key});
+      totalDynamicGoal+=dynamicGoal;
+      dayDetails.push({cal:t.cal,dynamicGoal,wkBonus});
     }
 
-    const activeDays=dayDetails.filter((_,i)=>{const dd=new Date(mon);dd.setDate(mon.getDate()+i);return dd<=today;}).length;
-    const weekGoal=dailyGoal*activeDays;
-    const balance=weekGoal-totalCal;
-    weeks.push({mon,sun,totalCal,weekGoal,balance,recordedDays,activeDays,dayDetails});
+    const activeDays=dayDetails.length;
+    const balanceA=totalDynamicGoal-totalCal;
+    const weekMaintenance=maintenance?maintenance*activeDays:null;
+    const balanceB=weekMaintenance!==null?weekMaintenance-totalCal:null;
+    weeks.push({mon,sun,totalCal,totalDynamicGoal,weekMaintenance,balanceA,balanceB,recordedDays,activeDays,dayDetails});
   }
 
   const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;
+  const balChip=(balance,labelPos,labelNeg)=>{
+    if(balance===null)return`<span style="font-size:10px;color:var(--text3)">未设置</span>`;
+    const col=balance>=0?'var(--green-dark)':'var(--red-dark)';
+    const bg=balance>=0?'var(--green-light)':'#FEE2E2';
+    const icon=balance>=0?'▼':'▲';
+    const label=balance>=0?labelPos:labelNeg;
+    return`<span style="display:inline-block;padding:3px 7px;background:${bg};border-radius:4px;font-size:11px;font-weight:700;color:${col}">${icon} ${Math.abs(balance).toLocaleString()} kcal ${label}</span>`;
+  };
+
   let html='';
   weeks.forEach((w,wi)=>{
     const isCurrentWeek=wi===0;
-    const balanceColor=w.balance>=0?'var(--green-dark)':'var(--red-dark)';
-    const balanceBg=w.balance>=0?'var(--green-light)':'var(--red-light, #FEE2E2)';
-    const balanceText=w.balance>=0?`▼ ${w.balance.toLocaleString()} kcal 结余`:`▲ ${Math.abs(w.balance).toLocaleString()} kcal 超出`;
     const weekLabel=isCurrentWeek?`本周（${fmt(w.mon)}〜${fmt(w.sun)}）`:`${fmt(w.mon)}〜${fmt(w.sun)}`;
-
-    const maxCal=Math.max(dailyGoal*1.3,...w.dayDetails.map(d=>d.cal),1);
     const dayNames=['一','二','三','四','五','六','日'];
+    const maxCal=Math.max(dailyGoal*1.3,...w.dayDetails.map(d=>d.cal),1);
+
     const barsHtml=w.dayDetails.map((d,i)=>{
-      const dow=new Date(w.mon);dow.setDate(w.mon.getDate()+i);
-      if(dow>today)return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="flex:1"></div><div style="font-size:8px;color:var(--text3)">${dayNames[i]}</div></div>`;
       const pct=Math.min(d.cal/maxCal*100,100);
-      const barColor=d.cal===0?'var(--border)':d.cal>dailyGoal*1.2?'var(--red)':d.cal>dailyGoal?'var(--amber)':'var(--green)';
-      const goalPct=Math.min(dailyGoal/maxCal*100,100);
+      const barColor=d.cal===0?'var(--border)':d.cal>d.dynamicGoal*1.2?'var(--red)':d.cal>d.dynamicGoal?'var(--amber)':'var(--green)';
+      const goalPct=Math.min(d.dynamicGoal/maxCal*100,100);
       return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">`+
         `<div style="font-size:8px;color:var(--text3);height:14px;display:flex;align-items:flex-end">${d.cal>0?d.cal:''}</div>`+
         `<div style="flex:1;width:100%;position:relative;display:flex;flex-direction:column;justify-content:flex-end">`+
@@ -1399,15 +1411,27 @@ function renderWeekSummary(){
         `</div><div style="font-size:8px;color:${i>=5?'var(--amber)':'var(--text3)'}">${dayNames[i]}</div></div>`;
     }).join('');
 
+    const totalBonus=w.dayDetails.reduce((s,d)=>s+d.wkBonus,0);
+    const bonusTxt=totalBonus>0?`<span style="font-size:9px;color:#7C3AED;margin-left:4px">+${totalBonus}kcal运动</span>`:'';
+
     html+=`<div style="margin-bottom:${wi<weeks.length-1?'16':'0'}px">`+
       `<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">`+
       `<span style="font-size:11px;font-weight:600;color:${isCurrentWeek?'var(--text)':'var(--text2)'}">${weekLabel}</span>`+
       `<span style="font-size:10px;color:var(--text3)">${w.recordedDays}/${w.activeDays}天已记录</span></div>`+
       `<div style="display:flex;height:60px;gap:3px;align-items:flex-end;margin-bottom:8px">${barsHtml}</div>`+
-      `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:${balanceBg};border-radius:var(--radius-xs)">`+
-      `<div><div style="font-size:10px;color:var(--text3);margin-bottom:2px">摄入 / 目标</div>`+
-      `<div style="font-size:13px;font-weight:600;color:var(--text)">${w.totalCal.toLocaleString()} / ${w.weekGoal.toLocaleString()} kcal</div></div>`+
-      `<div style="font-size:12px;font-weight:700;color:${balanceColor}">${balanceText}</div></div></div>`;
+      `<div style="font-size:11px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center">`+
+      `本周摄入合计：<span style="font-weight:600;color:var(--text)">${w.totalCal.toLocaleString()} kcal</span>${bonusTxt}</div>`+
+      `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">`+
+      `<div style="padding:8px;background:var(--card-bg,var(--bg2));border:0.5px solid var(--border);border-radius:var(--radius-xs)">`+
+      `<div style="font-size:9px;color:var(--text3);margin-bottom:4px">🎯 习惯管理（目标比）</div>`+
+      `<div style="font-size:10px;color:var(--text3);margin-bottom:4px">${w.totalCal.toLocaleString()} / ${w.totalDynamicGoal.toLocaleString()} kcal</div>`+
+      balChip(w.balanceA,'余量','超出')+
+      `</div>`+
+      `<div style="padding:8px;background:var(--card-bg,var(--bg2));border:0.5px solid var(--border);border-radius:var(--radius-xs)">`+
+      `<div style="font-size:9px;color:var(--text3);margin-bottom:4px">⚖️ 体脂肪收支（实态）</div>`+
+      `<div style="font-size:10px;color:var(--text3);margin-bottom:4px">${w.totalCal.toLocaleString()} / ${w.weekMaintenance!==null?w.weekMaintenance.toLocaleString():'--'} kcal</div>`+
+      balChip(w.balanceB,'脂肪减','脂肪增')+
+      `</div></div></div>`;
   });
 
   document.getElementById('weekSummaryBody').innerHTML=html||'<div style="font-size:12px;color:var(--text3);padding:8px 0">暂无记录</div>';

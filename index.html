@@ -388,8 +388,12 @@
         <div style="position:relative;height:170px"><canvas id="pfcChart"></canvas></div>
       </div>
 
+      <div class="chart-card" id="weekSummaryCard">
+        <div class="chart-title">週間カロリー収支</div>
+        <div id="weekSummaryBody"></div>
+      </div>
+
       <div class="chart-card">
-        <div class="chart-title" id="logTitle">記録ログ</div>
         <div id="calLog"></div>
       </div>
 
@@ -1377,6 +1381,92 @@ function deleteCustomFood(idx){
 }
 
 /* ---- graphs ---- */
+function renderWeekSummary(){
+  const goals=loadGoals();
+  const dailyGoal=goals.cal||0;
+  const today=new Date();
+  // 今日が属する月曜〜日曜の週を含む、直近N週を生成（最大4週 or 表示期間に応じて）
+  const weeksToShow=graphPeriod<=14?2:graphPeriod<=30?4:8;
+
+  // 今週の月曜を取得
+  const todayDow=today.getDay(); // 0=日,1=月...6=土
+  const daysFromMon=(todayDow===0?6:todayDow-1); // 月曜からの経過日数
+  const thisMonday=new Date(today);
+  thisMonday.setDate(today.getDate()-daysFromMon);
+  thisMonday.setHours(0,0,0,0);
+
+  const weeks=[];
+  for(let w=0;w<weeksToShow;w++){
+    const mon=new Date(thisMonday);
+    mon.setDate(thisMonday.getDate()-w*7);
+    const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+
+    let totalCal=0,recordedDays=0;
+    const dayDetails=[];
+    for(let d=0;d<7;d++){
+      const dd=new Date(mon);dd.setDate(mon.getDate()+d);
+      if(dd>today)break; // 未来日はスキップ
+      const s=localStorage.getItem('diet_day_'+key);
+      const dayData=s?JSON.parse(s):{meals:{朝食:[],昼食:[],夕食:[]},snacks:[],comment:'',weight:null};
+      const t=calcTotals(dayData);
+      if(t.cal>0){totalCal+=t.cal;recordedDays++;}
+      dayDetails.push({date:dd,cal:t.cal,key});
+    }
+
+    const activeDays=dayDetails.filter((_,i)=>{const dd=new Date(mon);dd.setDate(mon.getDate()+i);return dd<=today;}).length;
+    const weekGoal=dailyGoal*activeDays;
+    const balance=weekGoal-totalCal; // 正=黒字(目標以内), 負=赤字(超過)
+    weeks.push({mon,sun,totalCal,weekGoal,balance,recordedDays,activeDays,dayDetails});
+  }
+
+  // HTML生成
+  const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;
+  let html='';
+  weeks.forEach((w,wi)=>{
+    const isCurrentWeek=wi===0;
+    const balanceColor=w.balance>=0?'var(--green-dark)':'var(--red-dark)';
+    const balanceBg=w.balance>=0?'var(--green-light)':'var(--red-light, #FEE2E2)';
+    const balanceText=w.balance>=0?`▼ ${w.balance.toLocaleString()} kcal 黒字`:`▲ ${Math.abs(w.balance).toLocaleString()} kcal 赤字`;
+    const weekLabel=isCurrentWeek?`今週（${fmt(w.mon)}〜${fmt(w.sun)}）`:`${fmt(w.mon)}〜${fmt(w.sun)}`;
+
+    // 日別バー
+    const maxCal=Math.max(dailyGoal*1.3,...w.dayDetails.map(d=>d.cal),1);
+    const dayNames=['月','火','水','木','金','土','日'];
+    const barsHtml=w.dayDetails.map((d,i)=>{
+      const dow=new Date(w.mon);dow.setDate(w.mon.getDate()+i);
+      if(dow>today)return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="flex:1"></div><div style="font-size:8px;color:var(--text3)">${dayNames[i]}</div></div>`;
+      const pct=Math.min(d.cal/maxCal*100,100);
+      const barColor=d.cal===0?'var(--border)':d.cal>dailyGoal*1.2?'var(--red)':d.cal>dailyGoal?'var(--amber)':'var(--green)';
+      const goalPct=Math.min(dailyGoal/maxCal*100,100);
+      return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+        <div style="font-size:8px;color:var(--text3);height:14px;display:flex;align-items:flex-end">${d.cal>0?d.cal:''}</div>
+        <div style="flex:1;width:100%;position:relative;display:flex;flex-direction:column;justify-content:flex-end">
+          <div style="position:absolute;bottom:${goalPct}%;left:0;right:0;border-top:1px dashed var(--blue);opacity:0.5"></div>
+          <div style="width:100%;height:${Math.max(pct,d.cal>0?3:0)}%;background:${barColor};border-radius:2px 2px 0 0;min-height:${d.cal>0?'3px':'0'}"></div>
+        </div>
+        <div style="font-size:8px;color:${i>=5?'var(--amber)':'var(--text3)'}">${dayNames[i]}</div>
+      </div>`;
+    }).join('');
+
+    html+=`<div style="margin-bottom:${wi<weeks.length-1?'16':'0'}px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:600;color:${isCurrentWeek?'var(--text)':'var(--text2)'}">${weekLabel}</span>
+        <span style="font-size:10px;color:var(--text3)">${w.recordedDays}/${w.activeDays}日記録</span>
+      </div>
+      <div style="display:flex;height:60px;gap:3px;align-items:flex-end;margin-bottom:8px">${barsHtml}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:${balanceBg};border-radius:var(--radius-xs)">
+        <div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:2px">摂取 / 目標</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${w.totalCal.toLocaleString()} / ${w.weekGoal.toLocaleString()} kcal</div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:${balanceColor}">${balanceText}</div>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('weekSummaryBody').innerHTML=html||'<div style="font-size:12px;color:var(--text3);padding:8px 0">記録がありません</div>';
+}
+
 function setPeriod(days,btn){
   graphPeriod=days;
   document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
@@ -1462,6 +1552,8 @@ function renderCharts(){
     logHtml+=`<div class="log-row"><span class="log-date">${ds.main}</span><span class="log-cal ${cls}">${t.cal} kcal${wStr}</span>${data.comment?`<span class="log-comment">${data.comment}</span>`:'<span></span>'}</div>`;
   }
   document.getElementById('calLog').innerHTML=logHtml||'<div style="font-size:12px;color:var(--text3);padding:8px 0">この期間に記録はありません</div>';
+
+  renderWeekSummary();
 
   // 体重グラフ
   const prof=loadProfileData();

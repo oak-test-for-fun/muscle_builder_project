@@ -1406,6 +1406,7 @@ function renderWeekSummary(){
     for(let d=0;d<7;d++){
       const dd=new Date(mon);dd.setDate(mon.getDate()+d);
       if(dd>today)break; // 未来日はスキップ
+      const key=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
       const s=localStorage.getItem('diet_day_'+key);
       const dayData=s?JSON.parse(s):{meals:{朝食:[],昼食:[],夕食:[]},snacks:[],comment:'',weight:null};
       const t=calcTotals(dayData);
@@ -1553,8 +1554,6 @@ function renderCharts(){
   }
   document.getElementById('calLog').innerHTML=logHtml||'<div style="font-size:12px;color:var(--text3);padding:8px 0">この期間に記録はありません</div>';
 
-  renderWeekSummary();
-
   // 体重グラフ
   const prof=loadProfileData();
   const wLabels=[],wActual=[],wTheory=[];
@@ -1597,6 +1596,7 @@ function renderCharts(){
       }}
     });
   }
+  renderWeekSummary();
 }
 
 /* ---- export / import ---- */
@@ -2794,8 +2794,8 @@ function renderWorkoutGraph(){
   const labels=[],vals=[];
   for(let i=89;i>=0;i--){
     const data=loadWorkoutDay(-i);
-    const found=data.find(e=>e.name===ex);
-    if(found&&found.sets.length){
+    const found=data.find(e=>e.name===ex&&e.type!=='cardio');
+    if(found&&found.sets&&found.sets.length){
       const d=new Date();d.setDate(d.getDate()-i);
       labels.push(`${d.getMonth()+1}/${d.getDate()}`);
       if(workoutGraphMode==='best'){

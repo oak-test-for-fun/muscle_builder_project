@@ -1498,8 +1498,6 @@ function renderCharts(){
   }
   document.getElementById('calLog').innerHTML=logHtml||'<div style="font-size:12px;color:var(--text3);padding:8px 0">此期间暂无记录</div>';
 
-  renderWeekSummary();
-
   // 体重グラフ
   const prof=loadProfileData();
   const wLabels=[],wActual=[],wTheory=[];
@@ -1542,6 +1540,7 @@ function renderCharts(){
       }}
     });
   }
+  renderWeekSummary();
 }
 
 /* ---- export / import ---- */
@@ -2728,8 +2727,8 @@ function renderWorkoutGraph(){
   const labels=[],vals=[];
   for(let i=89;i>=0;i--){
     const data=loadWorkoutDay(-i);
-    const found=data.find(e=>e.name===ex);
-    if(found&&found.sets.length){
+    const found=data.find(e=>e.name===ex&&e.type!=='cardio');
+    if(found&&found.sets&&found.sets.length){
       const d=new Date();d.setDate(d.getDate()-i);
       labels.push(`${d.getMonth()+1}/${d.getDate()}`);
       if(workoutGraphMode==='best'){

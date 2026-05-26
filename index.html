@@ -2600,9 +2600,9 @@ function openWorkoutModal(){
 
 function selectMuscleGroup(btn,group){
   selMuscle=group;selExercise='';pendingSets=[];
-  document.querySelectorAll('.muscle-chip').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');
+  document.querySelectorAll('#muscleGroupWrap .muscle-chip').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');
   document.getElementById('workoutForm').style.display='none';
-  const allEx=getAllExercises();const customs=loadCustomExercises();document.getElementById('exerciseWrap').innerHTML=(allEx[group]||[]).map(ex=>{const isC=customs.find(e=>e.name===ex);return`<button class="exercise-chip" onclick="selectExercise(this,'${ex}')">${ex}${isC?'<span style="font-size:9px;color:var(--green);margin-left:3px">●</span>':''}</button>`;}).join('');
+  renderWorkoutModalExercises();
 }
 
 function selectExercise(btn,ex){

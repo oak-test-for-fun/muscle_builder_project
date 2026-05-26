@@ -712,6 +712,9 @@
       </div>
       <div class="calc-hint" id="workoutCalHint"></div>
       <button class="add-btn" onclick="saveWorkout()">記録する</button>
+      <div id="customExDeleteRow" style="display:none;margin-top:8px;text-align:center">
+        <button onclick="deleteCustomExerciseFromForm()" style="background:none;border:none;color:var(--red-dark);font-size:12px;cursor:pointer;text-decoration:underline;padding:4px">この種目を削除する</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2634,6 +2637,19 @@ function selectExercise(btn,ex){
   renderSetList();
   document.getElementById('workoutForm').style.display='block';
   updateSetCalHint();
+  // カスタム種目なら削除ボタンを表示
+  const isCustom=loadCustomExercises().some(e=>e.name===ex);
+  document.getElementById('customExDeleteRow').style.display=isCustom?'block':'none';
+}
+
+function deleteCustomExerciseFromForm(){
+  if(!confirm(`「${selExercise}」を削除しますか？\n過去の記録はそのまま残ります。`))return;
+  const customs=loadCustomExercises().filter(e=>e.name!==selExercise);
+  saveCustomExercises(customs);
+  selExercise='';
+  document.getElementById('workoutForm').style.display='none';
+  document.getElementById('customExDeleteRow').style.display='none';
+  renderWorkoutModalExercises();
 }
 
 function renderSetList(){

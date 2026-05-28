@@ -393,6 +393,11 @@
         <div id="weekSummaryBody"></div>
       </div>
 
+      <div class="chart-card" id="prof_progress" style="display:none">
+        <div class="chart-title">目标达成进度</div>
+        <div id="prof_progress_body"></div>
+      </div>
+
       <div class="chart-card">
         <div class="chart-title" id="logTitle">记录日志</div>
         <div id="calLog"></div>
@@ -530,13 +535,6 @@
           <div id="prof_result_body"></div>
         </div>
       </div>
-      <div id="prof_progress" style="display:none">
-        <div class="prof-section">
-          <div class="prof-section-title">目标达成进度</div>
-          <div id="prof_progress_body"></div>
-        </div>
-      </div>
-
     </div><!-- /tab-settings -->
 
     <!-- ======= 健身标签 ======= -->
@@ -1568,6 +1566,7 @@ function renderCharts(){
     });
   }
   renderWeekSummary();
+  renderProgress();
 }
 
 /* ---- export / import ---- */
@@ -1921,7 +1920,8 @@ function saveProfile(){
   const maintenance=calcMaintenanceCal(p);
   const totalDeficit=Math.round((weight-goalWeight)*7200);
   const totalDays=Math.round(goalMonths*30.4);
-  const dailyDeficit=Math.round(totalDeficit/totalDays);
+  const weeksInPeriod=totalDays/7;
+  const dailyDeficit=Math.round(totalDeficit/(weeksInPeriod*6*0.8));
   const dailyTarget=maintenance-dailyDeficit;
   const warn=document.getElementById('prof_warning');
   const warnings=[];
@@ -2021,8 +2021,9 @@ function renderProgress(){
   const deficitRemaining=p.totalDeficit-deficitSoFar;
   const newDailyTarget=remaining>0?Math.round(p.maintenance-deficitRemaining/remaining):p.dailyTarget;
   const newDailyTargetCapped=Math.max(1000,newDailyTarget);
-  const avgDeficit=elapsed>0?deficitSoFar/elapsed:Math.max(1,p.dailyDeficit||Math.round(p.totalDeficit/p.totalDays));
-  const daysToGoal=avgDeficit>0?Math.ceil(deficitRemaining/avgDeficit):remaining;
+  const rawAvgDeficit=elapsed>0?deficitSoFar/elapsed:Math.max(1,p.dailyDeficit||Math.round(p.totalDeficit/p.totalDays));
+  const effectiveDailyDeficit=rawAvgDeficit*(6*0.8/7);
+  const daysToGoal=effectiveDailyDeficit>0?Math.ceil(deficitRemaining/effectiveDailyDeficit):remaining;
   const goalDate=new Date(today);goalDate.setDate(today.getDate()+Math.max(0,daysToGoal));
   const goalDateStr=`${goalDate.getFullYear()}/${goalDate.getMonth()+1}/${goalDate.getDate()}`;
   const pct=Math.min(100,Math.round(deficitSoFar/p.totalDeficit*100));
@@ -2083,21 +2084,27 @@ function getDayStatusByKey(dateKey){
   const data=JSON.parse(s);
   const t=calcTotals(data);
   if(t.cal===0)return 'none';
-  if(data.cheatDay==='unlimited')return 'unlimited';
-  if(data.cheatDay==='cheat')return 'cheat';
   if(!_statusCache.goals)_statusCache.goals=loadGoals();
   if(!_statusCache.prof)_statusCache.prof=loadProfileData();
   const goals=_statusCache.goals;
   const prof=_statusCache.prof;
+  const proteinOk=t.p>=goals.protein;
+  if(data.cheatDay==='unlimited'){
+    return proteinOk?'perfect':'achieved';
+  }
+  if(data.cheatDay==='cheat'){
+    const cheatLimit=data.cheatCalLimit||goals.cal;
+    const calOk=t.cal<=cheatLimit;
+    if(!calOk)return 'failed';
+    return proteinOk?'perfect':'achieved';
+  }
   const bw=prof&&prof.weight?prof.weight:70;
   const wkS=localStorage.getItem('diet_workout_'+dateKey);
   const wkBonus=wkS?calcWorkoutCal(JSON.parse(wkS),bw)*0.5:0;
   const effectiveGoal=goals.cal+wkBonus;
   const calOk=t.cal<=effectiveGoal;
-  const proteinOk=t.p>=goals.protein;
-  if(calOk&&proteinOk)return 'perfect';
-  if(calOk)return 'achieved';
-  return 'failed';
+  if(!calOk)return 'failed';
+  return proteinOk?'perfect':'achieved';
 }
 
 function calcStreak(){
@@ -2226,7 +2233,9 @@ function renderStamp(){
   }
   document.getElementById('cheatCard').innerHTML=cheatHtml;
   const hasDays=rewards.cheat>0||rewards.bonusCheat>0||rewards.unlimited>0;
-  const alreadyCheat=todayStatus==='cheat'||todayStatus==='unlimited';
+  const todayRaw=localStorage.getItem('diet_day_'+getKey(0));
+  const todayData=todayRaw?JSON.parse(todayRaw):null;
+  const alreadyCheat=todayData&&(todayData.cheatDay==='cheat'||todayData.cheatDay==='unlimited');
   document.getElementById('cheatUseSection').style.display=(hasDays&&!alreadyCheat)?'block':'none';
   renderStampCalendar();
 }
@@ -2251,11 +2260,23 @@ function renderStampCalendar(){
     let stamp='';
     if(isToday)cls+=' today';
     if(!isFuture){
-      if(status==='perfect'){cls+=' perfect';stamp='⭐';}
+      const dayRaw=localStorage.getItem('diet_day_'+key);
+      const dayData=dayRaw?JSON.parse(dayRaw):null;
+      const cheatType=dayData?dayData.cheatDay:null;
+      if(cheatType==='cheat'){cls+=' cheat';stamp='🍕';}
+      else if(cheatType==='unlimited'){cls+=' unlimited';stamp='🎉';}
+      else if(status==='perfect'){cls+=' perfect';stamp='⭐';}
       else if(status==='achieved'){cls+=' achieved';stamp='🌸';}
-      else if(status==='cheat'){cls+=' cheat';stamp='🍕';}
-      else if(status==='unlimited'){cls+=' unlimited';stamp='🎉';}
       else if(status==='failed'){cls+=' failed';stamp='💔';}
+      if(cheatType==='cheat'){
+        if(status==='perfect')stamp='⭐';
+        else if(status==='failed')stamp='💔';
+        else stamp='🍕';
+      }
+      if(cheatType==='unlimited'){
+        if(status==='perfect')stamp='⭐';
+        else stamp='🎉';
+      }
       // 運動実施チェック
       const wkS=localStorage.getItem('diet_workout_'+key);
       const wkList=wkS?JSON.parse(wkS):[];

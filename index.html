@@ -393,6 +393,11 @@
         <div id="weekSummaryBody"></div>
       </div>
 
+      <div class="chart-card" id="prof_progress" style="display:none">
+        <div class="chart-title">目標達成までの進捗</div>
+        <div id="prof_progress_body"></div>
+      </div>
+
       <div class="chart-card">
         <div class="chart-title" id="logTitle">記録ログ</div>
         <div id="calLog"></div>
@@ -530,13 +535,6 @@
           <div id="prof_result_body"></div>
         </div>
       </div>
-      <div id="prof_progress" style="display:none">
-        <div class="prof-section">
-          <div class="prof-section-title">目標達成までの進捗</div>
-          <div id="prof_progress_body"></div>
-        </div>
-      </div>
-
     </div><!-- /tab-settings -->
 
     <!-- ======= 筋トレタブ ======= -->
@@ -1623,6 +1621,7 @@ function renderCharts(){
     });
   }
   renderWeekSummary();
+  renderProgress();
 }
 
 /* ---- export / import ---- */
@@ -1976,7 +1975,10 @@ function saveProfile(){
   const maintenance=calcMaintenanceCal(p);
   const totalDeficit=Math.round((weight-goalWeight)*7200);
   const totalDays=Math.round(goalMonths*30.4);
-  const dailyDeficit=Math.round(totalDeficit/totalDays);
+  // チートデイ込みの現実的な計算：週実質赤字 = 日次赤字×6×0.8
+  // 必要な日次赤字 = totalDeficit ÷ (週数×6×0.8)
+  const weeksInPeriod=totalDays/7;
+  const dailyDeficit=Math.round(totalDeficit/(weeksInPeriod*6*0.8));
   const dailyTarget=maintenance-dailyDeficit;
   const warn=document.getElementById('prof_warning');
   const warnings=[];
@@ -2015,7 +2017,8 @@ function saveProfile(){
     <div class="result-row"><span class="result-label">脂質目標（自動）</span><span class="result-val">${fatG}g</span></div>
     <div class="result-row"><span class="result-label">炭水化物目標（自動）</span><span class="result-val">${Math.max(50,carbG)}g</span></div>
     ${dailyDeficit>500?`<div style="font-size:11px;color:var(--text3);margin-top:8px">安全なペース（500kcal赤字）だと約${safeMonths}ヶ月かかります</div>`:''}
-    <div style="font-size:11px;color:var(--text3);margin-top:6px">PFC目標は「目標設定」タブに自動反映されました</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px">※ チートデイ（6日に1回）を織り込んだ現実的な計算です</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:2px">PFC目標は「目標設定」タブに自動反映されました</div>
   `;
   renderProgress();
 }
@@ -2058,7 +2061,7 @@ function renderProgress(){
   const el=document.getElementById('prof_progress');
   const body=document.getElementById('prof_progress_body');
   if(!el||!body)return;
-  el.style.display='block';
+  el.style.display='block'; // グラフタブで表示
   const sp=p.startDate.split('-').map(Number);
   const startDate=new Date(sp[0],sp[1]-1,sp[2]);
   const today=new Date();today.setHours(0,0,0,0);
@@ -2076,8 +2079,11 @@ function renderProgress(){
   const deficitRemaining=p.totalDeficit-deficitSoFar;
   const newDailyTarget=remaining>0?Math.round(p.maintenance-deficitRemaining/remaining):p.dailyTarget;
   const newDailyTargetCapped=Math.max(1000,newDailyTarget);
-  const avgDeficit=elapsed>0?deficitSoFar/elapsed:Math.max(1,p.dailyDeficit||Math.round(p.totalDeficit/p.totalDays));
-  const daysToGoal=avgDeficit>0?Math.ceil(deficitRemaining/avgDeficit):remaining;
+  // 実績ベースの1日平均赤字をチートデイ係数で補正（週6日×0.8が実質稼働）
+  const rawAvgDeficit=elapsed>0?deficitSoFar/elapsed:Math.max(1,p.dailyDeficit||Math.round(p.totalDeficit/p.totalDays));
+  // 週実質赤字 = 日次赤字×6×0.8、1日換算 = 日次赤字×6×0.8/7
+  const effectiveDailyDeficit=rawAvgDeficit*(6*0.8/7);
+  const daysToGoal=effectiveDailyDeficit>0?Math.ceil(deficitRemaining/effectiveDailyDeficit):remaining;
   const goalDate=new Date(today);goalDate.setDate(today.getDate()+Math.max(0,daysToGoal));
   const goalDateStr=`${goalDate.getFullYear()}/${goalDate.getMonth()+1}/${goalDate.getDate()}`;
   const pct=Math.min(100,Math.round(deficitSoFar/p.totalDeficit*100));
@@ -2139,22 +2145,31 @@ function getDayStatusByKey(dateKey){
   const data=JSON.parse(s);
   const t=calcTotals(data);
   if(t.cal===0)return 'none';
-  if(data.cheatDay==='unlimited')return 'unlimited';
-  if(data.cheatDay==='cheat')return 'cheat';
-  // キャッシュからgoals/profを取得（ループ内の重複localStorage読み込みを防ぐ）
+  // キャッシュからgoals/profを取得
   if(!_statusCache.goals)_statusCache.goals=loadGoals();
   if(!_statusCache.prof)_statusCache.prof=loadProfileData();
   const goals=_statusCache.goals;
   const prof=_statusCache.prof;
+  const proteinOk=t.p>=goals.protein;
+  if(data.cheatDay==='unlimited'){
+    // 無制限デイ：カロリー不問、タンパク質のみ判定
+    return proteinOk?'perfect':'achieved';
+  }
+  if(data.cheatDay==='cheat'){
+    // チートデイ：上限超過はfailed、以内ならperfect/achieved判定
+    const cheatLimit=data.cheatCalLimit||goals.cal;
+    const calOk=t.cal<=cheatLimit;
+    if(!calOk)return 'failed';
+    return proteinOk?'perfect':'achieved';
+  }
+  // 通常日
   const bw=prof&&prof.weight?prof.weight:70;
   const wkS=localStorage.getItem('diet_workout_'+dateKey);
   const wkBonus=wkS?calcWorkoutCal(JSON.parse(wkS),bw)*0.5:0;
   const effectiveGoal=goals.cal+wkBonus;
   const calOk=t.cal<=effectiveGoal;
-  const proteinOk=t.p>=goals.protein;
-  if(calOk&&proteinOk)return 'perfect';
-  if(calOk)return 'achieved';
-  return 'failed';
+  if(!calOk)return 'failed';
+  return proteinOk?'perfect':'achieved';
 }
 
 function calcStreak(){
@@ -2283,7 +2298,9 @@ function renderStamp(){
   }
   document.getElementById('cheatCard').innerHTML=cheatHtml;
   const hasDays=rewards.cheat>0||rewards.bonusCheat>0||rewards.unlimited>0;
-  const alreadyCheat=todayStatus==='cheat'||todayStatus==='unlimited';
+  const todayRaw=localStorage.getItem('diet_day_'+getKey(0));
+  const todayData=todayRaw?JSON.parse(todayRaw):null;
+  const alreadyCheat=todayData&&(todayData.cheatDay==='cheat'||todayData.cheatDay==='unlimited');
   document.getElementById('cheatUseSection').style.display=(hasDays&&!alreadyCheat)?'block':'none';
   renderStampCalendar();
 }
@@ -2308,11 +2325,25 @@ function renderStampCalendar(){
     let stamp='';
     if(isToday)cls+=' today';
     if(!isFuture){
-      if(status==='perfect'){cls+=' perfect';stamp='⭐';}
+      // cheat/unlimitedはデータのcheatDayフィールドを直接参照、達成判定はgetDayStatusByKeyで
+      const dayRaw=localStorage.getItem('diet_day_'+key);
+      const dayData=dayRaw?JSON.parse(dayRaw):null;
+      const cheatType=dayData?dayData.cheatDay:null;
+      if(cheatType==='cheat'){cls+=' cheat';stamp='🍕';}
+      else if(cheatType==='unlimited'){cls+=' unlimited';stamp='🎉';}
+      else if(status==='perfect'){cls+=' perfect';stamp='⭐';}
       else if(status==='achieved'){cls+=' achieved';stamp='🌸';}
-      else if(status==='cheat'){cls+=' cheat';stamp='🍕';}
-      else if(status==='unlimited'){cls+=' unlimited';stamp='🎉';}
       else if(status==='failed'){cls+=' failed';stamp='💔';}
+      // チートデイでもperfect/failedを上書き表示（上限超過なら💔、完全達成なら⭐🍕）
+      if(cheatType==='cheat'){
+        if(status==='perfect')stamp='⭐';
+        else if(status==='failed')stamp='💔';
+        else stamp='🍕';
+      }
+      if(cheatType==='unlimited'){
+        if(status==='perfect')stamp='⭐';
+        else stamp='🎉';
+      }
       // 運動実施チェック
       const wkS=localStorage.getItem('diet_workout_'+key);
       const wkList=wkS?JSON.parse(wkS):[];

@@ -527,7 +527,7 @@
           <div><div class="field-label" style="margin-top:0">達成期間 (ヶ月)</div><input type="number" id="pf_goal_months" placeholder="3"></div>
         </div>
         <div id="prof_warning" style="display:none" class="prof-warning"></div>
-        <button class="save-btn" onclick="saveProfile()">計算して目標を設定する</button>
+        <button class="save-btn" onclick="calcProfile()">計算する</button>
       </div>
       <div id="prof_result" style="display:none">
         <div class="prof-section">
@@ -1947,7 +1947,10 @@ function calcBMR(p){
 }
 function calcMaintenanceCal(p){return Math.round(calcBMR(p)*calcActivityFactor(p));}
 
-function saveProfile(){
+// 計算結果を一時保存するグローバル変数
+let _calcResult=null;
+
+function calcProfile(){
   const age=parseInt(document.getElementById('pf_age').value);
   const weight=parseFloat(document.getElementById('pf_weight').value);
   const height=parseFloat(document.getElementById('pf_height').value);
@@ -1958,10 +1961,8 @@ function saveProfile(){
   if(goalWeight>=weight){alert('目標体重は現在の体重より軽い値を入力してください');return;}
   if(goalWeight<=0){alert('目標体重が不正です');return;}
 
-  // 既存のstartDateがあれば保持する
   const existing=loadProfileData();
   const startDate=existing&&existing.startDate?existing.startDate:getKey(0);
-
   const p={
     age,weight,height,sex,goalWeight,goalMonths,
     wt_on:document.getElementById('pf_wt_on').checked,
@@ -1975,34 +1976,29 @@ function saveProfile(){
   const maintenance=calcMaintenanceCal(p);
   const totalDeficit=Math.round((weight-goalWeight)*7200);
   const totalDays=Math.round(goalMonths*30.4);
-  // チートデイ込みの現実的な計算：週実質赤字 = 日次赤字×6×0.8
-  // 必要な日次赤字 = totalDeficit ÷ (週数×6×0.8)
   const weeksInPeriod=totalDays/7;
   const dailyDeficit=Math.round(totalDeficit/(weeksInPeriod*6*0.8));
   const dailyTarget=maintenance-dailyDeficit;
+  const targetKcal=Math.max(1000,dailyTarget);
+  const proteinG=Math.round(weight*(p.wt_on?2.0:1.6));
+  const fatG=Math.round(targetKcal*0.25/9);
+  const carbG=Math.round((targetKcal-proteinG*4-fatG*9)/4);
+
+  // 計算結果を一時保存（適用ボタン用）
+  _calcResult={p,maintenance,totalDeficit,totalDays,dailyDeficit,dailyTarget,targetKcal,proteinG,fatG,carbG};
+
+  // 警告（筋トレON時は500kcal閾値）
   const warn=document.getElementById('prof_warning');
   const warnings=[];
-  if(dailyDeficit>750)warnings.push(`1日の赤字が${dailyDeficit}kcalと大きめです。推奨上限は750kcal（筋トレあり：500kcal）です。`);
+  const deficitThreshold=p.wt_on?500:750;
+  if(dailyDeficit>deficitThreshold)warnings.push(`1日の赤字が${dailyDeficit}kcalです。筋トレ中の推奨上限は${deficitThreshold}kcalです。筋肉量の維持が難しくなる可能性があります。`);
   if(dailyTarget<1200&&sex==='female')warnings.push('目標カロリーが女性の最低推奨値（1,200kcal）を下回っています。');
   if(dailyTarget<1500&&sex==='male')warnings.push('目標カロリーが男性の最低推奨値（1,500kcal）を下回っています。');
   warn.style.display=warnings.length?'block':'none';
-  if(warnings.length)warn.innerHTML='⚠️ '+warnings.join('<br>⚠️ ')+'<br><span style="font-size:11px;margin-top:4px;display:block">このまま設定することもできます。</span>';
-  p.maintenance=maintenance;p.dailyTarget=dailyTarget;p.dailyDeficit=dailyDeficit;p.totalDeficit=totalDeficit;p.totalDays=totalDays;
-  saveProfileData(p);
+  if(warnings.length)warn.innerHTML='⚠️ '+warnings.join('<br>⚠️ ')+'<br><span style="font-size:11px;margin-top:4px;display:block">このまま適用することもできます。</span>';
 
-  // カロリー目標とPFCを自動計算して反映
-  const targetKcal=Math.max(1000,dailyTarget);
-  const proteinG=Math.round(weight*(p.wt_on?2.0:1.6)); // 筋トレありなら体重×2g
-  const fatG=Math.round(targetKcal*0.25/9);             // 総カロリーの25%
-  const carbG=Math.round((targetKcal-proteinG*4-fatG*9)/4); // 残り
-  const goals=loadGoals();
-  goals.cal=targetKcal;
-  goals.protein=proteinG;
-  goals.fat=fatG;
-  goals.carb=Math.max(50,carbG); // 最低50g
-  localStorage.setItem('diet_goals',JSON.stringify(goals));
   const bmr=Math.round(calcBMR(p)),af=calcActivityFactor(p).toFixed(2),loseKg=(weight-goalWeight).toFixed(1);
-  const safeMonths=Math.ceil(totalDeficit/(500*30.4));
+  const safeMonths=Math.ceil(totalDeficit/((p.wt_on?500:750)*30.4));
   document.getElementById('prof_result').style.display='block';
   document.getElementById('prof_result_body').innerHTML=`
     <div class="result-row"><span class="result-label">基礎代謝（BMR）</span><span class="result-val">${bmr} kcal</span></div>
@@ -2011,16 +2007,30 @@ function saveProfile(){
     <div class="result-row"><span class="result-label">目標減量</span><span class="result-val">${loseKg} kg</span></div>
     <div class="result-row"><span class="result-label">期間</span><span class="result-val">${goalMonths}ヶ月（${totalDays}日）</span></div>
     <div class="result-row"><span class="result-label">必要赤字（累計）</span><span class="result-val">${totalDeficit.toLocaleString()} kcal</span></div>
-    <div class="result-row"><span class="result-label">1日の赤字目標</span><span class="result-val ${dailyDeficit>750?'red':''}">${dailyDeficit} kcal</span></div>
+    <div class="result-row"><span class="result-label">1日の赤字目標</span><span class="result-val ${dailyDeficit>deficitThreshold?'red':''}">${dailyDeficit} kcal</span></div>
     <div class="result-row"><span class="result-label">1日の摂取目標</span><span class="result-val green">${targetKcal} kcal</span></div>
     <div class="result-row"><span class="result-label">たんぱく質目標（自動）</span><span class="result-val green">${proteinG}g</span></div>
     <div class="result-row"><span class="result-label">脂質目標（自動）</span><span class="result-val">${fatG}g</span></div>
     <div class="result-row"><span class="result-label">炭水化物目標（自動）</span><span class="result-val">${Math.max(50,carbG)}g</span></div>
-    ${dailyDeficit>500?`<div style="font-size:11px;color:var(--text3);margin-top:8px">安全なペース（500kcal赤字）だと約${safeMonths}ヶ月かかります</div>`:''}
+    ${dailyDeficit>deficitThreshold?`<div style="font-size:11px;color:var(--text3);margin-top:8px">安全なペース（${deficitThreshold}kcal赤字）だと約${safeMonths}ヶ月かかります</div>`:''}
     <div style="font-size:11px;color:var(--text3);margin-top:6px">※ チートデイ（6日に1回）を織り込んだ現実的な計算です</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:2px">PFC目標は「目標設定」タブに自動反映されました</div>
+    <button class="save-btn" style="margin-top:12px" onclick="applyProfile()">この目標を適用する</button>
   `;
-  renderProgress();
+}
+
+function applyProfile(){
+  if(!_calcResult){alert('先に「計算する」を実行してください');return;}
+  const {p,maintenance,totalDeficit,totalDays,dailyDeficit,dailyTarget,targetKcal,proteinG,fatG,carbG}=_calcResult;
+  p.maintenance=maintenance;p.dailyTarget=dailyTarget;p.dailyDeficit=dailyDeficit;p.totalDeficit=totalDeficit;p.totalDays=totalDays;
+  saveProfileData(p);
+  const goals=loadGoals();
+  goals.cal=targetKcal;goals.protein=proteinG;goals.fat=fatG;goals.carb=Math.max(50,carbG);
+  localStorage.setItem('diet_goals',JSON.stringify(goals));
+  // 適用ボタンをフィードバック表示に変更
+  event.target.textContent='✅ 適用しました';
+  event.target.disabled=true;
+  setTimeout(()=>{if(event.target){event.target.textContent='この目標を適用する';event.target.disabled=false;}},2000);
+  render();renderProgress();
 }
 
 function loadProfileForm(){

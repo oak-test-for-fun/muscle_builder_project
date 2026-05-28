@@ -527,7 +527,7 @@
           <div><div class="field-label" style="margin-top:0">达成期间 (月)</div><input type="number" id="pf_goal_months" placeholder="3"></div>
         </div>
         <div id="prof_warning" style="display:none" class="prof-warning"></div>
-        <button class="save-btn" onclick="saveProfile()">计算并设置目标</button>
+        <button class="save-btn" onclick="calcProfile()">计算</button>
       </div>
       <div id="prof_result" style="display:none">
         <div class="prof-section">
@@ -1892,7 +1892,9 @@ function calcBMR(p){
 }
 function calcMaintenanceCal(p){return Math.round(calcBMR(p)*calcActivityFactor(p));}
 
-function saveProfile(){
+let _calcResult=null;
+
+function calcProfile(){
   const age=parseInt(document.getElementById('pf_age').value);
   const weight=parseFloat(document.getElementById('pf_weight').value);
   const height=parseFloat(document.getElementById('pf_height').value);
@@ -1903,10 +1905,8 @@ function saveProfile(){
   if(goalWeight>=weight){alert('目标体重须小于当前体重');return;}
   if(goalWeight<=0){alert('目标体重无效');return;}
 
-  // 既存のstartDateがあれば保持する
   const existing=loadProfileData();
   const startDate=existing&&existing.startDate?existing.startDate:getKey(0);
-
   const p={
     age,weight,height,sex,goalWeight,goalMonths,
     wt_on:document.getElementById('pf_wt_on').checked,
@@ -1923,46 +1923,55 @@ function saveProfile(){
   const weeksInPeriod=totalDays/7;
   const dailyDeficit=Math.round(totalDeficit/(weeksInPeriod*6*0.8));
   const dailyTarget=maintenance-dailyDeficit;
+  const targetKcal=Math.max(1000,dailyTarget);
+  const proteinG=Math.round(weight*(p.wt_on?2.0:1.6));
+  const fatG=Math.round(targetKcal*0.25/9);
+  const carbG=Math.round((targetKcal-proteinG*4-fatG*9)/4);
+
+  _calcResult={p,maintenance,totalDeficit,totalDays,dailyDeficit,dailyTarget,targetKcal,proteinG,fatG,carbG};
+
   const warn=document.getElementById('prof_warning');
   const warnings=[];
-  if(dailyDeficit>750)warnings.push(`每日赤字${dailyDeficit}kcal偏大，推荐上限750kcal（有健身：500kcal）。`);
+  const deficitThreshold=p.wt_on?500:750;
+  if(dailyDeficit>deficitThreshold)warnings.push(`每日赤字${dailyDeficit}kcal，力量训练推荐上限${deficitThreshold}kcal，可能影响肌肉保留。`);
   if(dailyTarget<1200&&sex==='female')warnings.push('热量目标低于女性最低推荐值（1,200kcal）。');
   if(dailyTarget<1500&&sex==='male')warnings.push('热量目标低于男性最低推荐值（1,500kcal）。');
   warn.style.display=warnings.length?'block':'none';
   if(warnings.length)warn.innerHTML='⚠️ '+warnings.join('<br>⚠️ ')+'<br><span style="font-size:11px;margin-top:4px;display:block">也可以按此设置继续。</span>';
-  p.maintenance=maintenance;p.dailyTarget=dailyTarget;p.dailyDeficit=dailyDeficit;p.totalDeficit=totalDeficit;p.totalDays=totalDays;
-  saveProfileData(p);
 
-  // カロリー目標とPFCを自動計算して反映
-  const targetKcal=Math.max(1000,dailyTarget);
-  const proteinG=Math.round(weight*(p.wt_on?2.0:1.6)); // 有健身则体重×2g
-  const fatG=Math.round(targetKcal*0.25/9);             // 总热量的25%
-  const carbG=Math.round((targetKcal-proteinG*4-fatG*9)/4); // 剩余
-  const goals=loadGoals();
-  goals.cal=targetKcal;
-  goals.protein=proteinG;
-  goals.fat=fatG;
-  goals.carb=Math.max(50,carbG); // 最低50g
-  localStorage.setItem('diet_goals',JSON.stringify(goals));
   const bmr=Math.round(calcBMR(p)),af=calcActivityFactor(p).toFixed(2),loseKg=(weight-goalWeight).toFixed(1);
-  const safeMonths=Math.ceil(totalDeficit/(500*30.4));
+  const safeMonths=Math.ceil(totalDeficit/((p.wt_on?500:750)*30.4));
   document.getElementById('prof_result').style.display='block';
   document.getElementById('prof_result_body').innerHTML=`
     <div class="result-row"><span class="result-label">基础代谢（BMR）</span><span class="result-val">${bmr} kcal</span></div>
     <div class="result-row"><span class="result-label">活动系数</span><span class="result-val">${af}</span></div>
     <div class="result-row"><span class="result-label">维持热量</span><span class="result-val">${maintenance} kcal</span></div>
     <div class="result-row"><span class="result-label">目标减重</span><span class="result-val">${loseKg} kg</span></div>
-    <div class="result-row"><span class="result-label">期間</span><span class="result-val">${goalMonths}个月（${totalDays}天）</span></div>
-    <div class="result-row"><span class="result-label">必要赤字（累計）</span><span class="result-val">${totalDeficit.toLocaleString()} kcal</span></div>
-    <div class="result-row"><span class="result-label">每日赤字目标</span><span class="result-val ${dailyDeficit>750?'red':''}">${dailyDeficit} kcal</span></div>
+    <div class="result-row"><span class="result-label">期间</span><span class="result-val">${goalMonths}个月（${totalDays}天）</span></div>
+    <div class="result-row"><span class="result-label">所需赤字（累计）</span><span class="result-val">${totalDeficit.toLocaleString()} kcal</span></div>
+    <div class="result-row"><span class="result-label">每日赤字目标</span><span class="result-val ${dailyDeficit>deficitThreshold?'red':''}">${dailyDeficit} kcal</span></div>
     <div class="result-row"><span class="result-label">每日摄入目标</span><span class="result-val green">${targetKcal} kcal</span></div>
     <div class="result-row"><span class="result-label">蛋白质目标（自动）</span><span class="result-val green">${proteinG}g</span></div>
     <div class="result-row"><span class="result-label">脂肪目标（自动）</span><span class="result-val">${fatG}g</span></div>
     <div class="result-row"><span class="result-label">碳水目标（自动）</span><span class="result-val">${Math.max(50,carbG)}g</span></div>
-    ${dailyDeficit>500?`<div style="font-size:11px;color:var(--text3);margin-top:8px">以安全进度（500kcal赤字）约需${safeMonths}个月</div>`:''}
-    <div style="font-size:11px;color:var(--text3);margin-top:6px">PFC目标已自动更新到目标设置</div>
+    ${dailyDeficit>deficitThreshold?`<div style="font-size:11px;color:var(--text3);margin-top:8px">以安全进度（${deficitThreshold}kcal赤字）约需${safeMonths}个月</div>`:''}
+    <div style="font-size:11px;color:var(--text3);margin-top:6px">※ 已将欺骗日（每6天1次）纳入计算</div>
+    <button class="save-btn" style="margin-top:12px" onclick="applyProfile()">应用此目标</button>
   `;
-  renderProgress();
+}
+
+function applyProfile(){
+  if(!_calcResult){alert('请先点击「计算」');return;}
+  const {p,maintenance,totalDeficit,totalDays,dailyDeficit,dailyTarget,targetKcal,proteinG,fatG,carbG}=_calcResult;
+  p.maintenance=maintenance;p.dailyTarget=dailyTarget;p.dailyDeficit=dailyDeficit;p.totalDeficit=totalDeficit;p.totalDays=totalDays;
+  saveProfileData(p);
+  const goals=loadGoals();
+  goals.cal=targetKcal;goals.protein=proteinG;goals.fat=fatG;goals.carb=Math.max(50,carbG);
+  localStorage.setItem('diet_goals',JSON.stringify(goals));
+  event.target.textContent='✅ 已应用';
+  event.target.disabled=true;
+  setTimeout(()=>{if(event.target){event.target.textContent='应用此目标';event.target.disabled=false;}},2000);
+  render();renderProgress();
 }
 
 function loadProfileForm(){

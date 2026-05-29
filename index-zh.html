@@ -915,7 +915,10 @@ function getDateStr(offset){
   return{main:offset===0?'今日':offset===-1?'昨日':`${d.getMonth()+1}月${d.getDate()}日`,sub:`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}（${w}）`};
 }
 function loadDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_day_'+k);if(s)return JSON.parse(s);return{meals:{早餐:[],午餐:[],晚餐:[]},snacks:[],comment:'',weight:null};}
-function saveDay(offset,data){localStorage.setItem('diet_day_'+getKey(offset),JSON.stringify(data));}
+function saveDay(offset,data){
+  if(data.goalCal==null){const goals=loadGoals();data.goalCal=goals.cal||0;}
+  localStorage.setItem('diet_day_'+getKey(offset),JSON.stringify(data));
+}
 function saveWeight(){
   const val=parseFloat(document.getElementById('todayWeight').value);
   const data=loadDay(currentDay);
@@ -1855,6 +1858,8 @@ function importData(event){
       }
       document.getElementById('importSuccess').style.display='block';
       setTimeout(()=>document.getElementById('importSuccess').style.display='none',3000);
+      localStorage.removeItem('diet_goalcal_backfilled');
+      backfillGoalCal();
       render();
     }catch(err){alert('文件读取失败，请确认是否为正确的JSON文件。');}
     event.target.value='';
@@ -2137,12 +2142,13 @@ function getDayStatusByKey(dateKey){
   if(!_statusCache.prof)_statusCache.prof=loadProfileData();
   const goals=_statusCache.goals;
   const prof=_statusCache.prof;
+  const effectiveCal=data.goalCal||goals.cal;
   const proteinOk=t.p>=goals.protein;
   if(data.cheatDay==='unlimited'){
     return proteinOk?'perfect':'achieved';
   }
   if(data.cheatDay==='cheat'){
-    const cheatLimit=data.cheatCalLimit||goals.cal;
+    const cheatLimit=data.cheatCalLimit||effectiveCal;
     const calOk=t.cal<=cheatLimit;
     if(!calOk)return 'failed';
     return proteinOk?'perfect':'achieved';
@@ -2150,7 +2156,7 @@ function getDayStatusByKey(dateKey){
   const bw=prof&&prof.weight?prof.weight:70;
   const wkS=localStorage.getItem('diet_workout_'+dateKey);
   const wkBonus=wkS?calcWorkoutCal(JSON.parse(wkS),bw)*0.5:0;
-  const effectiveGoal=goals.cal+wkBonus;
+  const effectiveGoal=effectiveCal+wkBonus;
   const calOk=t.cal<=effectiveGoal;
   if(!calOk)return 'failed';
   return proteinOk?'perfect':'achieved';
@@ -2909,6 +2915,25 @@ function renderWorkoutBonus(){
     bonusRemain.style.display='none';
   }
 }
+
+function backfillGoalCal(){
+  if(localStorage.getItem('diet_goalcal_backfilled'))return;
+  const goals=loadGoals();
+  if(!goals.cal)return;
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(!k||!k.startsWith('diet_day_'))continue;
+    try{
+      const data=JSON.parse(localStorage.getItem(k));
+      if(data&&data.goalCal==null&&calcTotals(data).cal>0){
+        data.goalCal=goals.cal;
+        localStorage.setItem(k,JSON.stringify(data));
+      }
+    }catch(e){}
+  }
+  localStorage.setItem('diet_goalcal_backfilled','1');
+}
+backfillGoalCal();
 
 render();
 

@@ -909,7 +909,11 @@ function getDateStr(offset){
   return{main:offset===0?'今日':offset===-1?'昨日':`${d.getMonth()+1}月${d.getDate()}日`,sub:`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}（${w}）`};
 }
 function loadDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_day_'+k);if(s)return JSON.parse(s);return{meals:{朝食:[],昼食:[],夕食:[]},snacks:[],comment:'',weight:null};}
-function saveDay(offset,data){localStorage.setItem('diet_day_'+getKey(offset),JSON.stringify(data));}
+function saveDay(offset,data){
+  // 目標カロリーのスナップショットを保存（未設定の場合のみ付与）
+  if(data.goalCal==null){const goals=loadGoals();data.goalCal=goals.cal||0;}
+  localStorage.setItem('diet_day_'+getKey(offset),JSON.stringify(data));
+}
 function saveWeight(){
   const val=parseFloat(document.getElementById('todayWeight').value);
   const data=loadDay(currentDay);
@@ -1910,6 +1914,9 @@ function importData(event){
       }
       document.getElementById('importSuccess').style.display='block';
       setTimeout(()=>document.getElementById('importSuccess').style.display='none',3000);
+      // インポート後にbackfillフラグをリセット→再バックフィル（古いバックアップ対応）
+      localStorage.removeItem('diet_goalcal_backfilled');
+      backfillGoalCal();
       render();
     }catch(err){alert('ファイルの読み込みに失敗しました。正しいJSONファイルか確認してください。');}
     event.target.value='';
@@ -2204,14 +2211,14 @@ function getDayStatusByKey(dateKey){
   if(!_statusCache.prof)_statusCache.prof=loadProfileData();
   const goals=_statusCache.goals;
   const prof=_statusCache.prof;
+  // goalCalスナップショットがあればそちらを優先（目標変更の影響を受けない）
+  const effectiveCal=data.goalCal||goals.cal;
   const proteinOk=t.p>=goals.protein;
   if(data.cheatDay==='unlimited'){
-    // 無制限デイ：カロリー不問、タンパク質のみ判定
     return proteinOk?'perfect':'achieved';
   }
   if(data.cheatDay==='cheat'){
-    // チートデイ：上限超過はfailed、以内ならperfect/achieved判定
-    const cheatLimit=data.cheatCalLimit||goals.cal;
+    const cheatLimit=data.cheatCalLimit||effectiveCal;
     const calOk=t.cal<=cheatLimit;
     if(!calOk)return 'failed';
     return proteinOk?'perfect':'achieved';
@@ -2220,7 +2227,7 @@ function getDayStatusByKey(dateKey){
   const bw=prof&&prof.weight?prof.weight:70;
   const wkS=localStorage.getItem('diet_workout_'+dateKey);
   const wkBonus=wkS?calcWorkoutCal(JSON.parse(wkS),bw)*0.5:0;
-  const effectiveGoal=goals.cal+wkBonus;
+  const effectiveGoal=effectiveCal+wkBonus;
   const calOk=t.cal<=effectiveGoal;
   if(!calOk)return 'failed';
   return proteinOk?'perfect':'achieved';
@@ -2991,6 +2998,26 @@ function renderWorkoutBonus(){
     bonusRemain.style.display='none';
   }
 }
+
+// 初回起動時：過去の全日データにgoalCalスナップショットをバックフィル
+function backfillGoalCal(){
+  if(localStorage.getItem('diet_goalcal_backfilled'))return;
+  const goals=loadGoals();
+  if(!goals.cal)return;
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(!k||!k.startsWith('diet_day_'))continue;
+    try{
+      const data=JSON.parse(localStorage.getItem(k));
+      if(data&&data.goalCal==null&&calcTotals(data).cal>0){
+        data.goalCal=goals.cal;
+        localStorage.setItem(k,JSON.stringify(data));
+      }
+    }catch(e){}
+  }
+  localStorage.setItem('diet_goalcal_backfilled','1');
+}
+backfillGoalCal();
 
 render();
 

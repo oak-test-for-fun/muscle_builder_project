@@ -2113,6 +2113,22 @@ function renderProgress(){
     actualWeightLoss=firstWeight-latestWeight;
     diff=actualWeightLoss-theoreticalLoss;
   }
+  // 実測体重ベースの予測日計算
+  let weightBasedDateStr=null;
+  if(firstWeight!==null&&latestWeight!==null&&p.goalWeight!=null){
+    const weightElapsed=elapsed; // 実測期間（経過日数）
+    const actualDailyLoss=(firstWeight-latestWeight)/Math.max(1,weightElapsed);
+    const weightRemaining=latestWeight-p.goalWeight;
+    if(actualDailyLoss>0&&weightRemaining>0){
+      const daysToGoalWeight=Math.ceil(weightRemaining/actualDailyLoss);
+      const wGoalDate=new Date(today);wGoalDate.setDate(today.getDate()+daysToGoalWeight);
+      weightBasedDateStr=`${wGoalDate.getFullYear()}/${wGoalDate.getMonth()+1}/${wGoalDate.getDate()}`;
+    }else if(actualDailyLoss<=0){
+      weightBasedDateStr='現在のペースでは達成困難';
+    }else{
+      weightBasedDateStr='目標達成済み';
+    }
+  }
   body.innerHTML=`
     <div class="progress-bar-wrap">
       <div class="progress-label"><span>赤字進捗</span><span>${pct}%</span></div>
@@ -2125,7 +2141,9 @@ function renderProgress(){
     <div class="result-row"><span class="result-label">今日の摂取</span><span class="result-val">${calcTotals(loadDay(0)).cal} kcal</span></div>
     <div class="result-row"><span class="result-label">残り日数</span><span class="result-val">${remaining}日</span></div>
     <div class="result-row"><span class="result-label">今後の1日目標（再計算）</span><span class="result-val ${onTrack?'green':'red'}">${newDailyTargetCapped} kcal</span></div>
-    <div class="result-row"><span class="result-label">現ペース達成予測</span><span class="result-val">${recordedDays>0?goalDateStr:'記録を積み重ねると表示されます'}</span></div>
+    <div class="result-row"><span class="result-label">現ペース達成予測（カロリー）</span><span class="result-val">${recordedDays>0?goalDateStr:'記録を積み重ねると表示されます'}</span></div>
+    ${weightBasedDateStr?`<div class="result-row"><span class="result-label">現ペース達成予測（体重実測）</span><span class="result-val ${weightBasedDateStr==='現在のペースでは達成困難'?'red':'green'}">${weightBasedDateStr}</span></div>`:''}
+    ${weightBasedDateStr&&goalDateStr&&weightBasedDateStr!==goalDateStr&&weightBasedDateStr!=='現在のペースでは達成困難'&&weightBasedDateStr!=='目標達成済み'?`<div style="font-size:10px;color:var(--text3);margin-top:-4px;margin-bottom:4px">※ カロリー記録の精度により2つの予測が異なる場合があります</div>`:''}
     ${!onTrack?'<div style="font-size:11px;color:var(--red-dark);margin-top:6px">⚠️ 赤字が大きすぎます。目標期間の延長を検討してください。</div>':''}
     ${remaining>0&&recordedDays>0?`<button onclick="applyNewDailyTarget(${newDailyTargetCapped})" style="margin-top:10px;width:100%;padding:10px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">この目標（${newDailyTargetCapped}kcal）を適用する</button>`:''}
   `;

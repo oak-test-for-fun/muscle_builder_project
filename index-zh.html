@@ -2052,6 +2052,21 @@ function renderProgress(){
     actualWeightLoss=firstWeight-latestWeight;
     diff=actualWeightLoss-theoreticalLoss;
   }
+  // 実測体重ベースの予測日計算
+  let weightBasedDateStr=null;
+  if(firstWeight!==null&&latestWeight!==null&&p.goalWeight!=null){
+    const actualDailyLoss=(firstWeight-latestWeight)/Math.max(1,elapsed);
+    const weightRemaining=latestWeight-p.goalWeight;
+    if(actualDailyLoss>0&&weightRemaining>0){
+      const daysToGoalWeight=Math.ceil(weightRemaining/actualDailyLoss);
+      const wGoalDate=new Date(today);wGoalDate.setDate(today.getDate()+daysToGoalWeight);
+      weightBasedDateStr=`${wGoalDate.getFullYear()}/${wGoalDate.getMonth()+1}/${wGoalDate.getDate()}`;
+    }else if(actualDailyLoss<=0){
+      weightBasedDateStr='按当前趋势难以达成';
+    }else{
+      weightBasedDateStr='已达成目标';
+    }
+  }
   body.innerHTML=`
     <div class="progress-bar-wrap">
       <div class="progress-label"><span>赤字進捗</span><span>${pct}%</span></div>
@@ -2064,7 +2079,9 @@ function renderProgress(){
     <div class="result-row"><span class="result-label">今日摄入</span><span class="result-val">${calcTotals(loadDay(0)).cal} kcal</span></div>
     <div class="result-row"><span class="result-label">剩余天数</span><span class="result-val">${remaining}日</span></div>
     <div class="result-row"><span class="result-label">今后每日目标（重新计算）</span><span class="result-val ${onTrack?'green':'red'}">${newDailyTargetCapped} kcal</span></div>
-    <div class="result-row"><span class="result-label">按当前进度预计达成</span><span class="result-val">${recordedDays>0?goalDateStr:'积累记录后显示'}</span></div>
+    <div class="result-row"><span class="result-label">预计达成（热量）</span><span class="result-val">${recordedDays>0?goalDateStr:'积累记录后显示'}</span></div>
+    ${weightBasedDateStr?`<div class="result-row"><span class="result-label">预计达成（体重实测）</span><span class="result-val ${weightBasedDateStr==='按当前趋势难以达成'?'red':'green'}">${weightBasedDateStr}</span></div>`:''}
+    ${weightBasedDateStr&&goalDateStr&&weightBasedDateStr!==goalDateStr&&weightBasedDateStr!=='按当前趋势难以达成'&&weightBasedDateStr!=='已达成目标'?`<div style="font-size:10px;color:var(--text3);margin-top:-4px;margin-bottom:4px">※ 两项预测不同时，可能是饮食记录精度差异所致</div>`:''}
     ${!onTrack?'<div style="font-size:11px;color:var(--red-dark);margin-top:6px">⚠️ 赤字过大，请考虑延长目标期限。</div>':''}
     ${remaining>0&&recordedDays>0?`<button onclick="applyNewDailyTarget(${newDailyTargetCapped})" style="margin-top:10px;width:100%;padding:10px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">此目标（${newDailyTargetCapped}kcal）已应用</button>`:''}
   `;

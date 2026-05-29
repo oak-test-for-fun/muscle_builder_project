@@ -2052,19 +2052,34 @@ function renderProgress(){
     actualWeightLoss=firstWeight-latestWeight;
     diff=actualWeightLoss-theoreticalLoss;
   }
-  // 実測体重ベースの予測日計算
+  // 実測体重ベースの予測日計算（7日移動平均でノイズ除去）
   let weightBasedDateStr=null;
-  if(firstWeight!==null&&latestWeight!==null&&p.goalWeight!=null){
-    const actualDailyLoss=(firstWeight-latestWeight)/Math.max(1,elapsed);
-    const weightRemaining=latestWeight-p.goalWeight;
-    if(actualDailyLoss>0&&weightRemaining>0){
-      const daysToGoalWeight=Math.ceil(weightRemaining/actualDailyLoss);
-      const wGoalDate=new Date(today);wGoalDate.setDate(today.getDate()+daysToGoalWeight);
-      weightBasedDateStr=`${wGoalDate.getFullYear()}/${wGoalDate.getMonth()+1}/${wGoalDate.getDate()}`;
-    }else if(actualDailyLoss<=0){
-      weightBasedDateStr='按当前趋势难以达成';
-    }else{
-      weightBasedDateStr='已达成目标';
+  if(p.goalWeight!=null&&elapsed>=7){
+    const collectAvg=(fromDay,days)=>{
+      let sum=0,cnt=0;
+      for(let i=fromDay;i<fromDay+days;i++){
+        const d=new Date(startDate);d.setDate(d.getDate()+i);
+        if(d>today)break;
+        const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const s=localStorage.getItem('diet_day_'+k);
+        if(s){const day=JSON.parse(s);if(day.weight!=null){sum+=day.weight;cnt++;}}
+      }
+      return cnt>0?sum/cnt:null;
+    };
+    const earlyAvg=collectAvg(0,7);
+    const recentAvg=collectAvg(Math.max(0,elapsed-6),7);
+    if(earlyAvg!==null&&recentAvg!==null&&earlyAvg!==recentAvg){
+      const avgDailyLoss=(earlyAvg-recentAvg)/Math.max(1,elapsed);
+      const weightRemaining=recentAvg-p.goalWeight;
+      if(avgDailyLoss>0&&weightRemaining>0){
+        const daysToGoalWeight=Math.ceil(weightRemaining/avgDailyLoss);
+        const wGoalDate=new Date(today);wGoalDate.setDate(today.getDate()+daysToGoalWeight);
+        weightBasedDateStr=`${wGoalDate.getFullYear()}/${wGoalDate.getMonth()+1}/${wGoalDate.getDate()}`;
+      }else if(avgDailyLoss<=0){
+        weightBasedDateStr='按当前趋势难以达成';
+      }else{
+        weightBasedDateStr='已达成目标';
+      }
     }
   }
   body.innerHTML=`
@@ -2080,8 +2095,16 @@ function renderProgress(){
     <div class="result-row"><span class="result-label">剩余天数</span><span class="result-val">${remaining}日</span></div>
     <div class="result-row"><span class="result-label">今后每日目标（重新计算）</span><span class="result-val ${onTrack?'green':'red'}">${newDailyTargetCapped} kcal</span></div>
     <div class="result-row"><span class="result-label">预计达成（热量）</span><span class="result-val">${recordedDays>0?goalDateStr:'积累记录后显示'}</span></div>
-    ${weightBasedDateStr?`<div class="result-row"><span class="result-label">预计达成（体重实测）</span><span class="result-val ${weightBasedDateStr==='按当前趋势难以达成'?'red':'green'}">${weightBasedDateStr}</span></div>`:''}
-    ${weightBasedDateStr&&goalDateStr&&weightBasedDateStr!==goalDateStr&&weightBasedDateStr!=='按当前趋势难以达成'&&weightBasedDateStr!=='已达成目标'?`<div style="font-size:10px;color:var(--text3);margin-top:-4px;margin-bottom:4px">※ 两项预测不同时，可能是饮食记录精度差异所致</div>`:''}
+    ${weightBasedDateStr?`<div class="result-row"><span class="result-label">预计达成（体重实测）</span><span class="result-val ${weightBasedDateStr==='按当前趋势难以达成'?'red':'green'}">${weightBasedDateStr}<span style="font-size:9px;color:var(--text3);margin-left:4px">7日均值</span></span></div>`:''}
+    ${(()=>{
+      if(!weightBasedDateStr||!recordedDays||weightBasedDateStr==='按当前趋势难以达成'||weightBasedDateStr==='已达成目标')return '';
+      const d1=new Date(goalDate);
+      const d2Parts=weightBasedDateStr.split('/').map(Number);
+      const d2=new Date(d2Parts[0],d2Parts[1]-1,d2Parts[2]);
+      const mid=new Date((d1.getTime()+d2.getTime())/2);
+      const midStr=`${mid.getFullYear()}/${mid.getMonth()+1}/${mid.getDate()}`;
+      return `<div class="result-row"><span class="result-label">参考预测（中间值）</span><span class="result-val" style="color:var(--amber)">${midStr}</span></div><div style="font-size:10px;color:var(--text3);margin-top:-4px;margin-bottom:4px">热量预测与体重预测的中间值</div>`;
+    })()}
     ${!onTrack?'<div style="font-size:11px;color:var(--red-dark);margin-top:6px">⚠️ 赤字过大，请考虑延长目标期限。</div>':''}
     ${remaining>0&&recordedDays>0?`<button onclick="applyNewDailyTarget(${newDailyTargetCapped})" style="margin-top:10px;width:100%;padding:10px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">此目标（${newDailyTargetCapped}kcal）已应用</button>`:''}
   `;

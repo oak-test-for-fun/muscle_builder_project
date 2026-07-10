@@ -2155,8 +2155,9 @@ function getDayStatusByKey(dateKey){
     return proteinOk?'perfect':'achieved';
   }
   if(data.cheatDay==='cheat'){
-    const cheatLimit=data.cheatCalLimit||effectiveCal;
-    const calOk=t.cal<=cheatLimit;
+    // 上限未保存（旧バージョンで行使）のチートデイは遡及failedにしない救済措置
+    if(data.cheatCalLimit==null)return proteinOk?'perfect':'achieved';
+    const calOk=t.cal<=data.cheatCalLimit;
     if(!calOk)return 'failed';
     return proteinOk?'perfect':'achieved';
   }
@@ -2338,13 +2339,11 @@ function renderStampCalendar(){
       else if(status==='achieved'){cls+=' achieved';stamp='🌸';}
       else if(status==='failed'){cls+=' failed';stamp='💔';}
       if(cheatType==='cheat'){
-        if(status==='perfect')stamp='⭐';
-        else if(status==='failed')stamp='💔';
-        else stamp='🍕';
+        // 行使情報を常に可視化：上限超過のみ💔、それ以外は🍕（perfect判定はストリークに反映済み）
+        stamp=status==='failed'?'💔':'🍕';
       }
       if(cheatType==='unlimited'){
-        if(status==='perfect')stamp='⭐';
-        else stamp='🎉';
+        stamp='🎉';
       }
       // 運動実施チェック
       const wkS=localStorage.getItem('diet_workout_'+key);

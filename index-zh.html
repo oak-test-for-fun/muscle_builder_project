@@ -617,7 +617,7 @@
   </div>
 </div>
 
-<!-- 日付選択カレンダー -->
+<!-- 日期选择日历 -->
 <div class="datepick-overlay" id="datepickOverlay" onclick="if(event.target===this)closeDatePicker()">
   <div class="datepick-sheet">
     <div class="datepick-handle"></div>
@@ -799,7 +799,7 @@
     <div id="unit_count_section" style="display:none">
       <div style="font-size:11px;color:var(--text3);margin-bottom:5px">每1单位营养素</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-        <div style="flex:1"><div class="field-label" style="margin-top:0">単位</div>
+        <div style="flex:1"><div class="field-label" style="margin-top:0">单位</div>
           <select id="inp_unit_name">
             <option value="个">个</option>
             <option value="袋">袋</option>
@@ -908,7 +908,8 @@ function saveCustomFoods(arr){localStorage.setItem('diet_custom_foods',JSON.stri
 function loadBuiltinOverrides(){const s=localStorage.getItem('diet_builtin_overrides');return s?JSON.parse(s):{};}
 function saveBuiltinOverrides(obj){localStorage.setItem('diet_builtin_overrides',JSON.stringify(obj));}
 function getBuiltin(){const ov=loadBuiltinOverrides();return BUILTIN.map((f,i)=>ov[i]?{...f,...ov[i]}:f);}
-function getKey(offset){const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+const keyOf=d=>keyOf(d);
+function getKey(offset){const d=new Date();d.setDate(d.getDate()+offset);return keyOf(d);}
 function getDateStr(offset){
   const d=new Date();d.setDate(d.getDate()+offset);
   const w=['日','一','二','三','四','五','六'][d.getDay()];
@@ -1369,7 +1370,7 @@ function renderWeekSummary(){
     for(let d=0;d<7;d++){
       const dd=new Date(mon);dd.setDate(mon.getDate()+d);
       if(dd>today)break;
-      const key=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
+      const key=keyOf(dd);
       const s=localStorage.getItem('diet_day_'+key);
       const dayData=s?JSON.parse(s):{meals:{早餐:[],午餐:[],晚餐:[]},snacks:[],comment:'',weight:null};
       const t=calcTotals(dayData);
@@ -1462,7 +1463,7 @@ function renderCharts(){
     const t=calcTotals(loadDay(-i));calVals.push(t.cal);
     colors.push(t.cal>goals.cal*1.2?'#E24B4A':t.cal>goals.cal?'#BA7517':'#1D9E75');
     // 筋トレ実施チェック
-    const wkKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const wkKey=keyOf(d);
     const wkData=localStorage.getItem('diet_workout_'+wkKey);
     const wkList=wkData?JSON.parse(wkData):[];
     hasWorkout.push({weight:wkList.some(e=>e.type!=='cardio'),cardio:wkList.some(e=>e.type==='cardio')});
@@ -1546,7 +1547,7 @@ function renderCharts(){
         let cumDeficit=0;
         for(let j=0;j<=dayOffset;j++){
           const dd=new Date(startDate);dd.setDate(dd.getDate()+j);
-          const k=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
+          const k=keyOf(dd);
           const s=localStorage.getItem('diet_day_'+k);
           if(s){const t=calcTotals(JSON.parse(s));if(t.cal>0)cumDeficit+=prof.maintenance-t.cal;}
         }
@@ -1736,7 +1737,7 @@ function exportMarkdown(){
 `;
   const recent=rows.filter(r=>r.kcal>0).slice(-10);
   recent.forEach(r=>{
-    md+=`\n### ${r.date}（${r.kcal}kcal / 体重${r.weight!=null?r.weight+'kg':'未記録'}）\n`;
+    md+=`\n### ${r.date}（${r.kcal}kcal / 体重${r.weight!=null?r.weight+'kg':'未记录'}）\n`;
     const allMeals={...r.raw.meals};
     BASE_MEALS.forEach(meal=>{
       const items=allMeals[meal]||[];
@@ -2032,7 +2033,7 @@ function renderProgress(){
   let actualTotal=0,recordedDays=0;
   for(let i=0;i<=elapsed&&i<p.totalDays;i++){
     const d=new Date(startDate);d.setDate(d.getDate()+i);
-    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const key=keyOf(d);
     const s=localStorage.getItem('diet_day_'+key);
     if(s){const t=calcTotals(JSON.parse(s));if(t.cal>0){actualTotal+=t.cal;recordedDays++;}}
   }
@@ -2055,7 +2056,7 @@ function renderProgress(){
   let firstWeight=null,latestWeight=null;
   for(let i=0;i<=elapsed;i++){
     const d=new Date(startDate);d.setDate(d.getDate()+i);
-    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const k=keyOf(d);
     const s=localStorage.getItem('diet_day_'+k);
     if(s){const day=JSON.parse(s);if(day.weight!=null){if(firstWeight===null)firstWeight=day.weight;latestWeight=day.weight;}}
   }
@@ -2071,7 +2072,7 @@ function renderProgress(){
       for(let i=fromDay;i<fromDay+days;i++){
         const d=new Date(startDate);d.setDate(d.getDate()+i);
         if(d>today)break;
-        const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const k=keyOf(d);
         const s=localStorage.getItem('diet_day_'+k);
         if(s){const day=JSON.parse(s);if(day.weight!=null){sum+=day.weight;cnt++;}}
       }
@@ -2136,10 +2137,18 @@ function applyNewDailyTarget(kcal){
 let stampCalYear=new Date().getFullYear();
 let stampCalMonth=new Date().getMonth();
 
-let _statusCache={goals:null,prof:null};
-function clearStatusCache(){_statusCache={goals:null,prof:null};}
+let _statusCache={goals:null,prof:null,days:{}};
+function clearStatusCache(){_statusCache={goals:null,prof:null,days:{}};}
 
 function getDayStatusByKey(dateKey){
+  // 日別ステータスのメモ化（同一レンダリング内の重複計算を排除）
+  const cached=_statusCache.days[dateKey];
+  if(cached!==undefined)return cached;
+  const st=computeDayStatus(dateKey);
+  _statusCache.days[dateKey]=st;
+  return st;
+}
+function computeDayStatus(dateKey){
   const s=localStorage.getItem('diet_day_'+dateKey);
   if(!s)return 'none';
   const data=JSON.parse(s);
@@ -2170,11 +2179,10 @@ function getDayStatusByKey(dateKey){
 }
 
 function calcStreakCore(skipToday){
-  clearStatusCache();
   let streak=0,perfectStreak=0,perfectDone=false,i=skipToday?1:0;
   while(i<365){
     const d=new Date();d.setDate(d.getDate()-i);
-    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const key=keyOf(d);
     const status=getDayStatusByKey(key);
     if(status==='none'){if(i===0){i++;continue;}break;}
     if(status==='failed')break;
@@ -2227,7 +2235,7 @@ function calcCheatCalLimit(){
   let cumDeficit=0;
   for(let i=0;i<=elapsed;i++){
     const d=new Date(startDate);d.setDate(d.getDate()+i);
-    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const k=keyOf(d);
     const s=localStorage.getItem('diet_day_'+k);
     if(s){const t=calcTotals(JSON.parse(s));if(t.cal>0)cumDeficit+=prof.maintenance-t.cal;}
   }
@@ -2276,10 +2284,10 @@ function useCheatDay(){
 }
 
 function renderStamp(){
+  clearStatusCache(); // レンダリング開始時に1回だけリセット、以降はメモ共有
   const rewards=checkAndGrantRewards(); // calcStreak内包
   const {streak,perfectStreak}=calcStreak(); // 只调用一次
   const limits=calcCheatCalLimit();
-  const todayStatus=getDayStatusByKey(getKey(0));
   const nextCheat=streak%6===0&&streak>0?6:6-(streak%6);
   const nextPerfect=perfectStreak%6===0&&perfectStreak>0?6:6-(perfectStreak%6);
   const next31=streak%31===0&&streak>0?31:31-(streak%31);

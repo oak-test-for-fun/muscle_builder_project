@@ -910,9 +910,8 @@ function getDateStr(offset){
 }
 function loadDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_day_'+k);if(s)return JSON.parse(s);return{meals:{朝食:[],昼食:[],夕食:[]},snacks:[],comment:'',weight:null};}
 function saveDay(offset,data){
-  // 目標カロリーのスナップショット：今日は常に現在値で更新、過去日は既存値を保持
-  const goals=loadGoals();
-  if(offset===0||data.goalCal==null)data.goalCal=goals.cal||0;
+  // 目標カロリーのスナップショットを保存（未設定の場合のみ付与）
+  if(data.goalCal==null){const goals=loadGoals();data.goalCal=goals.cal||0;}
   localStorage.setItem('diet_day_'+getKey(offset),JSON.stringify(data));
 }
 function saveWeight(){
@@ -1005,8 +1004,6 @@ function switchTab(tab,btn){
 function render(){
   const data=loadDay(currentDay),ds=getDateStr(currentDay);
   const goals=loadGoals();
-  // 過去日はその日のgoalCalスナップショットで表示（カレンダー判定と一致させる）
-  if(currentDay!==0&&data.goalCal)goals.cal=data.goalCal;
   const baseGoal=goals.cal; // 筋トレ加算前の元の目標を保持
   // チートデイの一時的なカロリー上限を適用
   if(data.cheatDay==='unlimited')goals.cal=9999;
@@ -1423,9 +1420,7 @@ function renderWeekSummary(){
       // 筋トレ・有酸素ボーナス
       const wkS=localStorage.getItem('diet_workout_'+key);
       const wkBonus=wkS?Math.round(calcWorkoutCal(JSON.parse(wkS),bw)*0.5):0;
-      // その日のgoalCalスナップショットを優先（目標変更の影響を受けない）
-      const dayGoal=dayData.goalCal||dailyGoal;
-      const dynamicGoal=dayGoal+wkBonus;
+      const dynamicGoal=dailyGoal+wkBonus;
       if(t.cal>0){totalCal+=t.cal;recordedDays++;}
       totalDynamicGoal+=dynamicGoal;
       dayDetails.push({cal:t.cal,dynamicGoal,wkBonus});
@@ -2040,8 +2035,6 @@ function applyProfile(){
   const goals=loadGoals();
   goals.cal=targetKcal;goals.protein=proteinG;goals.fat=fatG;goals.carb=Math.max(50,carbG);
   localStorage.setItem('diet_goals',JSON.stringify(goals));
-  // 今日の記録が既にあれば、今日のスナップショットも新目標に更新（記録タブ・カレンダーの整合性）
-  if(localStorage.getItem('diet_day_'+getKey(0)))saveDay(0,loadDay(0));
   // 適用ボタンをフィードバック表示に変更
   event.target.textContent='✅ 適用しました';
   event.target.disabled=true;
@@ -2195,7 +2188,6 @@ function applyNewDailyTarget(kcal){
   const goals=loadGoals();
   goals.cal=kcal;
   localStorage.setItem('diet_goals',JSON.stringify(goals));
-  if(localStorage.getItem('diet_day_'+getKey(0)))saveDay(0,loadDay(0));
   // 設定タブの入力欄も更新
   const el=document.getElementById('g_cal');
   if(el)el.value=kcal;
@@ -2228,9 +2220,8 @@ function getDayStatusByKey(dateKey){
     return proteinOk?'perfect':'achieved';
   }
   if(data.cheatDay==='cheat'){
-    // 上限未保存（旧バージョンで行使）のチートデイは遡及failedにしない救済措置
-    if(data.cheatCalLimit==null)return proteinOk?'perfect':'achieved';
-    const calOk=t.cal<=data.cheatCalLimit;
+    const cheatLimit=data.cheatCalLimit||effectiveCal;
+    const calOk=t.cal<=cheatLimit;
     if(!calOk)return 'failed';
     return proteinOk?'perfect':'achieved';
   }
@@ -2244,9 +2235,9 @@ function getDayStatusByKey(dateKey){
   return proteinOk?'perfect':'achieved';
 }
 
-function calcStreakCore(skipToday){
+function calcStreak(){
   clearStatusCache(); // ループ前にキャッシュリセット
-  let streak=0,perfectStreak=0,perfectDone=false,i=skipToday?1:0;
+  let streak=0,perfectStreak=0,perfectDone=false,i=0;
   while(i<365){
     const d=new Date();d.setDate(d.getDate()-i);
     const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -2256,13 +2247,12 @@ function calcStreakCore(skipToday){
     streak++;
     if(!perfectDone){
       if(status==='perfect')perfectStreak++;
-      else perfectDone=true; // achievedで連続終了、以降は加算しない
+      else perfectDone=true; // achieved/cheat/unlimitedで連続終了、以降は加算しない
     }
     i++;
   }
   return{streak,perfectStreak};
 }
-function calcStreak(){return calcStreakCore(false);}
 
 function loadRewards(){return JSON.parse(localStorage.getItem('diet_rewards')||'{"cheat":0,"unlimited":0,"bonusCheat":0}');}
 function saveRewards(r){localStorage.setItem('diet_rewards',JSON.stringify(r));}
@@ -2271,15 +2261,9 @@ function checkAndGrantRewards(){
   const {streak,perfectStreak}=calcStreak();
   const rewards=loadRewards();
   let updated=false;
-  let lastCheat=parseInt(localStorage.getItem('diet_last_cheat_streak')||'0');
-  let lastPerfect=parseInt(localStorage.getItem('diet_last_perfect_streak')||'0');
-  let last31=parseInt(localStorage.getItem('diet_last_31_streak')||'0');
-  // ストリークが過去日で確実に切れた場合は基準値を同期する
-  // （今日の未確定状態＝食事・タンパク質が途中の状態では誤リセットしないよう、今日を除いて判定）
-  const stable=calcStreakCore(true);
-  if(stable.streak<lastCheat){lastCheat=stable.streak;localStorage.setItem('diet_last_cheat_streak',String(lastCheat));}
-  if(stable.perfectStreak<lastPerfect){lastPerfect=stable.perfectStreak;localStorage.setItem('diet_last_perfect_streak',String(lastPerfect));}
-  if(stable.streak<last31){last31=stable.streak;localStorage.setItem('diet_last_31_streak',String(last31));}
+  const lastCheat=parseInt(localStorage.getItem('diet_last_cheat_streak')||'0');
+  const lastPerfect=parseInt(localStorage.getItem('diet_last_perfect_streak')||'0');
+  const last31=parseInt(localStorage.getItem('diet_last_31_streak')||'0');
   if(streak>=6&&Math.floor(streak/6)>Math.floor(lastCheat/6)){
     rewards.cheat++;updated=true;localStorage.setItem('diet_last_cheat_streak',String(streak));
   }
@@ -2307,9 +2291,7 @@ function calcCheatCalLimit(){
     const s=localStorage.getItem('diet_day_'+k);
     if(s){const t=calcTotals(JSON.parse(s));if(t.cal>0)cumDeficit+=prof.maintenance-t.cal;}
   }
-  // 上限キャップ：メンテナンス×1.5（累積赤字が育ちすぎても健康的な範囲に抑える）
-  const cap=Math.round(prof.maintenance*1.5);
-  return{normal:Math.min(cap,Math.round(prof.maintenance+cumDeficit*0.2)),bonus:Math.min(cap,Math.round(prof.maintenance+cumDeficit*0.25))};
+  return{normal:Math.round(prof.maintenance+cumDeficit*0.2),bonus:Math.round(prof.maintenance+cumDeficit*0.25)};
 }
 
 function openCheatModal(){
@@ -2417,11 +2399,13 @@ function renderStampCalendar(){
       else if(status==='failed'){cls+=' failed';stamp='💔';}
       // チートデイでもperfect/failedを上書き表示（上限超過なら💔、完全達成なら⭐🍕）
       if(cheatType==='cheat'){
-        // 行使情報を常に可視化：上限超過のみ💔、それ以外は🍕（perfect判定はストリークに反映済み）
-        stamp=status==='failed'?'💔':'🍕';
+        if(status==='perfect')stamp='⭐';
+        else if(status==='failed')stamp='💔';
+        else stamp='🍕';
       }
       if(cheatType==='unlimited'){
-        stamp='🎉';
+        if(status==='perfect')stamp='⭐';
+        else stamp='🎉';
       }
       // 運動実施チェック
       const wkS=localStorage.getItem('diet_workout_'+key);

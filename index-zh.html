@@ -320,6 +320,7 @@
           </div>
         </div>
         <div class="cal-section">
+          <div id="cheatBanner" style="display:none;background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:8px;line-height:1.4"></div>
           <div class="cal-top">
             <div class="cal-left">
               <div><span class="cal-num" id="totalCal">0</span><span class="cal-unit">kcal</span></div>
@@ -370,6 +371,7 @@
           <span class="leg"><span class="leg-sq" style="background:var(--green)"></span>摄入</span>
           <span class="leg"><span class="leg-sq" style="background:var(--border);border:1px dashed var(--blue)"></span>目标</span>
           <span class="leg"><span style="font-size:12px">🏋️</span>力量训练／<span style="font-size:12px">🏃</span>有氧</span>
+          <span class="leg"><span class="leg-sq" style="background:#7C3AED"></span>欺骗日（计划）</span>
         </div>
         <div style="position:relative;" id="calChartWrap"><canvas id="calChart"></canvas></div>
       </div>
@@ -964,6 +966,16 @@ function render(){
   // 应用欺骗日临时热量上限
   if(data.cheatDay==='unlimited')goals.cal=9999;
   else if(data.cheatDay==='cheat'&&data.cheatCalLimit)goals.cal=data.cheatCalLimit;
+  const cheatBannerEl=document.getElementById('cheatBanner');
+  if(data.cheatDay==='unlimited'){
+    cheatBannerEl.style.display='block';
+    cheatBannerEl.textContent='🎉 无限日行使中　热量不限，注意蛋白质摄入即可！无需愧疚！';
+  }else if(data.cheatDay==='cheat'&&data.cheatCalLimit){
+    cheatBannerEl.style.display='block';
+    cheatBannerEl.textContent=`🍕 欺骗日行使中　今日上限 ${data.cheatCalLimit} kcal。这是努力后应得的奖励，无需愧疚！`;
+  }else{
+    cheatBannerEl.style.display='none';
+  }
   // 健身消耗×0.5加到目标（动态目标）
   const prof=loadProfileData();
   const bw=prof&&prof.weight?prof.weight:70;
@@ -1376,10 +1388,18 @@ function renderWeekSummary(){
       const wkS=localStorage.getItem('diet_workout_'+key);
       const wkBonus=wkS?Math.round(calcWorkoutCal(JSON.parse(wkS),bw)*0.5):0;
       const dayGoal=dayData.goalCal||dailyGoal;
-      const dynamicGoal=dayGoal+wkBonus;
+      // チートデイ／無制限デイは上限を「許可された目標」としてA指標に算入
+      let dynamicGoal,isCheat=false;
+      if(dayData.cheatDay==='unlimited'){
+        dynamicGoal=t.cal; isCheat=true;
+      }else if(dayData.cheatDay==='cheat'&&dayData.cheatCalLimit!=null){
+        dynamicGoal=dayData.cheatCalLimit; isCheat=true;
+      }else{
+        dynamicGoal=dayGoal+wkBonus;
+      }
       if(t.cal>0){totalCal+=t.cal;recordedDays++;}
       totalDynamicGoal+=dynamicGoal;
-      dayDetails.push({cal:t.cal,dynamicGoal,wkBonus});
+      dayDetails.push({cal:t.cal,dynamicGoal,wkBonus,isCheat});
     }
 
     const activeDays=dayDetails.length;
@@ -1408,7 +1428,7 @@ function renderWeekSummary(){
 
     const barsHtml=w.dayDetails.map((d,i)=>{
       const pct=Math.min(d.cal/maxCal*100,100);
-      const barColor=d.cal===0?'var(--border)':d.cal>d.dynamicGoal*1.2?'var(--red)':d.cal>d.dynamicGoal?'var(--amber)':'var(--green)';
+      const barColor=d.cal===0?'var(--border)':d.isCheat?(d.cal>d.dynamicGoal?'var(--red)':'#7C3AED'):d.cal>d.dynamicGoal*1.2?'var(--red)':d.cal>d.dynamicGoal?'var(--amber)':'var(--green)';
       const goalPct=Math.min(d.dynamicGoal/maxCal*100,100);
       return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">`+
         `<div style="font-size:8px;color:var(--text3);height:14px;display:flex;align-items:flex-end">${d.cal>0?d.cal:''}</div>`+
@@ -1453,19 +1473,36 @@ function setPeriod(days,btn){
 
 function renderCharts(){
   const goals=loadGoals();
+  const prof0=loadProfileData();
+  const bw0=prof0&&prof0.weight?prof0.weight:70;
   const labels=[],calVals=[],colors=[],hasWorkout=[];
   for(let i=graphPeriod-1;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
     const w=['日','一','二','三','四','五','六'][d.getDay()];
     const lbl=graphPeriod<=14?`${d.getMonth()+1}/${d.getDate()}(${w})`:`${d.getMonth()+1}/${d.getDate()}`;
     labels.push(lbl);
-    const t=calcTotals(loadDay(-i));calVals.push(t.cal);
-    colors.push(t.cal>goals.cal*1.2?'#E24B4A':t.cal>goals.cal?'#BA7517':'#1D9E75');
+    const dayData=loadDay(-i);
+    const t=calcTotals(dayData);calVals.push(t.cal);
     // 筋トレ実施チェック
     const wkKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const wkData=localStorage.getItem('diet_workout_'+wkKey);
     const wkList=wkData?JSON.parse(wkData):[];
     hasWorkout.push({weight:wkList.some(e=>e.type!=='cardio'),cardio:wkList.some(e=>e.type==='cardio')});
+    // バー色判定：チートデイ/無制限デイは紫、通常日はその日のgoalCalスナップショット基準
+    if(dayData.cheatDay==='unlimited'){
+      colors.push('#7C3AED');
+    }else if(dayData.cheatDay==='cheat'){
+      if(dayData.cheatCalLimit!=null){
+        colors.push(t.cal>dayData.cheatCalLimit?'#E24B4A':'#7C3AED');
+      }else{
+        const g0=dayData.goalCal||goals.cal;
+        colors.push(t.cal>g0*1.2?'#E24B4A':t.cal>g0?'#BA7517':'#1D9E75');
+      }
+    }else{
+      const wkBonus0=wkList.length?calcWorkoutCal(wkList,bw0)*0.5:0;
+      const dayGoal=(dayData.goalCal||goals.cal)+wkBonus0;
+      colors.push(t.cal>dayGoal*1.2?'#E24B4A':t.cal>dayGoal?'#BA7517':'#1D9E75');
+    }
   }
   const h=graphPeriod<=14?200:220;
   document.getElementById('calChartWrap').style.height=h+'px';
@@ -1523,9 +1560,19 @@ function renderCharts(){
   for(let i=graphPeriod-1;i>=0;i--){
     const data=loadDay(-i),t=calcTotals(data);
     if(t.cal===0&&!data.comment&&data.weight==null)continue;
-    const ds=getDateStr(-i),cls=t.cal>goals.cal*1.2?'over':t.cal<goals.cal*0.7&&t.cal>0?'under':'ok';
+    const ds=getDateStr(-i);
+    let cls,mark='';
+    if(data.cheatDay==='unlimited'){
+      cls='ok';mark='🎉';
+    }else if(data.cheatDay==='cheat'){
+      mark='🍕';
+      if(data.cheatCalLimit!=null)cls=t.cal>data.cheatCalLimit?'over':'ok';
+      else cls=t.cal>goals.cal*1.2?'over':t.cal<goals.cal*0.7&&t.cal>0?'under':'ok';
+    }else{
+      cls=t.cal>goals.cal*1.2?'over':t.cal<goals.cal*0.7&&t.cal>0?'under':'ok';
+    }
     const wStr=data.weight!=null?`<span style="font-size:11px;color:var(--text3);margin-left:4px">${data.weight}kg</span>`:'';
-    logHtml+=`<div class="log-row"><span class="log-date">${ds.main}</span><span class="log-cal ${cls}">${t.cal} kcal${wStr}</span>${data.comment?`<span class="log-comment">${data.comment}</span>`:'<span></span>'}</div>`;
+    logHtml+=`<div class="log-row"><span class="log-date">${ds.main}${mark?' '+mark:''}</span><span class="log-cal ${cls}">${t.cal} kcal${wStr}</span>${data.comment?`<span class="log-comment">${data.comment}</span>`:'<span></span>'}</div>`;
   }
   document.getElementById('calLog').innerHTML=logHtml||'<div style="font-size:12px;color:var(--text3);padding:8px 0">此期间暂无记录</div>';
 
@@ -1658,6 +1705,7 @@ function exportMarkdown(){
   const avgC=recorded.length?Math.round(recorded.reduce((s,r)=>s+r.c,0)/recorded.length*10)/10:0;
   const goalAchieved=recorded.filter(r=>r.kcal<=goals.cal).length;
   const over120=recorded.filter(r=>r.kcal>goals.cal*1.2).length;
+  const cheatDaysCount=recorded.filter(r=>r.raw.cheatDay==='cheat'||r.raw.cheatDay==='unlimited').length;
   const wRows=rows.filter(r=>r.weight!=null);
   const firstW=wRows.length?wRows[0].weight:null;
   const lastW=wRows.length?wRows[wRows.length-1].weight:null;
@@ -1689,12 +1737,14 @@ function exportMarkdown(){
 
 请分析以下数据，并提供：①热量管理情况、②PFC比例评估、③体重变化分析、④具体改善建议。
 
+※本应用设有计划性的"欺骗日🍕""无限日🎉"制度。这些是事先获得许可的计划性休息日，并非暴食或失败。在每日记录的"目标"列中，标记为🍕🎉的日期只要未超过其独立上限即视为达成。请以通常日为中心进行趋势分析和改善建议，不要将欺骗日/无限日当作暴食日处理。
+
 ---
 
 ## 用户信息
 `;
   if(prof){
-    md+=`- ${prof.age}歳·${prof.sex==='male'?'男性':'女性'}·身長${prof.height}cm
+    md+=`- ${prof.age}岁·${prof.sex==='male'?'男性':'女性'}·身高${prof.height}cm
 - 当前体重：${prof.weight}kg　目标体重：${prof.goalWeight}kg（${prof.goalMonths}个月达成）
 - 维持热量：${prof.maintenance||'未设定'}kcal　每日摄入目标：${Math.max(1000,prof.dailyTarget||goals.cal)}kcal
 `;
@@ -1708,35 +1758,42 @@ function exportMarkdown(){
 - 热量：${goals.cal}kcal　蛋白质：${goals.protein}g　脂肪：${goals.fat}g　碳水：${goals.carb}g
 
 ## 期间摘要（记录${recorded.length}天）
-- 平均摂取：${avgKcal}kcal（目標${goals.cal}kcal）
+- 平均摄入：${avgKcal}kcal（目标${goals.cal}kcal）
 - 平均PFC：P ${avgP}g / F ${avgF}g / C ${avgC}g
-- 目标达成日：${goalAchieved}天 / ${recorded.length}日（達成率${recorded.length?Math.round(goalAchieved/recorded.length*100):0}%）
-- 目標120%超出日：${over120}日
+- 目标达成日：${goalAchieved}天 / ${recorded.length}日（达成率${recorded.length?Math.round(goalAchieved/recorded.length*100):0}%）
+- 目标120%超出日：${over120}日
+- 欺骗日・无限日行使：${cheatDaysCount}天（计划性休息日，并非失败）
 `;
   if(firstW!=null){
-    md+=`- 体重変化：${firstW}kg → ${lastW}kg（${wChange!=null?(wChange>0?'+':'')+wChange:'不明'}kg）\n`;
+    md+=`- 体重变化：${firstW}kg → ${lastW}kg（${wChange!=null?(wChange>0?'+':'')+wChange:'不明'}kg）\n`;
     if(theorLoss!=null)md+=`- 理论减重：${theorLoss}kg（与实测差异：${wChange!=null?Math.round((Math.abs(wChange)-theorLoss)*100)/100:'未知'}kg）\n`;
   }
 
   md+=`
 ## 每日记录
-| 日期 | kcal | P(g) | F(g) | C(g) | 体重(kg) | 备注 |
-|------|-----:|-----:|-----:|-----:|-------:|------|
+| 日期 | kcal | 目标 | P(g) | F(g) | C(g) | 体重(kg) | 备注 |
+|------|-----:|-----:|-----:|-----:|-----:|-------:|------|
 `;
   rows.forEach(r=>{
     if(r.kcal===0&&r.weight==null)return;
-    const over=r.kcal>goals.cal*1.2?'⚠️':r.kcal>goals.cal?'↑':'';
+    let goalDisp,thresh;
+    if(r.raw.cheatDay==='unlimited'){goalDisp='∞🎉';thresh=Infinity;}
+    else if(r.raw.cheatDay==='cheat'&&r.raw.cheatCalLimit!=null){goalDisp=r.raw.cheatCalLimit+'🍕';thresh=r.raw.cheatCalLimit;}
+    else{const g=r.raw.goalCal||goals.cal;goalDisp=g;thresh=g;}
+    const over=r.kcal>thresh*1.2?'⚠️':r.kcal>thresh?'↑':'';
     const wkData=localStorage.getItem('diet_workout_'+r.date);
     const wkStr=wkData?JSON.parse(wkData).map(e=>e.name).join('·'):'';
-    md+=`| ${r.date} | ${r.kcal}${over} | ${r.p} | ${r.f} | ${r.c} | ${r.weight!=null?r.weight:'-'} | ${wkStr||r.comment||''} |\n`;
+    md+=`| ${r.date} | ${r.kcal}${over} | ${goalDisp} | ${r.p} | ${r.f} | ${r.c} | ${r.weight!=null?r.weight:'-'} | ${wkStr||r.comment||''} |\n`;
   });
 
   md+=`
-## 食事詳細（直近10天）
+## 饮食详情（最近10天）
+※🍕欺骗日・🎉无限日是计划性休息日（并非暴食或失败）
 `;
   const recent=rows.filter(r=>r.kcal>0).slice(-10);
   recent.forEach(r=>{
-    md+=`\n### ${r.date}（${r.kcal}kcal / 体重${r.weight!=null?r.weight+'kg':'未記録'}）\n`;
+    const cheatMark=r.raw.cheatDay==='cheat'?' 🍕':r.raw.cheatDay==='unlimited'?' 🎉':'';
+    md+=`\n### ${r.date}${cheatMark}（${r.kcal}kcal / 体重${r.weight!=null?r.weight+'kg':'未记录'}）\n`;
     const allMeals={...r.raw.meals};
     BASE_MEALS.forEach(meal=>{
       const items=allMeals[meal]||[];
@@ -1751,7 +1808,7 @@ function exportMarkdown(){
         md+=slot.map(i=>`${i.n}（${Math.round(i.k)}kcal）`).join('、')+'\n';
       }
     });
-    // 筋トレ・有酸素記録
+    // 力量训练・有氧记录
     const wkData=localStorage.getItem('diet_workout_'+r.date);
     if(wkData){
       const wkList=JSON.parse(wkData);

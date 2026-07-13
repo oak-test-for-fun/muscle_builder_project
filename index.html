@@ -84,6 +84,12 @@
   /* ---- Macro grid ---- */
   .macro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
   .macro-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 10px 8px;box-shadow:var(--shadow)}
+  .detail-block{border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;margin-bottom:8px;background:var(--card)}
+  .detail-block-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+  .detail-block-title{font-size:12px;font-weight:700;color:var(--text)}
+  .detail-block-kcal{font-size:12px;font-weight:700;color:var(--text)}
+  .detail-block-sub{font-size:10px;color:var(--text3);margin-bottom:6px}
+  .detail-item{font-size:12px;color:var(--text2);display:flex;justify-content:space-between;padding:2px 0}
   .macro-val{font-size:14px;font-weight:700;line-height:1}
   .macro-val.under{color:#166534}.macro-val.over{color:var(--red-dark)}.macro-val.ok{color:var(--text)}
   @media(prefers-color-scheme:dark){.macro-val.under{color:#86EFAC}.macro-val.over{color:#FCA5A5}}
@@ -2501,29 +2507,30 @@ function openDayDetail(offset){
     `<div class="macro-card"><div class="macro-val ok">${t.p}g</div><div class="macro-label">たんぱく質（目標${goals.protein}g）</div></div>`+
     `<div class="macro-card"><div class="macro-val ok">${data.weight!=null?data.weight+'kg':'-'}</div><div class="macro-label">体重</div></div>`+
     `</div>`;
-  BASE_MEALS.forEach(meal=>{
-    const items=data.meals[meal]||[];
-    if(items.length){
-      html+=`<div style="font-size:12px;font-weight:600;color:var(--text2);margin:8px 0 4px">${meal}</div>`;
-      items.forEach(i=>{html+=`<div style="font-size:12px;color:var(--text);display:flex;justify-content:space-between;padding:2px 0"><span>${escapeHtml(i.n)}</span><span style="color:var(--text3)">${Math.round(i.k)}kcal</span></div>`;});
-    }
-  });
-  (data.snacks||[]).forEach((slot,si)=>{
-    if(slot.length){
-      html+=`<div style="font-size:12px;font-weight:600;color:var(--text2);margin:8px 0 4px">間食${si+1}</div>`;
-      slot.forEach(i=>{html+=`<div style="font-size:12px;color:var(--text);display:flex;justify-content:space-between;padding:2px 0"><span>${escapeHtml(i.n)}</span><span style="color:var(--text3)">${Math.round(i.k)}kcal</span></div>`;});
-    }
-  });
+  const mealBlock=(label,items)=>{
+    if(!items.length)return;
+    const sub=items.reduce((a,i)=>({k:a.k+(i.k||0),p:a.p+(i.p||0),f:a.f+(i.f||0),c:a.c+(i.c||0)}),{k:0,p:0,f:0,c:0});
+    html+=`<div class="detail-block">`+
+      `<div class="detail-block-header"><span class="detail-block-title">${label}</span><span class="detail-block-kcal">${Math.round(sub.k)}kcal</span></div>`+
+      `<div class="detail-block-sub">P:${Math.round(sub.p*10)/10}g F:${Math.round(sub.f*10)/10}g C:${Math.round(sub.c*10)/10}g</div>`;
+    items.forEach(i=>{html+=`<div class="detail-item"><span>${escapeHtml(i.n)}</span><span>${Math.round(i.k)}kcal</span></div>`;});
+    html+=`</div>`;
+  };
+  BASE_MEALS.forEach(meal=>mealBlock(meal,data.meals[meal]||[]));
+  (data.snacks||[]).forEach((slot,si)=>mealBlock('間食'+(si+1),slot));
   if(wkData.length){
-    html+=`<div style="font-size:12px;font-weight:600;color:var(--text2);margin:10px 0 4px">🏋️ 運動</div>`;
+    const wkTotalCal=calcWorkoutCal(wkData,loadProfileData()&&loadProfileData().weight?loadProfileData().weight:70);
+    html+=`<div class="detail-block">`+
+      `<div class="detail-block-header"><span class="detail-block-title">🏋️ 運動</span><span class="detail-block-kcal">${wkTotalCal}kcal</span></div>`;
     wkData.forEach(ex=>{
       if(ex.type==='cardio'){
-        html+=`<div style="font-size:12px;color:var(--text);padding:2px 0">${ex.icon||'🏃'} ${escapeHtml(ex.name)}${ex.extraWeight?`（荷重${ex.extraWeight}kg）`:''}　${ex.minutes}分・${ex.cal}kcal</div>`;
+        html+=`<div class="detail-item"><span>${ex.icon||'🏃'} ${escapeHtml(ex.name)}${ex.extraWeight?`（荷重${ex.extraWeight}kg）`:''}</span><span>${ex.minutes}分・${ex.cal}kcal</span></div>`;
       }else{
         const setsStr=(ex.sets||[]).map((s,i)=>isBodyweightEx(ex.name)?`${s.reps}回`:`${s.weight}kg×${s.reps}`).join(' ');
-        html+=`<div style="font-size:12px;color:var(--text);padding:2px 0">${escapeHtml(ex.name)}（${escapeHtml(ex.muscle||'')}）${setsStr}</div>`;
+        html+=`<div class="detail-item"><span>${escapeHtml(ex.name)}（${escapeHtml(ex.muscle||'')}）</span><span>${setsStr}</span></div>`;
       }
     });
+    html+=`</div>`;
   }
   if(data.comment){
     html+=`<div style="font-size:12px;font-weight:600;color:var(--text2);margin:10px 0 4px">メモ</div><div style="font-size:12px;color:var(--text)">${escapeHtml(data.comment)}</div>`;

@@ -108,6 +108,7 @@
   /* ---- Meal blocks ---- */
   .meal-block{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:7px;overflow:hidden;box-shadow:var(--shadow)}
   .meal-header{display:flex;justify-content:space-between;align-items:center;padding:8px 13px;background:var(--bg);border-bottom:0.5px solid var(--border2)}
+  .meal-pfc-sub{font-size:10px;color:var(--text3);padding:0 13px 6px;background:var(--bg);border-bottom:0.5px solid var(--border2)}
   .meal-title{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:0.3px}
   .meal-kcal{font-size:11px;color:var(--text3)}
   .meal-header-right{display:flex;align-items:center;gap:8px}
@@ -351,6 +352,9 @@
           <div id="workoutBonusRemain" style="display:none;font-size:11px;color:var(--text3);margin-top:3px;text-align:right"></div>
         </div>
       </div>
+
+      <!-- 欺骗日操作区（集中在记录标签） -->
+      <div id="cheatActionArea" style="display:none;margin-bottom:8px"></div>
 
       <!-- 营养素网格 -->
       <div class="macro-grid" id="macroGrid"></div>
@@ -615,11 +619,6 @@
         </div>
       </div>
 
-      <!-- 欺骗日使用按钮 -->
-      <div id="cheatUseSection" style="display:none;margin-top:8px">
-        <button class="save-btn" style="background:var(--amber)" onclick="openCheatModal()">🍕 使用欺骗日</button>
-      </div>
-
     </div><!-- /tab-stamp -->
 
   </div>
@@ -764,11 +763,10 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div class="sheet-title" style="margin-bottom:0">🍕 使用欺骗日</div>
+      <div class="sheet-title" style="margin-bottom:0" id="cheatModalTitle">🍕 使用欺骗日</div>
       <button onclick="document.getElementById('cheatOverlay').classList.remove('open')" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:0 4px;line-height:1">×</button>
     </div>
     <div id="cheatModalBody"></div>
-    <button class="add-btn" style="background:var(--amber)" onclick="useCheatDay()">设为今日欺骗日</button>
   </div>
 </div>
 
@@ -1076,8 +1074,27 @@ function render(){
   }else{ab.style.display='none';}
   renderMeals(data);
   renderWorkoutBonus();
+  renderCheatActionArea(data);
 }
 function saveComment(){const data=loadDay(currentDay);data.comment=document.getElementById('commentTA').value;saveDay(currentDay,data);}
+// 欺骗日操作区（记录标签・针对当前查看日期）
+function renderCheatActionArea(data){
+  const area=document.getElementById('cheatActionArea');
+  if(data.cheatDay){
+    const label=data.cheatDay==='unlimited'?'🎉 无限日设置中':`🍕 欺骗日设置中${data.cheatCalLimit!=null?`（上限${data.cheatCalLimit}kcal）`:''}`;
+    area.style.display='block';
+    area.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;gap:8px"><span>${label}</span><button onclick="cancelCheatDay()" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;white-space:nowrap">取消</button></div>`;
+  }else{
+    const rewards=loadRewards();
+    const hasDays=rewards.cheat>0||rewards.bonusCheat>0||rewards.unlimited>0;
+    if(hasDays){
+      area.style.display='block';
+      area.innerHTML=`<button class="save-btn" style="background:var(--amber)" onclick="openCheatModal()">🍕 为此日使用欺骗日</button>`;
+    }else{
+      area.style.display='none';area.innerHTML='';
+    }
+  }
+}
 function renderMeals(data){
   const c=document.getElementById('mealsContainer');c.innerHTML='';
   BASE_MEALS.forEach(meal=>c.appendChild(makeMealBlock(meal,data.meals[meal]||[],false,-1)));
@@ -1085,8 +1102,12 @@ function renderMeals(data){
 }
 function makeMealBlock(label,items,isSnack,snackIdx){
   const mCal=Math.round(items.reduce((s,i)=>s+(i.k||0),0));
+  const mP=Math.round(items.reduce((s,i)=>s+(i.p||0),0)*10)/10;
+  const mF=Math.round(items.reduce((s,i)=>s+(i.f||0),0)*10)/10;
+  const mC=Math.round(items.reduce((s,i)=>s+(i.c||0),0)*10)/10;
   const div=document.createElement('div');div.className='meal-block';
   let h=`<div class="meal-header"><span class="meal-title">${label}</span><div class="meal-header-right"><span class="meal-kcal">${mCal} kcal</span>${isSnack?`<button class="meal-del" data-idx="${snackIdx}" onclick="removeSnack(parseInt(this.dataset.idx))">×</button>`:''}</div></div>`;
+  if(items.length)h+=`<div class="meal-pfc-sub">P:${mP}g F:${mF}g C:${mC}g</div>`;
   items.forEach((item,idx)=>{
     const dk=isSnack?`s${snackIdx}`:label;
     const safeName=escapeHtml(item.n);
@@ -2335,6 +2356,9 @@ function calcCheatCalLimit(){
 function openCheatModal(){
   const rewards=loadRewards();
   const limits=calcCheatCalLimit();
+  const ds=getDateStr(currentDay);
+  const titleEl=document.getElementById('cheatModalTitle');
+  if(titleEl)titleEl.textContent=`🍕 使用欺骗日（${ds.main}）`;
   let html='';
   if(rewards.cheat===0&&rewards.bonusCheat===0&&rewards.unlimited===0){
     html='<div style="font-size:13px;color:var(--text3);text-align:center;padding:16px">还未获得欺骗日。<br>目标连续6天达成！</div>';
@@ -2342,34 +2366,54 @@ function openCheatModal(){
     document.getElementById('cheatOverlay').classList.add('open');
     return;
   }
-  html='<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">今日热量目标临时提高。</div>';
-  if(rewards.cheat>0)html+=`<div class="result-row"><span class="result-label">🍕 欺骗日残数</span><span class="result-val">${rewards.cheat}日</span></div>`;
-  if(rewards.bonusCheat>0)html+=`<div class="result-row"><span class="result-label">🌟 奖励欺骗日残数</span><span class="result-val">${rewards.bonusCheat}日</span></div>`;
-  if(rewards.unlimited>0)html+=`<div class="result-row"><span class="result-label">🎉 无限日残数</span><span class="result-val green">${rewards.unlimited}日</span></div>`;
-  if(limits)html+=`<div class="result-row"><span class="result-label">欺骗日上限</span><span class="result-val" style="color:var(--amber)">${limits.normal.toLocaleString()} kcal</span></div>`;
-  if(limits&&rewards.bonusCheat>0)html+=`<div class="result-row"><span class="result-label">奖励上限</span><span class="result-val" style="color:var(--amber)">${limits.bonus.toLocaleString()} kcal</span></div>`;
+  html=`<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">将对当前查看日期（${ds.main}）应用欺骗日。请选择种类。</div>`;
+  if(rewards.cheat>0&&limits)html+=`<button class="add-btn" style="background:var(--amber);margin-bottom:8px" onclick="useCheatDay('cheat')">🍕 普通欺骗日（剩余${rewards.cheat}日・上限${limits.normal.toLocaleString()}kcal）</button>`;
+  if(rewards.bonusCheat>0&&limits)html+=`<button class="add-btn" style="background:var(--amber);margin-bottom:8px" onclick="useCheatDay('bonusCheat')">🌟 奖励欺骗日（剩余${rewards.bonusCheat}日・上限${limits.bonus.toLocaleString()}kcal）</button>`;
+  if(rewards.unlimited>0)html+=`<button class="add-btn" style="background:var(--green);margin-bottom:8px" onclick="useCheatDay('unlimited')">🎉 无限日（剩余${rewards.unlimited}日）</button>`;
   document.getElementById('cheatModalBody').innerHTML=html;
   document.getElementById('cheatOverlay').classList.add('open');
 }
 
-function useCheatDay(){
+function useCheatDay(type){
   const rewards=loadRewards();
   const limits=calcCheatCalLimit();
-  const today=loadDay(0);
-  if(rewards.unlimited>0){
-    today.cheatDay='unlimited';rewards.unlimited--;
-  }else if(rewards.bonusCheat>0&&limits){
-    today.cheatDay='cheat';today.cheatCalLimit=limits.bonus;rewards.bonusCheat--;
-  }else if(rewards.cheat>0&&limits){
-    today.cheatDay='cheat';today.cheatCalLimit=limits.normal;rewards.cheat--;
-  }else{
-    alert('没有剩余欺骗日');
+  const data=loadDay(currentDay);
+  if(data.cheatDay){
+    alert('此日已设置过欺骗日');
     document.getElementById('cheatOverlay').classList.remove('open');
     return;
   }
-  saveDay(0,today);saveRewards(rewards);
+  if(type==='unlimited'){
+    if(rewards.unlimited<=0){alert('没有剩余无限日');return;}
+    data.cheatDay='unlimited';data.cheatRewardType='unlimited';rewards.unlimited--;
+  }else if(type==='bonusCheat'){
+    if(rewards.bonusCheat<=0||!limits){alert('没有剩余奖励欺骗日');return;}
+    data.cheatDay='cheat';data.cheatCalLimit=limits.bonus;data.cheatRewardType='bonusCheat';rewards.bonusCheat--;
+  }else if(type==='cheat'){
+    if(rewards.cheat<=0||!limits){alert('没有剩余欺骗日');return;}
+    data.cheatDay='cheat';data.cheatCalLimit=limits.normal;data.cheatRewardType='cheat';rewards.cheat--;
+  }else{
+    return;
+  }
+  saveDay(currentDay,data);saveRewards(rewards);
   document.getElementById('cheatOverlay').classList.remove('open');
-  render();renderStamp();
+  render();
+}
+
+function cancelCheatDay(){
+  const data=loadDay(currentDay);
+  if(!data.cheatDay)return;
+  if(!confirm('要取消此日的欺骗日设置吗？'))return;
+  if(data.cheatRewardType){
+    const rewards=loadRewards();
+    if(data.cheatRewardType==='unlimited')rewards.unlimited++;
+    else if(data.cheatRewardType==='bonusCheat')rewards.bonusCheat++;
+    else if(data.cheatRewardType==='cheat')rewards.cheat++;
+    saveRewards(rewards);
+  }
+  delete data.cheatDay;delete data.cheatCalLimit;delete data.cheatRewardType;
+  saveDay(currentDay,data);
+  render();
 }
 
 function renderStamp(){
@@ -2398,11 +2442,6 @@ function renderStamp(){
     if(limits)cheatHtml+=`<div class="streak-row"><span class="streak-label">欺骗日上限</span><span class="streak-val">${limits.normal.toLocaleString()} kcal</span></div>`;
   }
   document.getElementById('cheatCard').innerHTML=cheatHtml;
-  const hasDays=rewards.cheat>0||rewards.bonusCheat>0||rewards.unlimited>0;
-  const todayRaw=localStorage.getItem('diet_day_'+getKey(0));
-  const todayData=safeParse(todayRaw,null);
-  const alreadyCheat=todayData&&(todayData.cheatDay==='cheat'||todayData.cheatDay==='unlimited');
-  document.getElementById('cheatUseSection').style.display=(hasDays&&!alreadyCheat)?'block':'none';
   renderStampCalendar();
 }
 

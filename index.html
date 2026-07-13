@@ -1709,7 +1709,7 @@ function buildExportData(){
     const totals=calcTotals(raw);
     return{
       date:dateKey,
-      summary:{total_kcal:totals.cal,total_protein_g:totals.p,total_fat_g:totals.f,total_carb_g:totals.c,weight_kg:raw.weight||null,goal_kcal:goals.cal,kcal_vs_goal_pct:goals.cal>0?Math.round(totals.cal/goals.cal*100):null,over_120pct:totals.cal>goals.cal*1.2,comment:raw.comment||null},
+      summary:{total_kcal:totals.cal,total_protein_g:totals.p,total_fat_g:totals.f,total_carb_g:totals.c,weight_kg:raw.weight||null,goal_kcal:goals.cal,kcal_vs_goal_pct:goals.cal>0?Math.round(totals.cal/goals.cal*100):null,over_120pct:totals.cal>goals.cal*1.2,comment:raw.comment||null,goal_kcal_snapshot:raw.goalCal!=null?raw.goalCal:null,cheat_day:raw.cheatDay||null,cheat_cal_limit:raw.cheatCalLimit!=null?raw.cheatCalLimit:null},
       meals:allItems,
     };
   });
@@ -1964,6 +1964,12 @@ function importData(event){
           const dateKey=rec.date;
           // rebuild raw day from meals array
           const raw={meals:{朝食:[],昼食:[],夕食:[]},snacks:[],comment:rec.summary&&rec.summary.comment?rec.summary.comment:'',weight:rec.summary&&rec.summary.weight_kg!=null?rec.summary.weight_kg:null};
+          // チートデイフラグ・goalCalスナップショットの復元（バックアップに含まれていれば）
+          if(rec.summary){
+            if(rec.summary.goal_kcal_snapshot!=null)raw.goalCal=rec.summary.goal_kcal_snapshot;
+            if(rec.summary.cheat_day)raw.cheatDay=rec.summary.cheat_day;
+            if(rec.summary.cheat_cal_limit!=null)raw.cheatCalLimit=rec.summary.cheat_cal_limit;
+          }
           (rec.meals||[]).forEach(item=>{
             const entry={n:item.name,k:item.kcal||0,p:item.protein_g||0,f:item.fat_g||0,c:item.carb_g||0};
             if(item.meal==='朝食'||item.meal==='昼食'||item.meal==='夕食'){

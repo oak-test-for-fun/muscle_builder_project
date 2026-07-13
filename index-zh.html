@@ -760,6 +760,7 @@
       <button onclick="closeDayDetail()" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:0 4px;line-height:1">×</button>
     </div>
     <div id="daydetailBody"></div>
+    <button class="add-btn" style="margin-top:10px" onclick="jumpToRecordDay()">在记录标签中打开此日</button>
   </div>
 </div>
 
@@ -1506,11 +1507,17 @@ function renderWeekSummary(){
       `<div style="padding:8px;background:var(--card-bg,var(--bg2));border:0.5px solid var(--border);border-radius:var(--radius-xs)">`+
       `<div style="font-size:9px;color:var(--text3);margin-bottom:4px">🎯 习惯管理（目标比）</div>`+
       `<div style="font-size:10px;color:var(--text3);margin-bottom:4px">${w.totalCal.toLocaleString()} / ${w.totalDynamicGoal.toLocaleString()} kcal</div>`+
+      `<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:6px">`+
+      `<div style="height:100%;width:${w.totalDynamicGoal>0?Math.min(100,Math.round(w.totalCal/w.totalDynamicGoal*100)):0}%;background:${w.balanceA>=0?'var(--green)':'var(--red)'};border-radius:3px"></div>`+
+      `</div>`+
       balChip(w.balanceA,'余量','超出')+
       `</div>`+
       `<div style="padding:8px;background:var(--card-bg,var(--bg2));border:0.5px solid var(--border);border-radius:var(--radius-xs)">`+
       `<div style="font-size:9px;color:var(--text3);margin-bottom:4px">⚖️ 体脂肪收支（实态）</div>`+
       `<div style="font-size:10px;color:var(--text3);margin-bottom:4px">${w.totalCal.toLocaleString()} / ${w.weekMaintenance!==null?w.weekMaintenance.toLocaleString():'--'} kcal</div>`+
+      `<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:6px">`+
+      `<div style="height:100%;width:${w.weekMaintenance?Math.min(100,Math.round(w.totalCal/w.weekMaintenance*100)):0}%;background:${w.balanceB===null?'var(--text3)':w.balanceB>=0?'var(--green)':'var(--red)'};border-radius:3px"></div>`+
+      `</div>`+
       balChip(w.balanceB,'脂肪减','脂肪增')+
       `</div></div></div>`;
   });
@@ -2364,7 +2371,13 @@ function calcCheatCalLimit(){
     if(s){const t=calcTotals(safeParse(s,{meals:{},snacks:[]}));if(t.cal>0)cumDeficit+=prof.maintenance-t.cal;}
   }
   const cap=Math.round(prof.maintenance*1.5);
-  return{normal:Math.min(cap,Math.round(prof.maintenance+cumDeficit*0.2)),bonus:Math.min(cap,Math.round(prof.maintenance+cumDeficit*0.25))};
+  const normalRaw=Math.round(prof.maintenance+cumDeficit*0.2);
+  const bonusRaw=Math.round(prof.maintenance+cumDeficit*0.25);
+  return{
+    normal:Math.min(cap,normalRaw),bonus:Math.min(cap,bonusRaw),
+    maintenance:prof.maintenance,cumDeficit:Math.round(cumDeficit),cap,
+    normalCapped:normalRaw>cap,bonusCapped:bonusRaw>cap
+  };
 }
 
 function openCheatModal(){
@@ -2381,6 +2394,9 @@ function openCheatModal(){
     return;
   }
   html=`<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">将对当前查看日期（${ds.main}）应用欺骗日。请选择种类。</div>`;
+  if(limits){
+    html+=`<div style="font-size:11px;color:var(--text3);background:var(--bg);border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.6">📊 上限明细：维持热量${limits.maintenance.toLocaleString()}kcal ＋ 累积${limits.cumDeficit>=0?'赤字':'盈余'}${Math.abs(limits.cumDeficit).toLocaleString()}kcal×20%（普通）/25%（奖励）${(limits.normalCapped||limits.bonusCapped)?`<br>※为了健康，已按上限${limits.cap.toLocaleString()}kcal（维持热量×1.5）封顶`:''}</div>`;
+  }
   if(rewards.cheat>0&&limits)html+=`<button class="add-btn" style="background:var(--amber);margin-bottom:8px" onclick="useCheatDay('cheat')">🍕 普通欺骗日（剩余${rewards.cheat}日・上限${limits.normal.toLocaleString()}kcal）</button>`;
   if(rewards.bonusCheat>0&&limits)html+=`<button class="add-btn" style="background:var(--amber);margin-bottom:8px" onclick="useCheatDay('bonusCheat')">🌟 奖励欺骗日（剩余${rewards.bonusCheat}日・上限${limits.bonus.toLocaleString()}kcal）</button>`;
   if(rewards.unlimited>0)html+=`<button class="add-btn" style="background:var(--green);margin-bottom:8px" onclick="useCheatDay('unlimited')">🎉 无限日（剩余${rewards.unlimited}日）</button>`;
@@ -2460,7 +2476,9 @@ function renderStamp(){
 }
 
 // 只读日别记录查看（图表点击・日历点击共用）
+let _dayDetailOffset=null;
 function openDayDetail(offset){
+  _dayDetailOffset=offset;
   const data=loadDay(offset);
   const ds=getDateStr(offset);
   const t=calcTotals(data);
@@ -2516,6 +2534,13 @@ function openDayDetail(offset){
   document.getElementById('daydetailOverlay').classList.add('open');
 }
 function closeDayDetail(){document.getElementById('daydetailOverlay').classList.remove('open');}
+function jumpToRecordDay(){
+  if(_dayDetailOffset==null)return;
+  currentDay=_dayDetailOffset;
+  closeDayDetail();
+  render();
+  switchTab('diary',document.querySelectorAll('.tab')[0]);
+}
 function openDayDetailByDate(y,m,d){
   const target=new Date(y,m,d);target.setHours(0,0,0,0);
   const today=new Date();today.setHours(0,0,0,0);

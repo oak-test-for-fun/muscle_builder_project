@@ -2643,19 +2643,24 @@ function renderWorkoutModalExercises(){
 function loadWorkoutDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_workout_'+k);return s?JSON.parse(s):[];}
 function saveWorkoutDay(offset,data){localStorage.setItem('diet_workout_'+getKey(offset),JSON.stringify(data));}
 
+// 部位系数（腿1.4／背・胸1.2／肩・手臂0.8／核心0.7）
+const MUSCLE_COEF={'腿':1.4,'背':1.2,'胸':1.2,'肩':0.8,'手臂':0.8,'核心':0.7};
 function calcWorkoutCal(exercises,bw){
   let total=0;
   exercises.forEach(ex=>{
     if(ex.type==='cardio'){total+=ex.cal||0;return;}
     const isBW=isBodyweightEx(ex.name);
     const isUni=ex.unilateral||false;
+    const coef=MUSCLE_COEF[ex.muscle]!=null?MUSCLE_COEF[ex.muscle]:1;
+    let exTotal=0;
     ex.sets.forEach(set=>{
-      if(isBW)total+=(set.reps||0)*(bw||70)*0.03;
+      if(isBW)exTotal+=(set.reps||0)*(bw||70)*0.03;
       else{
         const effectiveWeight=isUni?(set.weight||0)*2:(set.weight||0);
-        total+=effectiveWeight*(set.reps||0)*0.05;
+        exTotal+=effectiveWeight*(set.reps||0)*0.05;
       }
     });
+    total+=exTotal*coef;
   });
   return Math.round(total);
 }
@@ -2777,8 +2782,9 @@ function updateSetCalHint(){
   const weight=+document.getElementById('wk_weight').value||0;
   const prof=loadProfileData();const bw=prof&&prof.weight?prof.weight:70;
   const effectiveWeight=isUni?weight*2:weight;
-  const pendingCal=calcWorkoutCal([{name:selExercise,unilateral:isUni,sets:pendingSets}],bw);
-  const currentCal=reps>0?(isBW?Math.round(reps*bw*0.03):Math.round(effectiveWeight*reps*0.05)):0;
+  const coef=MUSCLE_COEF[selMuscle]!=null?MUSCLE_COEF[selMuscle]:1;
+  const pendingCal=calcWorkoutCal([{name:selExercise,muscle:selMuscle,unilateral:isUni,sets:pendingSets}],bw);
+  const currentCal=reps>0?Math.round((isBW?reps*bw*0.03:effectiveWeight*reps*0.05)*coef):0;
   const hint=document.getElementById('workoutCalHint');
   const parts=[];
   if(pendingSets.length>0)parts.push(`${pendingSets.length}组記録済（${pendingCal}kcal）`);

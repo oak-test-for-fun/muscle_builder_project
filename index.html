@@ -894,14 +894,24 @@ const BASE_MEALS=['朝食','昼食','夕食'];
 let currentDay=0, selMealKey='朝食', graphPeriod=7, calChartInst=null, pfcChartInst=null, weightChartInst=null, unitMode='g', cUnitMode='g';
 
 /* ---- storage helpers ---- */
-function loadGoals(){const s=localStorage.getItem('diet_goals');return s?JSON.parse(s):{cal:1800,protein:80,fat:50,carb:200};}
+// 破損データ対策：JSON.parse失敗時はfallbackを返し、白画面化を防ぐ
+function safeParse(str,fallback){
+  if(str==null)return fallback;
+  try{return JSON.parse(str);}catch(e){console.warn('[diet] JSON parse failed, using fallback',e);return fallback;}
+}
+// XSS対策：innerHTMLに展開するユーザー入力文字列をエスケープ
+function escapeHtml(str){
+  if(str==null)return '';
+  return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function loadGoals(){const s=localStorage.getItem('diet_goals');return safeParse(s,{cal:1800,protein:80,fat:50,carb:200});}
 function saveGoals(){
   const g={cal:+document.getElementById('g_cal').value||1800,protein:+document.getElementById('g_protein').value||80,fat:+document.getElementById('g_fat').value||50,carb:+document.getElementById('g_carb').value||200};
   localStorage.setItem('diet_goals',JSON.stringify(g));render();switchTab('diary',document.querySelectorAll('.tab')[0]);
 }
-function loadCustomFoods(){const s=localStorage.getItem('diet_custom_foods');return s?JSON.parse(s):[];}
+function loadCustomFoods(){const s=localStorage.getItem('diet_custom_foods');return safeParse(s,[]);}
 function saveCustomFoods(arr){localStorage.setItem('diet_custom_foods',JSON.stringify(arr));}
-function loadBuiltinOverrides(){const s=localStorage.getItem('diet_builtin_overrides');return s?JSON.parse(s):{};}
+function loadBuiltinOverrides(){const s=localStorage.getItem('diet_builtin_overrides');return safeParse(s,{});}
 function saveBuiltinOverrides(obj){localStorage.setItem('diet_builtin_overrides',JSON.stringify(obj));}
 function getBuiltin(){const ov=loadBuiltinOverrides();return BUILTIN.map((f,i)=>ov[i]?{...f,...ov[i]}:f);}
 function getKey(offset){const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -910,7 +920,7 @@ function getDateStr(offset){
   const w=['日','月','火','水','木','金','土'][d.getDay()];
   return{main:offset===0?'今日':offset===-1?'昨日':`${d.getMonth()+1}月${d.getDate()}日`,sub:`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}（${w}）`};
 }
-function loadDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_day_'+k);if(s)return JSON.parse(s);return{meals:{朝食:[],昼食:[],夕食:[]},snacks:[],comment:'',weight:null};}
+function loadDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_day_'+k);return safeParse(s,{meals:{朝食:[],昼食:[],夕食:[]},snacks:[],comment:'',weight:null});}
 function saveDay(offset,data){
   // 目標カロリーのスナップショット：今日は常に現在値で更新、過去日は既存値を保持
   const goals=loadGoals();
@@ -1091,7 +1101,7 @@ function render(){
   const ab=document.getElementById('alertBox');
   if(t.cal>goals.cal*1.2){
     ab.style.display='block';
-    ab.innerHTML=`<div class="alert"><div class="alert-title">⚠️ 目標カロリーの120%を超えています</div><div class="alert-text">食べ過ぎた理由や気づきをメモしましょう</div><textarea rows="2" placeholder="例：外食で食べ過ぎた..." id="commentTA">${data.comment||''}</textarea><button class="alert-save" onclick="saveComment()">メモを保存</button></div>`;
+    ab.innerHTML=`<div class="alert"><div class="alert-title">⚠️ 目標カロリーの120%を超えています</div><div class="alert-text">食べ過ぎた理由や気づきをメモしましょう</div><textarea rows="2" placeholder="例：外食で食べ過ぎた..." id="commentTA">${escapeHtml(data.comment||'')}</textarea><button class="alert-save" onclick="saveComment()">メモを保存</button></div>`;
   }else{ab.style.display='none';}
   renderMeals(data);
   renderWorkoutBonus();
@@ -1108,7 +1118,7 @@ function makeMealBlock(label,items,isSnack,snackIdx){
   let h=`<div class="meal-header"><span class="meal-title">${label}</span><div class="meal-header-right"><span class="meal-kcal">${mCal} kcal</span>${isSnack?`<button class="meal-del" data-idx="${snackIdx}" onclick="removeSnack(parseInt(this.dataset.idx))">×</button>`:''}</div></div>`;
   items.forEach((item,idx)=>{
     const dk=isSnack?`s${snackIdx}`:label;
-    const safeName=item.n.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safeName=escapeHtml(item.n);
     h+=`<div class="food-row"><div><div class="food-name">${safeName}</div><div class="food-macros">P:${item.p}g F:${item.f}g C:${item.c}g</div></div><div class="food-right"><span class="food-kcal">${Math.round(item.k)} kcal</span><button class="food-del" data-key="${dk}" data-idx="${idx}" onclick="delFood(this.dataset.key,parseInt(this.dataset.idx))">×</button></div></div>`;
   });
   const mealKey=isSnack?'snack_'+snackIdx:label;
@@ -1218,8 +1228,8 @@ function renderQuickTags(){
   const customs=loadCustomFoods();
   const builtins=getBuiltin();
   document.getElementById('quickWrap').innerHTML=
-    builtins.map((q,i)=>`<button class="qtag" onclick="fillQ(${i},false)">${q.n}</button>`).join('')+
-    customs.map((q,i)=>`<button class="qtag custom" onclick="fillQ(${i},true)">${q.n}</button>`).join('');
+    builtins.map((q,i)=>`<button class="qtag" onclick="fillQ(${i},false)">${escapeHtml(q.n)}</button>`).join('')+
+    customs.map((q,i)=>`<button class="qtag custom" onclick="fillQ(${i},true)">${escapeHtml(q.n)}</button>`).join('');
 }
 function fillQ(i,isCustom){
   const q=isCustom?loadCustomFoods()[i]:getBuiltin()[i];
@@ -1301,7 +1311,7 @@ function renderCustomFoodList(){
   if(!customs.length){el.innerHTML='<div class="empty-state">まだ食品が登録されていません</div>';return;}
   el.innerHTML=customs.map((f,i)=>{
     const unitLabel=f.unitMode==='count'?`1${f.unitName||'個'}あたり`:'100gあたり';
-    return`<div class="custom-food-row"><div><div class="custom-food-name">${f.n}</div><div class="custom-food-detail">${f.k}kcal / P:${f.p}g F:${f.f}g C:${f.c}g（${unitLabel}）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openCustomFoodModal(${i})" style="color:var(--blue)">編集</button><button class="icon-btn" onclick="deleteCustomFood(${i})" style="color:var(--red)">削除</button></div></div>`;
+    return`<div class="custom-food-row"><div><div class="custom-food-name">${escapeHtml(f.n)}</div><div class="custom-food-detail">${f.k}kcal / P:${f.p}g F:${f.f}g C:${f.c}g（${unitLabel}）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openCustomFoodModal(${i})" style="color:var(--blue)">編集</button><button class="icon-btn" onclick="deleteCustomFood(${i})" style="color:var(--red)">削除</button></div></div>`;
   }).join('');
 }
 function renderBuiltinFoodList(){
@@ -1430,11 +1440,11 @@ function renderWeekSummary(){
       if(dd>today)break;
       const key=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
       const s=localStorage.getItem('diet_day_'+key);
-      const dayData=s?JSON.parse(s):{meals:{朝食:[],昼食:[],夕食:[]},snacks:[],comment:'',weight:null};
+      const dayData=safeParse(s,{meals:{朝食:[],昼食:[],夕食:[]},snacks:[],comment:'',weight:null});
       const t=calcTotals(dayData);
       // 筋トレ・有酸素ボーナス
       const wkS=localStorage.getItem('diet_workout_'+key);
-      const wkBonus=wkS?Math.round(calcWorkoutCal(JSON.parse(wkS),bw)*0.5):0;
+      const wkBonus=Math.round(calcWorkoutCal(safeParse(wkS,[]),bw)*0.5);
       // その日のgoalCalスナップショットを優先（目標変更の影響を受けない）
       const dayGoal=dayData.goalCal||dailyGoal;
       // チートデイ／無制限デイは上限を「許可された目標」としてA指標に算入
@@ -1543,7 +1553,7 @@ function renderCharts(){
     // 運動実施チェック
     const wkKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const wkData=localStorage.getItem('diet_workout_'+wkKey);
-    const wkList=wkData?JSON.parse(wkData):[];
+    const wkList=safeParse(wkData,[]);
     hasWorkout.push({weight:wkList.some(e=>e.type!=='cardio'),cardio:wkList.some(e=>e.type==='cardio')});
     // バー色判定：チートデイ/無制限デイは紫、通常日はその日のgoalCalスナップショット基準
     if(dayData.cheatDay==='unlimited'){
@@ -1630,7 +1640,7 @@ function renderCharts(){
       cls=t.cal>goals.cal*1.2?'over':t.cal<goals.cal*0.7&&t.cal>0?'under':'ok';
     }
     const wStr=data.weight!=null?`<span style="font-size:11px;color:var(--text3);margin-left:4px">${data.weight}kg</span>`:'';
-    logHtml+=`<div class="log-row"><span class="log-date">${ds.main}${mark?' '+mark:''}</span><span class="log-cal ${cls}">${t.cal} kcal${wStr}</span>${data.comment?`<span class="log-comment">${data.comment}</span>`:'<span></span>'}</div>`;
+    logHtml+=`<div class="log-row"><span class="log-date">${ds.main}${mark?' '+mark:''}</span><span class="log-cal ${cls}">${t.cal} kcal${wStr}</span>${data.comment?`<span class="log-comment">${escapeHtml(data.comment)}</span>`:'<span></span>'}</div>`;
   }
   document.getElementById('calLog').innerHTML=logHtml||'<div style="font-size:12px;color:var(--text3);padding:8px 0">この期間に記録はありません</div>';
 
@@ -1653,7 +1663,7 @@ function renderCharts(){
           const dd=new Date(startDate);dd.setDate(dd.getDate()+j);
           const k=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
           const s=localStorage.getItem('diet_day_'+k);
-          if(s){const t=calcTotals(JSON.parse(s));if(t.cal>0)cumDeficit+=prof.maintenance-t.cal;}
+          if(s){const t=calcTotals(safeParse(s,{meals:{},snacks:[]}));if(t.cal>0)cumDeficit+=prof.maintenance-t.cal;}
         }
         wTheory.push(Math.round((prof.weight-cumDeficit/7200)*10)/10);
       }else{wTheory.push(null);}
@@ -1692,7 +1702,7 @@ function buildExportData(){
   }
   dayKeys.sort();
   const dailyRecords=dayKeys.map(dateKey=>{
-    const raw=JSON.parse(localStorage.getItem('diet_day_'+dateKey));
+    const raw=safeParse(localStorage.getItem('diet_day_'+dateKey),{meals:{},snacks:[],comment:'',weight:null});
     const allItems=[];
     BASE_MEALS.forEach(meal=>{(raw.meals[meal]||[]).forEach(item=>allItems.push({meal,name:item.n,kcal:item.k,protein_g:item.p,fat_g:item.f,carb_g:item.c}));});
     (raw.snacks||[]).forEach((slot,si)=>slot.forEach(item=>allItems.push({meal:'間食'+(si+1),name:item.n,kcal:item.k,protein_g:item.p,fat_g:item.f,carb_g:item.c})));
@@ -1719,7 +1729,7 @@ function buildExportData(){
     daily_records:dailyRecords,
     workout_records:dayKeys.map(dateKey=>{
       const s=localStorage.getItem('diet_workout_'+dateKey);
-      return s?{date:dateKey,exercises:JSON.parse(s)}:null;
+      return s?{date:dateKey,exercises:safeParse(s,[])}:null;
     }).filter(Boolean),
   };
 }
@@ -1750,7 +1760,7 @@ function exportMarkdown(){
   if(!dayKeys.length){alert('記録がありません');return;}
 
   const rows=dayKeys.map(dateKey=>{
-    const raw=JSON.parse(localStorage.getItem('diet_day_'+dateKey));
+    const raw=safeParse(localStorage.getItem('diet_day_'+dateKey),{meals:{},snacks:[],comment:'',weight:null});
     const t=calcTotals(raw);
     return{date:dateKey,kcal:t.cal,p:t.p,f:t.f,c:t.c,weight:raw.weight||null,comment:raw.comment||null,raw};
   });
@@ -1840,7 +1850,7 @@ function exportMarkdown(){
     else{const g=r.raw.goalCal||goals.cal;goalDisp=g;thresh=g;}
     const over=r.kcal>thresh*1.2?'⚠️':r.kcal>thresh?'↑':'';
     const wkData=localStorage.getItem('diet_workout_'+r.date);
-    const wkStr=wkData?JSON.parse(wkData).map(e=>e.name).join('・'):'';
+    const wkStr=wkData?safeParse(wkData,[]).map(e=>e.name).join('・'):'';
     md+=`| ${r.date} | ${r.kcal}${over} | ${goalDisp} | ${r.p} | ${r.f} | ${r.c} | ${r.weight!=null?r.weight:'-'} | ${wkStr||r.comment||''} |\n`;
   });
 
@@ -1869,7 +1879,7 @@ function exportMarkdown(){
     // 筋トレ・有酸素記録
     const wkData=localStorage.getItem('diet_workout_'+r.date);
     if(wkData){
-      const wkList=JSON.parse(wkData);
+      const wkList=safeParse(wkData,[]);
       const weightEx=wkList.filter(e=>e.type!=='cardio');
       const cardioEx=wkList.filter(e=>e.type==='cardio');
       if(weightEx.length){
@@ -1927,7 +1937,7 @@ function importData(event){
   const reader=new FileReader();
   reader.onload=function(e){
     try{
-      const data=JSON.parse(e.target.result);
+      let data;try{data=JSON.parse(e.target.result);}catch(err){alert('ファイルの読み込みに失敗しました。JSON形式が正しいか確認してください。');return;}
       // goals
       if(data.goals){
         localStorage.setItem('diet_goals',JSON.stringify({cal:data.goals.daily_kcal||1800,protein:data.goals.protein_g||80,fat:data.goals.fat_g||50,carb:data.goals.carb_g||200}));
@@ -1997,7 +2007,7 @@ function resetData(){
 }
 
 /* ---- profile & calorie target ---- */
-function loadProfileData(){const s=localStorage.getItem('diet_profile');return s?JSON.parse(s):null;}
+function loadProfileData(){const s=localStorage.getItem('diet_profile');return safeParse(s,null);}
 function saveProfileData(p){localStorage.setItem('diet_profile',JSON.stringify(p));}
 
 function toggleSection(sec){
@@ -2155,7 +2165,7 @@ function renderProgress(){
     const d=new Date(startDate);d.setDate(d.getDate()+i);
     const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const s=localStorage.getItem('diet_day_'+key);
-    if(s){const t=calcTotals(JSON.parse(s));if(t.cal>0){actualTotal+=t.cal;recordedDays++;}}
+    if(s){const t=calcTotals(safeParse(s,{meals:{},snacks:[]}));if(t.cal>0){actualTotal+=t.cal;recordedDays++;}}
   }
   // 記録のある日だけで赤字を計算（未記録日を除外）
   const deficitSoFar=recordedDays>0?p.maintenance*recordedDays-actualTotal:0;
@@ -2180,7 +2190,7 @@ function renderProgress(){
     const d=new Date(startDate);d.setDate(d.getDate()+i);
     const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const s=localStorage.getItem('diet_day_'+k);
-    if(s){const day=JSON.parse(s);if(day.weight!=null){if(firstWeight===null)firstWeight=day.weight;latestWeight=day.weight;}}
+    if(s){const day=safeParse(s,null);if(day&&day.weight!=null){if(firstWeight===null)firstWeight=day.weight;latestWeight=day.weight;}}
   }
   if(firstWeight!==null&&latestWeight!==null&&firstWeight!==latestWeight){
     actualWeightLoss=firstWeight-latestWeight;
@@ -2197,7 +2207,7 @@ function renderProgress(){
         if(d>today)break;
         const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         const s=localStorage.getItem('diet_day_'+k);
-        if(s){const day=JSON.parse(s);if(day.weight!=null){sum+=day.weight;cnt++;}}
+        if(s){const day=safeParse(s,null);if(day&&day.weight!=null){sum+=day.weight;cnt++;}}
       }
       return cnt>0?sum/cnt:null;
     };
@@ -2270,7 +2280,8 @@ function clearStatusCache(){_statusCache={goals:null,prof:null};}
 function getDayStatusByKey(dateKey){
   const s=localStorage.getItem('diet_day_'+dateKey);
   if(!s)return 'none';
-  const data=JSON.parse(s);
+  const data=safeParse(s,null);
+  if(!data)return 'none';
   const t=calcTotals(data);
   if(t.cal===0)return 'none';
   // キャッシュからgoals/profを取得
@@ -2294,7 +2305,7 @@ function getDayStatusByKey(dateKey){
   // 通常日
   const bw=prof&&prof.weight?prof.weight:70;
   const wkS=localStorage.getItem('diet_workout_'+dateKey);
-  const wkBonus=wkS?calcWorkoutCal(JSON.parse(wkS),bw)*0.5:0;
+  const wkBonus=wkS?calcWorkoutCal(safeParse(wkS,[]),bw)*0.5:0;
   const effectiveGoal=effectiveCal+wkBonus;
   const calOk=t.cal<=effectiveGoal;
   if(!calOk)return 'failed';
@@ -2321,7 +2332,7 @@ function calcStreakCore(skipToday){
 }
 function calcStreak(){return calcStreakCore(false);}
 
-function loadRewards(){return JSON.parse(localStorage.getItem('diet_rewards')||'{"cheat":0,"unlimited":0,"bonusCheat":0}');}
+function loadRewards(){return safeParse(localStorage.getItem('diet_rewards'),{cheat:0,unlimited:0,bonusCheat:0});}
 function saveRewards(r){localStorage.setItem('diet_rewards',JSON.stringify(r));}
 
 function checkAndGrantRewards(){
@@ -2362,7 +2373,7 @@ function calcCheatCalLimit(){
     const d=new Date(startDate);d.setDate(d.getDate()+i);
     const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const s=localStorage.getItem('diet_day_'+k);
-    if(s){const t=calcTotals(JSON.parse(s));if(t.cal>0)cumDeficit+=prof.maintenance-t.cal;}
+    if(s){const t=calcTotals(safeParse(s,{meals:{},snacks:[]}));if(t.cal>0)cumDeficit+=prof.maintenance-t.cal;}
   }
   // 上限キャップ：メンテナンス×1.5（累積赤字が育ちすぎても健康的な範囲に抑える）
   const cap=Math.round(prof.maintenance*1.5);
@@ -2437,7 +2448,7 @@ function renderStamp(){
   document.getElementById('cheatCard').innerHTML=cheatHtml;
   const hasDays=rewards.cheat>0||rewards.bonusCheat>0||rewards.unlimited>0;
   const todayRaw=localStorage.getItem('diet_day_'+getKey(0));
-  const todayData=todayRaw?JSON.parse(todayRaw):null;
+  const todayData=safeParse(todayRaw,null);
   const alreadyCheat=todayData&&(todayData.cheatDay==='cheat'||todayData.cheatDay==='unlimited');
   document.getElementById('cheatUseSection').style.display=(hasDays&&!alreadyCheat)?'block':'none';
   renderStampCalendar();
@@ -2465,7 +2476,7 @@ function renderStampCalendar(){
     if(!isFuture){
       // cheat/unlimitedはデータのcheatDayフィールドを直接参照、達成判定はgetDayStatusByKeyで
       const dayRaw=localStorage.getItem('diet_day_'+key);
-      const dayData=dayRaw?JSON.parse(dayRaw):null;
+      const dayData=safeParse(dayRaw,null);
       const cheatType=dayData?dayData.cheatDay:null;
       if(cheatType==='cheat'){cls+=' cheat';stamp='🍕';}
       else if(cheatType==='unlimited'){cls+=' unlimited';stamp='🎉';}
@@ -2482,7 +2493,7 @@ function renderStampCalendar(){
       }
       // 運動実施チェック
       const wkS=localStorage.getItem('diet_workout_'+key);
-      const wkList=wkS?JSON.parse(wkS):[];
+      const wkList=safeParse(wkS,[]);
       const hasWeight=wkList.some(e=>e.type!=='cardio');
       const hasCardio=wkList.some(e=>e.type==='cardio');
       if(hasWeight||hasCardio){
@@ -2522,7 +2533,7 @@ const PRESET_BODYWEIGHT=['ディップス','懸垂','腹筋ローラー'];
 const PRESET_UNILATERAL=['ワンハンドロー','ダンベルカール','インクラインダンベルカール','ハンマーカール','サイドレイズ','リアレイズ','ダンベルブルガリアンスクワット','インクラインダンベルベンチフライ'];
 
 // カスタム種目のCRUD
-function loadCustomExercises(){return JSON.parse(localStorage.getItem('diet_custom_exercises')||'[]');}
+function loadCustomExercises(){return safeParse(localStorage.getItem('diet_custom_exercises'),[]);}
 function saveCustomExercises(data){localStorage.setItem('diet_custom_exercises',JSON.stringify(data));}
 
 // 体重種目かどうかを判定
@@ -2706,7 +2717,7 @@ function renderWorkoutModalExercises(){
         const isSel=ex===selExercise;
         const safeEx=ex.replace(/'/g,"\'");
         return`<div style="display:flex;align-items:center;gap:4px">`+
-          `<button class="exercise-chip${isSel?' sel':''}" style="flex:1" onclick="selectExercise(this,'${safeEx}')">${ex}<span style="font-size:9px;color:var(--green);margin-left:3px">●</span></button>`+
+          `<button class="exercise-chip${isSel?' sel':''}" style="flex:1" onclick="selectExercise(this,'${safeEx}')">${escapeHtml(ex)}<span style="font-size:9px;color:var(--green);margin-left:3px">●</span></button>`+
           `<button onclick="openCustomExerciseModal('${safeEx}');event.stopPropagation()" style="padding:6px 8px;font-size:11px;border:0.5px solid var(--border);border-radius:var(--radius-xs);background:var(--bg);color:var(--text2);cursor:pointer;min-height:36px">編集</button>`+
           `<button onclick="deleteCustomExercise('${safeEx}');event.stopPropagation()" style="padding:6px 8px;font-size:11px;border:0.5px solid var(--border);border-radius:var(--radius-xs);background:var(--bg);color:var(--red-dark);cursor:pointer;min-height:36px">削除</button>`+
           `</div>`;
@@ -2723,7 +2734,7 @@ function renderWorkoutModalExercises(){
   }
 } // モーダル内で積み上げ中のセット
 
-function loadWorkoutDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_workout_'+k);return s?JSON.parse(s):[];}
+function loadWorkoutDay(offset){const k=getKey(offset);const s=localStorage.getItem('diet_workout_'+k);return safeParse(s,[]);}
 function saveWorkoutDay(offset,data){localStorage.setItem('diet_workout_'+getKey(offset),JSON.stringify(data));}
 
 // 部位係数（脚1.4／背中・胸1.2／肩・腕0.8／体幹0.7）
@@ -2965,7 +2976,7 @@ function renderWorkoutTab(){
         return`<div class="set-row"><div><div class="set-info">S${si+1}：${txt}</div><div class="set-detail">${sCal} kcal</div></div><button class="food-del" onclick="deleteSet(${exIdx},${si})">×</button></div>`;
       }).join('');
       const collapseId=`sets-${exIdx}`;
-      return`<div class="workout-block"><div class="workout-header" onclick="toggleSets('${collapseId}',this)"><div><div class="workout-title">${ex.name}</div><div class="workout-muscle">${ex.muscle}　${ex.sets.length}セット・${exCal}kcal</div></div><div style="display:flex;align-items:center;gap:6px">${badge}<span class="wk-collapse-icon open">▼</span><button class="workout-del" onclick="event.stopPropagation();deleteWorkout(${exIdx})">×</button></div></div><div class="wk-sets-wrap" id="${collapseId}">${setsHtml}</div></div>`;
+      return`<div class="workout-block"><div class="workout-header" onclick="toggleSets('${collapseId}',this)"><div><div class="workout-title">${escapeHtml(ex.name)}</div><div class="workout-muscle">${escapeHtml(ex.muscle)}　${ex.sets.length}セット・${exCal}kcal</div></div><div style="display:flex;align-items:center;gap:6px">${badge}<span class="wk-collapse-icon open">▼</span><button class="workout-del" onclick="event.stopPropagation();deleteWorkout(${exIdx})">×</button></div></div><div class="wk-sets-wrap" id="${collapseId}">${setsHtml}</div></div>`;
     }).join('');
   }
   // 有酸素リスト
@@ -2975,7 +2986,7 @@ function renderWorkoutTab(){
     cardioSec.style.display='block';
     cardioList.innerHTML=data.map((ex,exIdx)=>{
       if(ex.type!=='cardio')return'';
-      return`<div class="workout-block"><div class="workout-header" style="cursor:default"><div><div class="workout-title">${ex.icon||'🏃'} ${ex.name}</div><div class="workout-muscle">${ex.minutes}分${ex.extraWeight?`・荷重${ex.extraWeight}kg`:''}・${ex.cal} kcal</div></div><button class="workout-del" onclick="deleteCardio(${exIdx})">×</button></div></div>`;
+      return`<div class="workout-block"><div class="workout-header" style="cursor:default"><div><div class="workout-title">${ex.icon||'🏃'} ${escapeHtml(ex.name)}</div><div class="workout-muscle">${ex.minutes}分${ex.extraWeight?`・荷重${ex.extraWeight}kg`:''}・${ex.cal} kcal</div></div><button class="workout-del" onclick="deleteCardio(${exIdx})">×</button></div></div>`;
     }).join('');
   }else{
     cardioSec.style.display='none';
@@ -3090,7 +3101,8 @@ function backfillGoalCal(){
     const k=localStorage.key(i);
     if(!k||!k.startsWith('diet_day_'))continue;
     try{
-      const data=JSON.parse(localStorage.getItem(k));
+      const data=safeParse(localStorage.getItem(k),null);
+      if(!data)continue;
       if(data&&data.goalCal==null&&calcTotals(data).cal>0){
         data.goalCal=goals.cal;
         localStorage.setItem(k,JSON.stringify(data));
@@ -3110,7 +3122,8 @@ function sanitizeStoredNumbers(){
     if(!k)continue;
     try{
       if(k.startsWith('diet_workout_')){
-        const list=JSON.parse(localStorage.getItem(k));
+        const list=safeParse(localStorage.getItem(k),null);
+        if(!list)continue;
         let dirty=false;
         list.forEach(ex=>{
           if(ex.sets)ex.sets.forEach(s=>{if(s.weight!=null&&s.weight!==r2(s.weight)){s.weight=r2(s.weight);dirty=true;}});
@@ -3119,7 +3132,8 @@ function sanitizeStoredNumbers(){
         });
         if(dirty)localStorage.setItem(k,JSON.stringify(list));
       }else if(k.startsWith('diet_day_')){
-        const d=JSON.parse(localStorage.getItem(k));
+        const d=safeParse(localStorage.getItem(k),null);
+        if(!d)continue;
         if(d&&d.weight!=null&&d.weight!==r2(d.weight)){d.weight=r2(d.weight);localStorage.setItem(k,JSON.stringify(d));}
       }
     }catch(e){}

@@ -124,8 +124,10 @@
   .add-snack-btn:active{opacity:0.6}
 
   /* ---- Bottom sheet modal ---- */
-  .sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200}
-  .sheet-overlay.open{display:flex;align-items:flex-end;justify-content:center}
+  .sheet-overlay{display:flex;align-items:flex-end;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,0);z-index:200;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .25s ease,background-color .25s ease,visibility 0s linear .25s}
+  .sheet-overlay.open{visibility:visible;opacity:1;background:rgba(0,0,0,0.4);pointer-events:auto;transition:opacity .25s ease,background-color .25s ease,visibility 0s linear 0s}
+  .sheet-overlay .sheet{transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+  .sheet-overlay.open .sheet{transform:translateY(0)}
   .sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow-y:auto}
   .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 13px}
   .sheet-title{font-size:16px;font-weight:600;margin-bottom:12px}
@@ -265,8 +267,10 @@
   .date-center{text-align:center;cursor:pointer;padding:4px 12px;border-radius:var(--radius-sm);transition:background .15s}
   .date-center:active{background:var(--bg)}
   .date-center-hint{font-size:9px;color:var(--text3);margin-top:1px}
-  .datepick-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:250}
-  .datepick-overlay.open{display:flex;align-items:flex-end;justify-content:center}
+  .datepick-overlay{display:flex;align-items:flex-end;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,0);z-index:250;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .25s ease,background-color .25s ease,visibility 0s linear .25s}
+  .datepick-overlay.open{visibility:visible;opacity:1;background:rgba(0,0,0,0.4);pointer-events:auto;transition:opacity .25s ease,background-color .25s ease,visibility 0s linear 0s}
+  .datepick-overlay .datepick-sheet{transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+  .datepick-overlay.open .datepick-sheet{transform:translateY(0)}
   .datepick-sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px))}
   .datepick-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px}
   .datepick-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -390,6 +394,7 @@
         <div class="chart-title">体重趋势</div>
         <div class="chart-legend">
           <span class="leg"><span class="leg-sq" style="background:#7C3AED"></span>实测</span>
+          <span class="leg"><span class="leg-sq" style="background:#0EA5E9"></span>7天移动平均</span>
           <span class="leg"><span class="leg-sq" style="background:#F59E0B"></span>理论值</span>
         </div>
         <div style="position:relative;height:200px"><canvas id="weightChart"></canvas></div>
@@ -1629,12 +1634,19 @@ function renderCharts(){
 
   // 体重グラフ
   const prof=loadProfileData();
-  const wLabels=[],wActual=[],wTheory=[];
+  const wLabels=[],wActual=[],wTheory=[],wMovingAvg=[];
   for(let i=graphPeriod-1;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
     wLabels.push(`${d.getMonth()+1}/${d.getDate()}`);
     const day=loadDay(-i);
     wActual.push(day.weight!=null?day.weight:null);
+    // 7日移動平均（この日を含む直近7日間、記録がある日のみで平均）
+    let maSum=0,maCnt=0;
+    for(let j=0;j<7;j++){
+      const dd=loadDay(-i-j);
+      if(dd.weight!=null){maSum+=dd.weight;maCnt++;}
+    }
+    wMovingAvg.push(maCnt>0?Math.round(maSum/maCnt*10)/10:null);
     // 理論値：開始体重 - (開始からの累计赤字 / 7200)
     if(prof&&prof.startDate&&prof.weight){
       const sp=prof.startDate.split('-').map(Number);
@@ -1658,7 +1670,9 @@ function renderCharts(){
   if(hasWeight||hasTheory){
     const datasets=[];
     const hasActual=wActual.some(v=>v!=null);
+    const hasMovingAvg=wMovingAvg.some(v=>v!=null);
     if(hasActual)datasets.push({label:'実測',data:wActual,borderColor:'#8B5CF6',backgroundColor:'rgba(139,92,246,0.1)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#8B5CF6',tension:0.3,spanGaps:true});
+    if(hasMovingAvg)datasets.push({label:'7日移動平均',data:wMovingAvg,borderColor:'#0EA5E9',borderWidth:2,pointRadius:0,tension:0.3,spanGaps:true,fill:false});
     if(hasTheory)datasets.push({label:'理論値',data:wTheory,borderColor:'#F59E0B',borderDash:[5,4],borderWidth:1.5,pointRadius:0,tension:0.3,spanGaps:true,fill:false});
     weightChartInst=new Chart(document.getElementById('weightChart'),{
       type:'line',

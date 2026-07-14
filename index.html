@@ -59,7 +59,8 @@
   .card-pad{padding:13px 15px}
   .section-title{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.6px;text-transform:uppercase;margin:14px 0 5px 2px}
   .section-title.toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:32px;padding:4px 2px 4px 0;margin:10px 0 5px 0;-webkit-tap-highlight-color:transparent}
-  .section-arrow{font-size:11px;transition:transform .2s}
+  .section-title-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .section-arrow{font-size:11px;transition:transform .2s;flex-shrink:0;margin-left:6px}
   .section-title:first-child{margin-top:2px}
 
   /* ---- Top card (weight + cal) ---- */
@@ -447,17 +448,17 @@
 
     <!-- ======= 食品タブ ======= -->
     <div id="tab-foods" style="display:none">
-      <div class="section-title toggle" onclick="toggleFoodSection('custom')">自分で登録した食品<span class="section-arrow" id="arrow_custom">▾</span></div>
+      <div class="section-title toggle" onclick="toggleFoodSection('custom')"><span class="section-title-label">自分で登録した食品</span><span class="section-arrow" id="arrow_custom">▾</span></div>
       <div id="content_custom">
         <button class="save-btn" style="margin-bottom:10px" onclick="openCustomFoodModal(null)">＋ 新しい食品を登録</button>
         <div class="card" id="customFoodList"></div>
       </div>
-      <div class="section-title toggle" onclick="toggleFoodSection('frequent')">よく食べるもの候補<span class="section-arrow" id="arrow_frequent">▾</span></div>
+      <div class="section-title toggle" onclick="toggleFoodSection('frequent')"><span class="section-title-label">よく食べるもの候補</span><span class="section-arrow" id="arrow_frequent">▾</span></div>
       <div id="content_frequent">
         <div style="font-size:11px;color:var(--text3);margin:-3px 0 6px 2px">過去の記録から、まだ登録されていない食品を頻度順に表示します</div>
         <div class="card card-pad" id="frequentFoodList"></div>
       </div>
-      <div class="section-title toggle" onclick="toggleFoodSection('builtin')">プリセット食品（編集可能）<span class="section-arrow" id="arrow_builtin">▾</span></div>
+      <div class="section-title toggle" onclick="toggleFoodSection('builtin')"><span class="section-title-label">プリセット食品（編集可能）</span><span class="section-arrow" id="arrow_builtin">▾</span></div>
       <div id="content_builtin">
         <div class="card" id="builtinFoodList"></div>
       </div>

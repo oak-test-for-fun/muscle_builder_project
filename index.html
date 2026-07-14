@@ -58,6 +58,8 @@
   .card{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);box-shadow:var(--shadow);margin-bottom:8px}
   .card-pad{padding:13px 15px}
   .section-title{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.6px;text-transform:uppercase;margin:14px 0 5px 2px}
+  .section-title.toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:32px;padding:4px 2px 4px 0;margin:10px 0 5px 0;-webkit-tap-highlight-color:transparent}
+  .section-arrow{font-size:11px;transition:transform .2s}
   .section-title:first-child{margin-top:2px}
 
   /* ---- Top card (weight + cal) ---- */
@@ -445,14 +447,20 @@
 
     <!-- ======= 食品タブ ======= -->
     <div id="tab-foods" style="display:none">
-      <div class="section-title">自分で登録した食品</div>
-      <button class="save-btn" style="margin-bottom:10px" onclick="openCustomFoodModal(null)">＋ 新しい食品を登録</button>
-      <div class="card" id="customFoodList"></div>
-      <div class="section-title">よく食べるもの候補</div>
-      <div style="font-size:11px;color:var(--text3);margin:-3px 0 6px 2px">過去の記録から、まだ登録されていない食品を頻度順に表示します</div>
-      <div class="card card-pad" id="frequentFoodList"></div>
-      <div class="section-title">プリセット食品（編集可能）</div>
-      <div class="card" id="builtinFoodList"></div>
+      <div class="section-title toggle" onclick="toggleFoodSection('custom')">自分で登録した食品<span class="section-arrow" id="arrow_custom">▾</span></div>
+      <div id="content_custom">
+        <button class="save-btn" style="margin-bottom:10px" onclick="openCustomFoodModal(null)">＋ 新しい食品を登録</button>
+        <div class="card" id="customFoodList"></div>
+      </div>
+      <div class="section-title toggle" onclick="toggleFoodSection('frequent')">よく食べるもの候補<span class="section-arrow" id="arrow_frequent">▾</span></div>
+      <div id="content_frequent">
+        <div style="font-size:11px;color:var(--text3);margin:-3px 0 6px 2px">過去の記録から、まだ登録されていない食品を頻度順に表示します</div>
+        <div class="card card-pad" id="frequentFoodList"></div>
+      </div>
+      <div class="section-title toggle" onclick="toggleFoodSection('builtin')">プリセット食品（編集可能）<span class="section-arrow" id="arrow_builtin">▾</span></div>
+      <div id="content_builtin">
+        <div class="card" id="builtinFoodList"></div>
+      </div>
     </div>
 
     <!-- ======= 設定タブ ======= -->
@@ -1033,7 +1041,7 @@ function switchTab(tab,btn){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   if(tab==='graph'){renderCharts();renderExportStatus();}
   if(tab==='settings'){const g=loadGoals();document.getElementById('g_cal').value=g.cal;document.getElementById('g_protein').value=g.protein;document.getElementById('g_fat').value=g.fat;document.getElementById('g_carb').value=g.carb;loadProfileForm();renderProgress();}
-  if(tab==='foods'){renderCustomFoodList();renderFrequentFoodList();}
+  if(tab==='foods'){renderCustomFoodList();renderFrequentFoodList();initFoodSectionState();}
   if(tab==='stamp')renderStamp();
   if(tab==='workout')renderWorkoutTab();
 }
@@ -1357,11 +1365,19 @@ function addFood(){
 //     "卵(1個)"→{base:'卵',type:'count',qty:1,unit:'個'}
 //     "外食"→{base:'外食',type:'exact',qty:1}
 function parseFoodItemName(name){
-  let m=name.match(/^(.+?)\((\d+)g\)$/);
-  if(m)return{base:m[1],type:'g',qty:parseInt(m[2],10)};
-  m=name.match(/^(.+?)\((\d+)([^\d)]+)\)$/);
-  if(m)return{base:m[1],type:'count',qty:parseInt(m[2],10),unit:m[3]};
-  return{base:name,type:'exact',qty:1};
+  let base=name,type='exact',qty=1,unit=undefined;
+  // 末尾の分量カッコを検出（1回分のみ：type/qty/unitはこの1回分で確定）
+  let m=base.match(/^(.+?)\((\d+)g\)$/);
+  if(m){base=m[1];type='g';qty=parseInt(m[2],10);}
+  else{
+    m=base.match(/^(.+?)\((\d+)([^\d)]+)\)$/);
+    if(m){base=m[1];type='count';qty=parseInt(m[2],10);unit=m[3];}
+  }
+  // プリセット名自体に単位が含まれる等で二重カッコになっているケースに対応し、
+  // 残った末尾カッコをさらに取り除いて基準名だけを残す（一致判定の精度を上げるため）
+  let guard=0;
+  while(/\([^()]*\)$/.test(base)&&guard<5){base=base.replace(/\([^()]*\)$/,'').trim();guard++;}
+  return{base,type,qty,unit};
 }
 function _avgArr(arr){return arr.length?arr.reduce((s,v)=>s+v,0)/arr.length:0;}
 
@@ -1448,6 +1464,26 @@ function openCandidateRegisterModal(idx){
   }
 }
 
+// 食品タブの各セクション折りたたみ
+const FOOD_SECTIONS=['custom','frequent','builtin'];
+function toggleFoodSection(id){
+  const content=document.getElementById('content_'+id);
+  const arrow=document.getElementById('arrow_'+id);
+  if(!content)return;
+  const collapsed=content.style.display==='none';
+  content.style.display=collapsed?'':'none';
+  if(arrow)arrow.textContent=collapsed?'▾':'▸';
+  localStorage.setItem('diet_foodsection_collapsed_'+id,collapsed?'0':'1');
+}
+function initFoodSectionState(){
+  FOOD_SECTIONS.forEach(id=>{
+    const collapsed=localStorage.getItem('diet_foodsection_collapsed_'+id)==='1';
+    const content=document.getElementById('content_'+id);
+    const arrow=document.getElementById('arrow_'+id);
+    if(content)content.style.display=collapsed?'none':'';
+    if(arrow)arrow.textContent=collapsed?'▸':'▾';
+  });
+}
 function renderCustomFoodList(){
   renderBuiltinFoodList();
   const customs=loadCustomFoods();

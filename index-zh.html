@@ -448,6 +448,9 @@
       <div class="section-title">自定义食品</div>
       <button class="save-btn" style="margin-bottom:10px" onclick="openCustomFoodModal(null)">＋ 添加新食品</button>
       <div class="card" id="customFoodList"></div>
+      <div class="section-title">常吃的候选食品</div>
+      <div style="font-size:11px;color:var(--text3);margin:-3px 0 6px 2px">根据历史记录，按频率显示尚未注册的食品</div>
+      <div class="card card-pad" id="frequentFoodList"></div>
       <div class="section-title">预设食品（可编辑）</div>
       <div class="card" id="builtinFoodList"></div>
     </div>
@@ -984,7 +987,7 @@ function switchTab(tab,btn){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   if(tab==='graph'){renderCharts();renderExportStatus();}
   if(tab==='settings'){const g=loadGoals();document.getElementById('g_cal').value=g.cal;document.getElementById('g_protein').value=g.protein;document.getElementById('g_fat').value=g.fat;document.getElementById('g_carb').value=g.carb;loadProfileForm();renderProgress();}
-  if(tab==='foods')renderCustomFoodList();
+  if(tab==='foods'){renderCustomFoodList();renderFrequentFoodList();}
   if(tab==='stamp')renderStamp();
   if(tab==='workout')renderWorkoutTab();
 }
@@ -1302,6 +1305,102 @@ function addFood(){
 }
 
 /* ---- custom foods ---- */
+// 从食物记录名称中拆解出「基础名＋分量信息」
+// 例: "鸡胸肉(150g)"→{base:'鸡胸肉',type:'g',qty:150}
+//     "鸡蛋(1个)"→{base:'鸡蛋',type:'count',qty:1,unit:'个'}
+//     "外食"→{base:'外食',type:'exact',qty:1}
+function parseFoodItemName(name){
+  let m=name.match(/^(.+?)\((\d+)g\)$/);
+  if(m)return{base:m[1],type:'g',qty:parseInt(m[2],10)};
+  m=name.match(/^(.+?)\((\d+)([^\d)]+)\)$/);
+  if(m)return{base:m[1],type:'count',qty:parseInt(m[2],10),unit:m[3]};
+  return{base:name,type:'exact',qty:1};
+}
+function _avgArr(arr){return arr.length?arr.reduce((s,v)=>s+v,0)/arr.length:0;}
+
+// 从历史记录中提取「尚未注册的常吃食品」，按频率排序（前20个）
+function collectFrequentFoods(){
+  const registeredNames=new Set();
+  getBuiltin().forEach(f=>registeredNames.add(f.n));
+  loadCustomFoods().forEach(f=>registeredNames.add(f.n));
+  const registeredBase=new Set([...registeredNames].map(n=>parseFoodItemName(n).base));
+
+  const groups={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(!k||!k.startsWith('diet_day_'))continue;
+    const dateKey=k.replace('diet_day_','');
+    const raw=safeParse(localStorage.getItem(k),null);
+    if(!raw||!raw.meals)continue;
+    const allItems=[];
+    BASE_MEALS.forEach(meal=>(raw.meals[meal]||[]).forEach(it=>allItems.push(it)));
+    (raw.snacks||[]).forEach(slot=>(slot||[]).forEach(it=>allItems.push(it)));
+    allItems.forEach(it=>{
+      if(!it||!it.n)return;
+      const parsed=parseFoodItemName(it.n);
+      if(registeredNames.has(it.n)||registeredBase.has(parsed.base))return;
+      const key=parsed.base+'|'+parsed.type+'|'+(parsed.unit||'');
+      if(!groups[key])groups[key]={base:parsed.base,type:parsed.type,unit:parsed.unit,occurrences:[],dates:new Set()};
+      groups[key].occurrences.push({qty:parsed.qty||1,k:it.k||0,p:it.p||0,f:it.f||0,c:it.c||0,date:dateKey});
+      groups[key].dates.add(dateKey);
+    });
+  }
+
+  const list=Object.values(groups).map(g=>{
+    let k,p,f,c,unitLabel,unitMode;
+    if(g.type==='g'){
+      const r=g.occurrences.map(o=>({k:o.k/o.qty*100,p:o.p/o.qty*100,f:o.f/o.qty*100,c:o.c/o.qty*100}));
+      k=_avgArr(r.map(x=>x.k));p=_avgArr(r.map(x=>x.p));f=_avgArr(r.map(x=>x.f));c=_avgArr(r.map(x=>x.c));
+      unitLabel='每100g';unitMode='g';
+    }else if(g.type==='count'){
+      const r=g.occurrences.map(o=>({k:o.k/o.qty,p:o.p/o.qty,f:o.f/o.qty,c:o.c/o.qty}));
+      k=_avgArr(r.map(x=>x.k));p=_avgArr(r.map(x=>x.p));f=_avgArr(r.map(x=>x.f));c=_avgArr(r.map(x=>x.c));
+      unitLabel=`每1${g.unit||'个'}`;unitMode='count';
+    }else{
+      // exact：没有分量标记，直接使用最近一次的记录值作为固定量
+      const last=g.occurrences[g.occurrences.length-1];
+      k=last.k;p=last.p;f=last.f;c=last.c;
+      unitLabel='固定1份';unitMode='count';
+    }
+    return{
+      name:g.base,unitMode,unit:g.type==='count'?(g.unit||'个'):'个',unitLabel,
+      k:Math.round(k*10)/10,p:Math.round(p*10)/10,f:Math.round(f*10)/10,c:Math.round(c*10)/10,
+      freq:g.dates.size
+    };
+  });
+  list.sort((a,b)=>b.freq-a.freq);
+  return list.slice(0,20);
+}
+
+let _frequentCandidates=[];
+function renderFrequentFoodList(){
+  _frequentCandidates=collectFrequentFoods();
+  const el=document.getElementById('frequentFoodList');
+  if(!_frequentCandidates.length){el.innerHTML='<div class="empty-state">暂无候选</div>';return;}
+  el.innerHTML=`<div class="quick-wrap">`+_frequentCandidates.map((c,i)=>
+    `<button class="qtag" onclick="openCandidateRegisterModal(${i})">${escapeHtml(c.name)}<span style="color:var(--text3);font-size:10px;margin-left:4px">(${c.freq}天)</span></button>`
+  ).join('')+`</div>`;
+}
+function openCandidateRegisterModal(idx){
+  const c=_frequentCandidates[idx];
+  if(!c)return;
+  openCustomFoodModal(null);
+  document.getElementById('c_name').value=c.name;
+  setCUnit(c.unitMode);
+  if(c.unitMode==='count'){
+    document.getElementById('c_cal_cnt').value=c.k;
+    document.getElementById('c_p_cnt').value=c.p;
+    document.getElementById('c_f_cnt').value=c.f;
+    document.getElementById('c_c_cnt').value=c.c;
+    if(document.getElementById('c_unit_name'))document.getElementById('c_unit_name').value=c.unit;
+  }else{
+    document.getElementById('c_cal').value=c.k;
+    document.getElementById('c_p').value=c.p;
+    document.getElementById('c_f').value=c.f;
+    document.getElementById('c_c').value=c.c;
+  }
+}
+
 function renderCustomFoodList(){
   renderBuiltinFoodList();
   const customs=loadCustomFoods();

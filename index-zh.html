@@ -479,6 +479,16 @@
     <!-- ======= 设置标签 ======= -->
     <div id="tab-settings" style="display:none">
 
+      <!-- 饮食管理模式 -->
+      <div class="section-title">饮食管理模式</div>
+      <div class="form-card">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <button class="period-btn" id="modeBtnReward" style="flex:1" onclick="setMode('reward')">🎁 奖励模式</button>
+          <button class="period-btn" id="modeBtnFree" style="flex:1" onclick="setMode('free')">🍃 自由模式</button>
+        </div>
+        <div id="modeDesc" style="font-size:12px;color:var(--text2);line-height:1.6"></div>
+      </div>
+
       <!-- 目標値 -->
       <div class="section-title">每日目标</div>
       <div class="form-card">
@@ -960,6 +970,34 @@ function saveCustomFoods(arr){localStorage.setItem('diet_custom_foods',JSON.stri
 function loadBuiltinOverrides(){const s=localStorage.getItem('diet_builtin_overrides');return safeParse(s,{});}
 function saveBuiltinOverrides(obj){localStorage.setItem('diet_builtin_overrides',JSON.stringify(obj));}
 function getBuiltin(){const ov=loadBuiltinOverrides();return BUILTIN.map((f,i)=>ov[i]?{...f,...ov[i]}:f);}
+
+/* ---- 饮食管理模式（奖励模式／自由模式） v39 ---- */
+function loadMode(){return localStorage.getItem('diet_mode')||'reward';}
+function setMode(mode){
+  localStorage.setItem('diet_mode',mode);
+  renderModeUI();
+  render();
+  const activeTab=document.querySelector('.tab.active');
+  if(activeTab&&activeTab.textContent.includes('打卡'))renderStamp();
+}
+function renderModeUI(){
+  const mode=loadMode();
+  const btnR=document.getElementById('modeBtnReward'),btnF=document.getElementById('modeBtnFree');
+  if(!btnR||!btnF)return;
+  btnR.classList.toggle('active',mode==='reward');
+  btnF.classList.toggle('active',mode==='free');
+  document.getElementById('modeDesc').textContent=mode==='reward'
+    ?'🎁 奖励模式：达成本周目标即可获得欺骗日等奖励。'
+    :'🍃 自由模式：不区分好坏日，按周宽松管理。不使用欺骗日和连续达成的概念。';
+}
+function getRecoveryFactor(offset){
+  const d1=safeParse(localStorage.getItem('diet_day_'+getKey(offset-1)),null);
+  if(d1&&(d1.cheatDay==='cheat'||d1.cheatDay==='unlimited'))return 1.15;
+  const d2=safeParse(localStorage.getItem('diet_day_'+getKey(offset-2)),null);
+  if(d2&&(d2.cheatDay==='cheat'||d2.cheatDay==='unlimited'))return 1.10;
+  return 1;
+}
+
 function getKey(offset){const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function getDateStr(offset){
   const d=new Date();d.setDate(d.getDate()+offset);
@@ -1001,7 +1039,7 @@ function switchTab(tab,btn){
   ['diary','graph','foods','settings','stamp','workout'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   if(tab==='graph'){renderCharts();renderExportStatus();}
-  if(tab==='settings'){const g=loadGoals();document.getElementById('g_cal').value=g.cal;document.getElementById('g_protein').value=g.protein;document.getElementById('g_fat').value=g.fat;document.getElementById('g_carb').value=g.carb;loadProfileForm();renderProgress();}
+  if(tab==='settings'){const g=loadGoals();document.getElementById('g_cal').value=g.cal;document.getElementById('g_protein').value=g.protein;document.getElementById('g_fat').value=g.fat;document.getElementById('g_carb').value=g.carb;loadProfileForm();renderProgress();renderModeUI();}
   if(tab==='foods'){renderCustomFoodList();renderFrequentFoodList();initFoodSectionState();}
   if(tab==='stamp')renderStamp();
   if(tab==='workout')renderWorkoutTab();
@@ -1009,20 +1047,24 @@ function switchTab(tab,btn){
 
 /* ---- diary render ---- */
 function render(){
+  renderModeUI();
   const data=loadDay(currentDay),ds=getDateStr(currentDay);
   const goals=loadGoals();
   if(currentDay!==0&&data.goalCal)goals.cal=data.goalCal;
+  else if(currentDay===0){
+    const recoveryFactor=getRecoveryFactor(0);
+    if(recoveryFactor>1)goals.cal=Math.round(goals.cal*recoveryFactor);
+  }
   const baseGoal=goals.cal; // 保存健身加算前的原始目标
-  // 应用欺骗日临时热量上限
-  if(data.cheatDay==='unlimited')goals.cal=9999;
-  else if(data.cheatDay==='cheat'&&data.cheatCalLimit)goals.cal=data.cheatCalLimit;
+  // v39：欺骗日不再强制上限，视为“可以吃的一天”（上限不再用于失败判定）
+  if(data.cheatDay==='unlimited'||data.cheatDay==='cheat')goals.cal=9999;
   const cheatBannerEl=document.getElementById('cheatBanner');
   if(data.cheatDay==='unlimited'){
     cheatBannerEl.style.display='block';
     cheatBannerEl.textContent='🎉 无限日行使中　热量不限，注意蛋白质摄入即可！无需愧疚！';
-  }else if(data.cheatDay==='cheat'&&data.cheatCalLimit){
+  }else if(data.cheatDay==='cheat'){
     cheatBannerEl.style.display='block';
-    cheatBannerEl.textContent=`🍕 欺骗日行使中　今日上限 ${data.cheatCalLimit} kcal。这是努力后应得的奖励，无需愧疚！`;
+    cheatBannerEl.textContent='🍕 欺骗日行使中　不用在意数字，注意蛋白质摄入即可！这是努力后应得的奖励，无需愧疚！';
   }else{
     cheatBannerEl.style.display='none';
   }
@@ -1104,8 +1146,9 @@ function saveComment(){const data=loadDay(currentDay);data.comment=document.getE
 // 欺骗日操作区（记录标签・针对当前查看日期）
 function renderCheatActionArea(data){
   const area=document.getElementById('cheatActionArea');
+  if(loadMode()==='free'){area.style.display='none';area.innerHTML='';return;}
   if(data.cheatDay){
-    const label=data.cheatDay==='unlimited'?'🎉 无限日设置中':`🍕 欺骗日设置中${data.cheatCalLimit!=null?`（上限${data.cheatCalLimit}kcal）`:''}`;
+    const label=data.cheatDay==='unlimited'?'🎉 无限日设置中':'🍕 欺骗日设置中';
     area.style.display='block';
     area.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;gap:8px"><span>${label}</span><button onclick="cancelCheatDay()" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;white-space:nowrap">取消</button></div>`;
   }else{
@@ -2435,10 +2478,7 @@ function getDayStatusByKey(dateKey){
     return proteinOk?'perfect':'achieved';
   }
   if(data.cheatDay==='cheat'){
-    // 上限未保存（旧バージョンで行使）のチートデイは遡及failedにしない救済措置
-    if(data.cheatCalLimit==null)return proteinOk?'perfect':'achieved';
-    const calOk=t.cal<=data.cheatCalLimit;
-    if(!calOk)return 'failed';
+    // v39: 上限超過をfailedにしない（たがのゆるみ効果対策。チートデイは常に成功扱い）
     return proteinOk?'perfect':'achieved';
   }
   const bw=prof&&prof.weight?prof.weight:70;
@@ -2629,12 +2669,9 @@ function openCheatModal(){
     document.getElementById('cheatOverlay').classList.add('open');
     return;
   }
-  html=`<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">将对当前查看日期（${ds.main}）应用欺骗日。请选择种类。</div>`;
-  if(limits){
-    html+=`<div style="font-size:11px;color:var(--text3);background:var(--bg);border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.6">📊 上限明细：维持热量${limits.maintenance.toLocaleString()}kcal ＋ 累积${limits.cumDeficit>=0?'赤字':'盈余'}${Math.abs(limits.cumDeficit).toLocaleString()}kcal×20%（普通）/25%（奖励）${(limits.normalCapped||limits.bonusCapped)?`<br>※为了健康，已按上限${limits.cap.toLocaleString()}kcal（维持热量×1.5）封顶`:''}</div>`;
-  }
-  if(rewards.cheat>0&&limits)html+=`<button class="add-btn" style="background:var(--amber);margin-bottom:8px" onclick="useCheatDay('cheat')">🍕 普通欺骗日（剩余${rewards.cheat}日・上限${limits.normal.toLocaleString()}kcal）</button>`;
-  if(rewards.bonusCheat>0&&limits)html+=`<button class="add-btn" style="background:var(--amber);margin-bottom:8px" onclick="useCheatDay('bonusCheat')">🌟 奖励欺骗日（剩余${rewards.bonusCheat}日・上限${limits.bonus.toLocaleString()}kcal）</button>`;
+  html=`<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">将对当前查看日期（${ds.main}）应用欺骗日。请选择种类。不用在意数字，注意蛋白质摄入即可。</div>`;
+  if(rewards.cheat>0)html+=`<button class="add-btn" style="background:var(--amber);margin-bottom:8px" onclick="useCheatDay('cheat')">🍕 普通欺骗日（剩余${rewards.cheat}日）</button>`;
+  if(rewards.bonusCheat>0)html+=`<button class="add-btn" style="background:var(--amber);margin-bottom:8px" onclick="useCheatDay('bonusCheat')">🌟 奖励欺骗日（剩余${rewards.bonusCheat}日）</button>`;
   if(rewards.unlimited>0)html+=`<button class="add-btn" style="background:var(--green);margin-bottom:8px" onclick="useCheatDay('unlimited')">🎉 无限日（剩余${rewards.unlimited}日）</button>`;
   document.getElementById('cheatModalBody').innerHTML=html;
   document.getElementById('cheatOverlay').classList.add('open');
@@ -2683,16 +2720,25 @@ function cancelCheatDay(){
 }
 
 function renderStamp(){
-  const rewards=checkAndGrantWeeklyRewards();
-  const {streak,perfectStreak}=calcWeekStreak();
-  const limits=calcCheatCalLimit();
-  const todayStatus=getDayStatusByKey(getKey(0));
-  const thisWeekKey=getWeekStartKey(getKey(0));
-  const thisWeekStatus=getWeekStatus(thisWeekKey);
-  const wt=calcWeekTotals(thisWeekKey);
+  const mode=loadMode();
   const goals=loadGoals();
+  const thisWeekKey=getWeekStartKey(getKey(0));
+  const wt=calcWeekTotals(thisWeekKey);
   const weekGoalCal=goals.cal*7;
   const weekRemain=weekGoalCal-wt.totalCal;
+  if(mode==='free'){
+    document.getElementById('streakCard').innerHTML=`
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🍃 自由模式运行中</div>
+      <div class="streak-row"><span class="streak-label">本周剩余</span><span class="streak-val" style="color:${weekRemain>=0?'var(--green-dark)':'var(--red-dark)'}">${weekRemain>=0?weekRemain+'kcal':'+'+Math.abs(weekRemain)+'kcal超出'}</span></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">不区分好坏日，按周宽松管理。不使用奖励和连续达成的概念。</div>
+    `;
+    document.getElementById('cheatCard').innerHTML='';
+    renderStampCalendar();
+    return;
+  }
+  const rewards=checkAndGrantWeeklyRewards();
+  const {streak,perfectStreak}=calcWeekStreak();
+  const thisWeekStatus=getWeekStatus(thisWeekKey);
   const cheatGrantedThisWeek=thisWeekStatus!=='none'&&thisWeekStatus!=='failed';
   const nextUnlimitedWeeks=streak%4===0&&streak>0?4:4-(streak%4);
   document.getElementById('streakCard').innerHTML=`
@@ -2710,7 +2756,6 @@ function renderStamp(){
     if(rewards.cheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🍕 欺骗日</span><span class="streak-val" style="color:var(--amber)">${rewards.cheat}天</span></div>`;
     if(rewards.bonusCheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🌟 奖励欺骗日</span><span class="streak-val" style="color:var(--amber)">${rewards.bonusCheat}天</span></div>`;
     if(rewards.unlimited>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🎉 无限日</span><span class="streak-val green">${rewards.unlimited}天</span></div>`;
-    if(limits)cheatHtml+=`<div class="streak-row"><span class="streak-label">欺骗日上限</span><span class="streak-val">${limits.normal.toLocaleString()} kcal</span></div>`;
   }
   document.getElementById('cheatCard').innerHTML=cheatHtml;
   renderStampCalendar();
@@ -2804,6 +2849,7 @@ function renderStampCalendar(){
   const grid=document.getElementById('stampCalGrid');
   const goals=loadGoals();
   const weekGoalCal=goals.cal*7;
+  const mode=loadMode();
   const fmt2=dt=>`${dt.getMonth()+1}/${dt.getDate()}`;
   let html='';
   for(let ws=new Date(gridStart);ws<=gridEnd;ws.setDate(ws.getDate()+7)){
@@ -2820,7 +2866,7 @@ function renderStampCalendar(){
     }else{
       const status=getWeekStatus(key);
       const wt=calcWeekTotals(key);
-      cls+=' '+(status==='none'?'none':status);
+      cls+=' '+(mode==='free'?'none':(status==='none'?'none':status));
       if(isInProgress)cls+=' inprogress';
       if(wt.recordedDays>0){
         const remain=weekGoalCal-wt.totalCal;
@@ -2837,7 +2883,7 @@ function renderStampCalendar(){
         const wkList=safeParse(localStorage.getItem('diet_workout_'+dkey),[]);
         if(wkList.length)hasWk=true;
       }
-      const statusIcon={perfect:'⭐',achieved:'🌸',failed:'💔',none:''}[status]||'';
+      const statusIcon=mode==='free'?'':({perfect:'⭐',achieved:'🌸',failed:'💔',none:''}[status]||'');
       badges=`${statusIcon}${hasCheat?' 🍕':''}${hasUnlimited?' 🎉':''}${hasWk?' 🏋️':''}`;
     }
     html+=`<div class="${cls}"${isFuture?'':` onclick="openWeekDetail('${key}')"`}>`+

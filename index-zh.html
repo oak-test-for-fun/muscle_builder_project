@@ -326,7 +326,7 @@
       <button class="tab active" onclick="switchTab('diary',this)"><span class="tab-icon">📝</span>记录</button>
       <button class="tab" onclick="switchTab('graph',this)"><span class="tab-icon">📊</span>图表</button>
       <button class="tab" onclick="switchTab('workout',this)"><span class="tab-icon">🏋️</span>健身</button>
-      <button class="tab" onclick="switchTab('stamp',this)"><span class="tab-icon">🏆</span>成就</button>
+      <button class="tab" id="tabBtnStamp" onclick="switchTab('stamp',this)"><span class="tab-icon">🏆</span>成就</button>
       <button class="tab" onclick="switchTab('foods',this)"><span class="tab-icon">🥗</span>食品</button>
       <button class="tab" onclick="switchTab('settings',this)"><span class="tab-icon">⚙️</span>设置</button>
     </div>
@@ -643,11 +643,13 @@
         <div id="stampCalGrid"></div>
         <!-- 图例 -->
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
-          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">⭐</span>完美达成</span>
-          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">🌸</span>普通达成</span>
-          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">🍕</span>欺骗日</span>
-          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">🎉</span>无限日</span>
-          <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">💔</span>未达成</span>
+          <span id="calLegendReward" style="display:contents">
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">⭐</span>完美达成</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">🌸</span>普通达成</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">🍕</span>欺骗日</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">🎉</span>无限日</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:16px">💔</span>未达成</span>
+          </span>
           <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)"><span style="font-size:13px">🏋️</span>力量训练／<span style="font-size:13px">🏃</span>有氧</span>
         </div>
       </div>
@@ -978,17 +980,22 @@ function setMode(mode){
   renderModeUI();
   render();
   const activeTab=document.querySelector('.tab.active');
-  if(activeTab&&activeTab.textContent.includes('打卡'))renderStamp();
+  if(activeTab&&activeTab.textContent.includes('成就'))renderStamp();
+  if(mode==='free'&&activeTab&&activeTab.textContent.includes('成就')){
+    switchTab('diary',document.querySelectorAll('.tab')[0]);
+  }
 }
 function renderModeUI(){
   const mode=loadMode();
   const btnR=document.getElementById('modeBtnReward'),btnF=document.getElementById('modeBtnFree');
+  const stampTabBtn=document.getElementById('tabBtnStamp');
+  if(stampTabBtn)stampTabBtn.style.display=mode==='free'?'none':'';
   if(!btnR||!btnF)return;
   btnR.classList.toggle('active',mode==='reward');
   btnF.classList.toggle('active',mode==='free');
   document.getElementById('modeDesc').textContent=mode==='reward'
     ?'🎁 奖励模式：达成本周目标即可获得欺骗日等奖励。'
-    :'🍃 自由模式：不区分好坏日，按周宽松管理。不使用欺骗日和连续达成的概念。';
+    :'🍃 自由模式：不区分好坏日，按周宽松管理。不使用欺骗日和连续达成的概念。达成情况可在图表标签中查看。';
 }
 function getRecoveryFactor(offset){
   const d1=safeParse(localStorage.getItem('diet_day_'+getKey(offset-1)),null);
@@ -1721,7 +1728,8 @@ function renderCharts(){
   const goals=loadGoals();
   const prof0=loadProfileData();
   const bw0=prof0&&prof0.weight?prof0.weight:70;
-  const labels=[],calVals=[],colors=[],hasWorkout=[];
+  const mode=loadMode();
+  const labels=[],calVals=[],colors=[],hasWorkout=[],goalLine=[];
   for(let i=graphPeriod-1;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
     const w=['日','一','二','三','四','五','六'][d.getDay()];
@@ -1734,18 +1742,16 @@ function renderCharts(){
     const wkData=localStorage.getItem('diet_workout_'+wkKey);
     const wkList=safeParse(wkData,[]);
     hasWorkout.push({weight:wkList.some(e=>e.type!=='cardio'),cardio:wkList.some(e=>e.type==='cardio')});
-    // バー色判定：チートデイ/無制限デイは紫、通常日はその日のgoalCalスナップショット基準
-    if(dayData.cheatDay==='unlimited'){
+    const wkBonus0=wkList.length?calcWorkoutCal(wkList,bw0)*0.5:0;
+    goalLine.push((dayData.goalCal||goals.cal)+wkBonus0);
+    if(mode==='free'){
+      // v41: フリーモードでは達成度による色分けをせず、中立色で統一
+      colors.push('#7BA7D9');
+    }else if(dayData.cheatDay==='unlimited'){
       colors.push('#7C3AED');
     }else if(dayData.cheatDay==='cheat'){
-      if(dayData.cheatCalLimit!=null){
-        colors.push(t.cal>dayData.cheatCalLimit?'#E24B4A':'#7C3AED');
-      }else{
-        const g0=dayData.goalCal||goals.cal;
-        colors.push(t.cal>g0*1.2?'#E24B4A':t.cal>g0?'#BA7517':'#1D9E75');
-      }
+      colors.push('#7C3AED');
     }else{
-      const wkBonus0=wkList.length?calcWorkoutCal(wkList,bw0)*0.5:0;
       const dayGoal=(dayData.goalCal||goals.cal)+wkBonus0;
       colors.push(t.cal>dayGoal*1.2?'#E24B4A':t.cal>dayGoal?'#BA7517':'#1D9E75');
     }
@@ -1783,7 +1789,7 @@ function renderCharts(){
     type:'bar',
     data:{labels,datasets:[
       {label:'摂取',data:calVals,backgroundColor:colors,borderRadius:graphPeriod<=14?4:2,borderSkipped:false},
-      {label:'目標',data:Array(graphPeriod).fill(goals.cal),type:'line',borderColor:'#378ADD',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0}
+      {label:'目標',data:goalLine,type:'line',borderColor:'#378ADD',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0,stepped:true}
     ]},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:'easeInOutQuart'},plugins:{legend:{display:false}},
     onClick:(evt,elements)=>{if(elements&&elements.length){openDayDetail(elements[0].index-(graphPeriod-1));}},
@@ -2733,9 +2739,14 @@ function renderStamp(){
       <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">不区分好坏日，按周宽松管理。不使用奖励和连续达成的概念。</div>
     `;
     document.getElementById('cheatCard').innerHTML='';
+    document.getElementById('cheatCard').style.display='none';
+    const legendEl=document.getElementById('calLegendReward');
+    if(legendEl)legendEl.style.display='none';
     renderStampCalendar();
     return;
   }
+  document.getElementById('cheatCard').style.display='';
+  {const legendEl=document.getElementById('calLegendReward');if(legendEl)legendEl.style.display='contents';}
   const rewards=checkAndGrantWeeklyRewards();
   const {streak,perfectStreak}=calcWeekStreak();
   const thisWeekStatus=getWeekStatus(thisWeekKey);

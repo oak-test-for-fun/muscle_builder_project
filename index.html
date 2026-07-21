@@ -2592,6 +2592,100 @@ function calcCheatCalLimit(){
   };
 }
 
+
+/* ---- weekly goal system (v37) ---- */
+function getWeekStartKey(dateKey){
+  const [y,m,d]=dateKey.split('-').map(Number);
+  const dt=new Date(y,m-1,d);
+  dt.setDate(dt.getDate()-dt.getDay());
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+function calcWeekTotals(weekStartKey){
+  const [y,m,d]=weekStartKey.split('-').map(Number);
+  const start=new Date(y,m-1,d);
+  const goals=loadGoals();
+  let totalCal=0,totalProtein=0,recordedDays=0,bigOverageDays=0;
+  for(let i=0;i<7;i++){
+    const dd=new Date(start);dd.setDate(start.getDate()+i);
+    const key=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
+    const s=localStorage.getItem('diet_day_'+key);
+    if(!s)continue;
+    const data=safeParse(s,null);
+    if(!data)continue;
+    const t=calcTotals(data);
+    if(t.cal===0)continue;
+    recordedDays++;
+    const dayGoal=data.goalCal||goals.cal;
+    let calContribution=t.cal;
+    if(data.cheatDay==='unlimited'||data.cheatDay==='cheat'){
+      // チートデイ/無制限デイは週合計に対して中立（目標分のみ計上、報酬を使った分は帳消し）
+      calContribution=dayGoal;
+    }else if(dayGoal>0&&t.cal>dayGoal*1.3){
+      bigOverageDays++;
+    }
+    totalCal+=calContribution;
+    totalProtein+=t.p;
+  }
+  return{totalCal,totalProtein,recordedDays,bigOverageDays};
+}
+function getWeekStatus(weekStartKey){
+  const goals=loadGoals();
+  const wt=calcWeekTotals(weekStartKey);
+  if(wt.recordedDays===0)return 'none';
+  const weekGoalCal=goals.cal*7;
+  const weekGoalProtein=goals.protein*7;
+  const calOk=wt.totalCal<=weekGoalCal;
+  const proteinOk=wt.totalProtein>=weekGoalProtein;
+  if(!calOk)return 'failed';
+  return proteinOk?'perfect':'achieved';
+}
+function calcWeekStreakCore(skipCurrentWeek){
+  let streak=0,perfectStreak=0,perfectDone=false;
+  const wk=new Date();wk.setHours(0,0,0,0);
+  wk.setDate(wk.getDate()-wk.getDay());
+  if(skipCurrentWeek)wk.setDate(wk.getDate()-7);
+  for(let i=0;i<104;i++){
+    const key=`${wk.getFullYear()}-${String(wk.getMonth()+1).padStart(2,'0')}-${String(wk.getDate()).padStart(2,'0')}`;
+    const status=getWeekStatus(key);
+    if(status==='none'){
+      if(i===0){wk.setDate(wk.getDate()-7);continue;}
+      break;
+    }
+    if(status==='failed')break;
+    streak++;
+    if(!perfectDone){
+      if(status==='perfect')perfectStreak++;
+      else perfectDone=true;
+    }
+    wk.setDate(wk.getDate()-7);
+  }
+  return{streak,perfectStreak};
+}
+function calcWeekStreak(){return calcWeekStreakCore(false);}
+function checkAndGrantWeeklyRewards(){
+  const{streak,perfectStreak}=calcWeekStreak();
+  const rewards=loadRewards();
+  let updated=false;
+  let lastCheat=parseInt(localStorage.getItem('diet_last_cheat_weekstreak')||'0');
+  let lastPerfect=parseInt(localStorage.getItem('diet_last_perfect_weekstreak')||'0');
+  let last4w=parseInt(localStorage.getItem('diet_last_4week_streak')||'0');
+  const stable=calcWeekStreakCore(true);
+  if(stable.streak<lastCheat){lastCheat=stable.streak;localStorage.setItem('diet_last_cheat_weekstreak',String(lastCheat));}
+  if(stable.perfectStreak<lastPerfect){lastPerfect=stable.perfectStreak;localStorage.setItem('diet_last_perfect_weekstreak',String(lastPerfect));}
+  if(stable.streak<last4w){last4w=stable.streak;localStorage.setItem('diet_last_4week_streak',String(last4w));}
+  if(streak>=1&&streak>lastCheat){
+    rewards.cheat++;updated=true;localStorage.setItem('diet_last_cheat_weekstreak',String(streak));
+  }
+  if(perfectStreak>=1&&perfectStreak>lastPerfect){
+    rewards.bonusCheat++;updated=true;localStorage.setItem('diet_last_perfect_weekstreak',String(perfectStreak));
+  }
+  if(streak>=4&&Math.floor(streak/4)>Math.floor(last4w/4)){
+    rewards.unlimited++;updated=true;localStorage.setItem('diet_last_4week_streak',String(streak));
+  }
+  if(updated)saveRewards(rewards);
+  return rewards;
+}
+
 function openCheatModal(){
   const rewards=loadRewards();
   const limits=calcCheatCalLimit();
@@ -2659,24 +2753,29 @@ function cancelCheatDay(){
 }
 
 function renderStamp(){
-  const rewards=checkAndGrantRewards();
-  const {streak,perfectStreak}=calcStreak();
+  const rewards=checkAndGrantWeeklyRewards();
+  const {streak,perfectStreak}=calcWeekStreak();
   const limits=calcCheatCalLimit();
   const todayStatus=getDayStatusByKey(getKey(0));
-  const nextCheat=streak%6===0&&streak>0?6:6-(streak%6);
-  const nextPerfect=perfectStreak%6===0&&perfectStreak>0?6:6-(perfectStreak%6);
-  const next31=streak%31===0&&streak>0?31:31-(streak%31);
+  const thisWeekKey=getWeekStartKey(getKey(0));
+  const thisWeekStatus=getWeekStatus(thisWeekKey);
+  const wt=calcWeekTotals(thisWeekKey);
+  const goals=loadGoals();
+  const weekGoalCal=goals.cal*7;
+  const weekRemain=weekGoalCal-wt.totalCal;
+  const cheatGrantedThisWeek=thisWeekStatus!=='none'&&thisWeekStatus!=='failed';
+  const nextUnlimitedWeeks=streak%4===0&&streak>0?4:4-(streak%4);
   document.getElementById('streakCard').innerHTML=`
-    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🔥 連続達成ストリーク</div>
-    <div class="streak-row"><span class="streak-label">現在の連続達成</span><span class="streak-val green">${streak}日</span></div>
-    <div class="streak-row"><span class="streak-label">完全達成の連続</span><span class="streak-val ${perfectStreak>=3?'green':''}">⭐ ${perfectStreak}日</span></div>
-    <div class="streak-row"><span class="streak-label">次のチートデイまで</span><span class="streak-val" style="color:var(--amber)">あと${nextCheat}日</span></div>
-    <div class="streak-row"><span class="streak-label">次のボーナスまで</span><span class="streak-val">⭐ あと${nextPerfect}日</span></div>
-    <div class="streak-row"><span class="streak-label">次の無制限デイまで</span><span class="streak-val">🎉 あと${next31}日</span></div>
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🔥 週目標の連続達成</div>
+    <div class="streak-row"><span class="streak-label">現在の連続達成</span><span class="streak-val green">${streak}週</span></div>
+    <div class="streak-row"><span class="streak-label">完全達成の連続</span><span class="streak-val ${perfectStreak>=2?'green':''}">⭐ ${perfectStreak}週</span></div>
+    <div class="streak-row"><span class="streak-label">今週の残り</span><span class="streak-val" style="color:${weekRemain>=0?'var(--green-dark)':'var(--red-dark)'}">${weekRemain>=0?weekRemain+'kcal':'+'+Math.abs(weekRemain)+'kcal超過'}</span></div>
+    <div class="streak-row"><span class="streak-label">通常チート／ボーナス</span><span class="streak-val" style="color:var(--amber)">${cheatGrantedThisWeek?'今週分は達成済み':'今週達成でGET'}</span></div>
+    <div class="streak-row"><span class="streak-label">次の無制限デイまで</span><span class="streak-val">🎉 あと${nextUnlimitedWeeks}週</span></div>
   `;
   let cheatHtml='<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🎁 獲得した報酬</div>';
   if(rewards.cheat===0&&rewards.bonusCheat===0&&rewards.unlimited===0){
-    cheatHtml+='<div style="font-size:12px;color:var(--text3)">まだ報酬はありません。6日連続達成を目指しましょう！</div>';
+    cheatHtml+='<div style="font-size:12px;color:var(--text3)">まだ報酬はありません。1週間の目標達成を目指しましょう！</div>';
   }else{
     if(rewards.cheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🍕 チートデイ</span><span class="streak-val" style="color:var(--amber)">${rewards.cheat}日分</span></div>`;
     if(rewards.bonusCheat>0)cheatHtml+=`<div class="streak-row"><span class="streak-label">🌟 ボーナスチートデイ</span><span class="streak-val" style="color:var(--amber)">${rewards.bonusCheat}日分</span></div>`;

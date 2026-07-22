@@ -306,6 +306,18 @@
   .export-status-icon{font-size:20px;flex-shrink:0;line-height:1}
   .export-status-title{font-size:13px;font-weight:600}
   .export-status-sub{font-size:11px;margin-top:1px}
+
+  /* ---- Blank gap banner (記録空白検知) ---- */
+  .blank-gap-banner{display:none;align-items:center;gap:10px;justify-content:space-between;background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px}
+  .blank-gap-text{font-size:12.5px;color:var(--text2);line-height:1.5;flex:1}
+  .blank-gap-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .blank-gap-resume{background:var(--green);color:#fff;border:none;border-radius:var(--radius-xs);padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .blank-gap-dismiss{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;line-height:1}
+  .builtin-override-notice{display:none;align-items:center;gap:10px;justify-content:space-between;background:var(--card);border:0.5px solid var(--border);border-left:3px solid var(--text3);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px}
+  .builtin-override-text{font-size:12.5px;color:var(--text2);line-height:1.5;flex:1}
+  .builtin-override-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .builtin-override-goto{background:none;color:var(--text2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .builtin-override-dismiss{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;line-height:1}
 </style>
 
 <body>
@@ -323,16 +335,34 @@
       <button class="nav-btn" onclick="chgDay(1)">›</button>
     </div>
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('diary',this)"><span class="tab-icon">📝</span>記録</button>
+      <button class="tab active" id="tabBtnDiary" onclick="switchTab('diary',this)"><span class="tab-icon">📝</span>記録</button>
       <button class="tab" onclick="switchTab('graph',this)"><span class="tab-icon">📊</span>グラフ</button>
       <button class="tab" onclick="switchTab('workout',this)"><span class="tab-icon">🏋️</span>筋トレ</button>
       <button class="tab" id="tabBtnStamp" onclick="switchTab('stamp',this)"><span class="tab-icon">🏆</span>達成</button>
-      <button class="tab" onclick="switchTab('foods',this)"><span class="tab-icon">🥗</span>食品</button>
+      <button class="tab" id="tabBtnFoods" onclick="switchTab('foods',this)"><span class="tab-icon">🥗</span>食品</button>
       <button class="tab" onclick="switchTab('settings',this)"><span class="tab-icon">⚙️</span>設定</button>
     </div>
   </div>
 
   <div class="content">
+
+    <!-- 記録空白検知バナー -->
+    <div class="blank-gap-banner" id="blankGapBanner">
+      <div class="blank-gap-text">記録が3日間ありません。次の食事から記録を再開できます。</div>
+      <div class="blank-gap-actions">
+        <button class="blank-gap-resume" onclick="resumeFromBlankGapBanner()">記録する</button>
+        <button class="blank-gap-dismiss" onclick="dismissBlankGapBanner()" aria-label="閉じる">✕</button>
+      </div>
+    </div>
+
+    <!-- BUILTIN上書きによるunitMode打ち消しの告知 -->
+    <div class="builtin-override-notice" id="builtinOverrideNotice">
+      <div class="builtin-override-text">Baseブレッド／最中／大福／卵／バナナの表示単位の仕様が更新されています。記録・集計に影響する場合があります(過去に記録済みのデータは自動では変更されません)。必要な場合のみ「確認する」から見直せます。</div>
+      <div class="builtin-override-actions">
+        <button class="builtin-override-goto" onclick="goToBuiltinOverrideCheck()">確認する</button>
+        <button class="builtin-override-dismiss" onclick="dismissBuiltinOverrideNotice()" aria-label="閉じる">✕</button>
+      </div>
+    </div>
 
     <!-- ======= 記録タブ ======= -->
     <div id="tab-diary">
@@ -398,7 +428,7 @@
         </div>
         <div class="chart-legend">
           <span class="leg" id="legIntake"><span class="leg-sq" style="background:var(--green)"></span>摂取</span>
-          <span class="leg"><span class="leg-sq" style="background:var(--border);border:1px dashed var(--blue)"></span>目標</span>
+          <span class="leg" id="legGoal"><span class="leg-sq" style="background:var(--border);border:1px dashed var(--blue)"></span>目標</span>
           <span class="leg"><span style="font-size:12px">🏋️</span>筋トレ実施日</span>
           <span class="leg" id="legCheat"><span class="leg-sq" style="background:#7C3AED"></span>チートデイ（計画）</span>
         </div>
@@ -859,6 +889,7 @@
             <option value="袋">袋</option>
             <option value="本">本</option>
             <option value="杯">杯</option>
+            <option value="枚">枚</option>
           </select>
         </div>
       </div>
@@ -913,6 +944,7 @@
             <option value="袋">袋</option>
             <option value="本">本</option>
             <option value="杯">杯</option>
+            <option value="枚">枚</option>
           </select>
         </div>
       </div>
@@ -931,16 +963,16 @@
 
 <script>
 const BUILTIN=[
-  {n:'焼き芋',k:130,p:1.4,f:0.2,c:31.0},{n:'蒸しジャガイモ',k:76,p:1.6,f:0.1,c:17.6},
-  {n:'Baseブレッド(1枚)',k:200,p:13.5,f:6.5,c:22.0},{n:'蒸し鶏むね肉',k:108,p:22.3,f:1.5,c:0},
-  {n:'ブロッコリ',k:33,p:3.7,f:0.5,c:5.2},{n:'最中(1個)',k:150,p:2.5,f:1.5,c:32.0},
-  {n:'大福(1個)',k:170,p:3.5,f:0.5,c:38.5},{n:'レーズン',k:301,p:2.4,f:0.3,c:77.0},
-  {n:'ドライマンゴ',k:320,p:2.4,f:0.5,c:82.0},{n:'オートミール',k:350,p:13.0,f:5.7,c:62.0},
-  {n:'プロテイン',k:400,p:80.0,f:5.0,c:10.0},{n:'クレアチン',k:0,p:0,f:0,c:0},
-  {n:'EAA',k:40,p:9.0,f:0,c:1.0},{n:'はちみつ',k:294,p:0.2,f:0,c:79.7},
-  {n:'ご飯',k:156,p:2.5,f:0.3,c:34.6},{n:'卵1個(60g)',k:76,p:6.2,f:5.1,c:0.2},
-  {n:'サラダチキン',k:105,p:24.0,f:0.8,c:0},{n:'バナナ(1本)',k:86,p:1.1,f:0.2,c:22.5},
-  {n:'ヨーグルト',k:62,p:3.6,f:3.0,c:4.9},
+  {n:'焼き芋',k:130,p:1.4,f:0.2,c:31.0,unitMode:'g'},{n:'蒸しジャガイモ',k:76,p:1.6,f:0.1,c:17.6,unitMode:'g'},
+  {n:'Baseブレッド',k:200,p:13.5,f:6.5,c:22.0,unitMode:'count',unitName:'枚'},{n:'蒸し鶏むね肉',k:108,p:22.3,f:1.5,c:0,unitMode:'g'},
+  {n:'ブロッコリ',k:33,p:3.7,f:0.5,c:5.2,unitMode:'g'},{n:'最中',k:150,p:2.5,f:1.5,c:32.0,unitMode:'count',unitName:'個'},
+  {n:'大福',k:170,p:3.5,f:0.5,c:38.5,unitMode:'count',unitName:'個'},{n:'レーズン',k:301,p:2.4,f:0.3,c:77.0,unitMode:'g'},
+  {n:'ドライマンゴ',k:320,p:2.4,f:0.5,c:82.0,unitMode:'g'},{n:'オートミール',k:350,p:13.0,f:5.7,c:62.0,unitMode:'g'},
+  {n:'プロテイン',k:400,p:80.0,f:5.0,c:10.0,unitMode:'g'},{n:'クレアチン',k:0,p:0,f:0,c:0,unitMode:'g'},
+  {n:'EAA',k:40,p:9.0,f:0,c:1.0,unitMode:'g'},{n:'はちみつ',k:294,p:0.2,f:0,c:79.7,unitMode:'g'},
+  {n:'ご飯',k:156,p:2.5,f:0.3,c:34.6,unitMode:'g'},{n:'卵',k:76,p:6.2,f:5.1,c:0.2,unitMode:'count',unitName:'個',unitGramNote:60},
+  {n:'サラダチキン',k:105,p:24.0,f:0.8,c:0,unitMode:'g'},{n:'バナナ',k:86,p:1.1,f:0.2,c:22.5,unitMode:'count',unitName:'本'},
+  {n:'ヨーグルト',k:62,p:3.6,f:3.0,c:4.9,unitMode:'g'},
 ];
 const BASE_MEALS=['朝食','昼食','夕食'];
 let currentDay=0, selMealKey='朝食', graphPeriod=7, calChartInst=null, pfcChartInst=null, weightChartInst=null, unitMode='g', cUnitMode='g';
@@ -1001,6 +1033,62 @@ function getRecoveryFactor(offset){
 }
 
 function getKey(offset){const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+/* ---- 記録空白検知＋やさしい再開導線 ---- */
+const BLANK_GAP_THRESHOLD_DAYS=3;
+let blankGapLastCheckedKey=null;
+function getDaysSinceLastRecord(){
+  for(let i=0;i<365;i++){
+    const key=getKey(-i);
+    if(localStorage.getItem('diet_day_'+key)||localStorage.getItem('diet_workout_'+key))return i;
+  }
+  return 365;
+}
+function checkBlankGapBanner(){
+  const todayKey=getKey(0);
+  blankGapLastCheckedKey=todayKey;
+  const banner=document.getElementById('blankGapBanner');
+  if(!banner)return;
+  if(localStorage.getItem('diet_blankgap_dismissed_date')===todayKey){banner.style.display='none';return;}
+  banner.style.display=getDaysSinceLastRecord()>=BLANK_GAP_THRESHOLD_DAYS?'flex':'none';
+}
+function dismissBlankGapBanner(){
+  localStorage.setItem('diet_blankgap_dismissed_date',getKey(0));
+  const banner=document.getElementById('blankGapBanner');
+  if(banner)banner.style.display='none';
+}
+function resumeFromBlankGapBanner(){
+  dismissBlankGapBanner();
+  currentDay=0;
+  switchTab('diary',document.getElementById('tabBtnDiary'));
+  render();
+  const weightInput=document.getElementById('todayWeight');
+  if(weightInput)weightInput.focus();
+}
+
+/* ---- BUILTIN上書きによるunitMode打ち消しの告知（v47・バックログ#11） ---- */
+function hasLegacyBuiltinOverride(){
+  const ov=loadBuiltinOverrides();
+  return BUILTIN.some((f,i)=>f.unitMode==='count'&&ov[i]&&ov[i].unitMode!=='count');
+}
+function checkBuiltinOverrideNotice(){
+  const notice=document.getElementById('builtinOverrideNotice');
+  if(!notice)return;
+  if(sessionStorage.getItem('diet_builtin_override_notice_seen')){notice.style.display='none';return;}
+  const gapBanner=document.getElementById('blankGapBanner');
+  if(gapBanner&&gapBanner.style.display!=='none'){notice.style.display='none';return;} // blankGapBanner優先。既読にせず次回起動時に再判定
+  notice.style.display=hasLegacyBuiltinOverride()?'flex':'none';
+}
+function dismissBuiltinOverrideNotice(){
+  sessionStorage.setItem('diet_builtin_override_notice_seen','1');
+  const notice=document.getElementById('builtinOverrideNotice');
+  if(notice)notice.style.display='none';
+}
+function goToBuiltinOverrideCheck(){
+  dismissBuiltinOverrideNotice();
+  switchTab('foods',document.getElementById('tabBtnFoods'));
+}
+
 function getDateStr(offset){
   const d=new Date();d.setDate(d.getDate()+offset);
   const w=['日','月','火','水','木','金','土'][d.getDay()];
@@ -1559,7 +1647,8 @@ function renderBuiltinFoodList(){
   el.innerHTML=BUILTIN.map((f,i)=>{
     const cur=ov[i]?{...f,...ov[i]}:f;
     const edited=!!ov[i];
-    return`<div class="custom-food-row"><div><div class="custom-food-name">${cur.n}${edited?'<span style="font-size:10px;color:var(--green);margin-left:6px">編集済</span>':''}</div><div class="custom-food-detail">${cur.k}kcal / P:${cur.p}g F:${cur.f}g C:${cur.c}g（100gあたり）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openBuiltinEditModal(${i})" style="color:var(--blue)">編集</button>${edited?`<button class="icon-btn" onclick="resetBuiltin(${i})" style="color:var(--text3)">戻す</button>`:''}</div></div>`;
+    const unitLabel=cur.unitMode==='count'?`1${cur.unitName||'個'}あたり${cur.unitGramNote?`(約${cur.unitGramNote}g換算)`:''}`:'100gあたり';
+    return`<div class="custom-food-row"><div><div class="custom-food-name">${cur.n}${edited?'<span style="font-size:10px;color:var(--green);margin-left:6px">編集済</span>':''}</div><div class="custom-food-detail">${cur.k}kcal / P:${cur.p}g F:${cur.f}g C:${cur.c}g（${unitLabel}）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openBuiltinEditModal(${i})" style="color:var(--blue)">編集</button>${edited?`<button class="icon-btn" onclick="resetBuiltin(${i})" style="color:var(--text3)">戻す</button>`:''}</div></div>`;
   }).join('');
 }
 function openBuiltinEditModal(idx){
@@ -1871,12 +1960,13 @@ function renderCharts(){
     }
   };
 
+  const calDatasets=[{label:'摂取',data:calVals,backgroundColor:colors,borderRadius:graphPeriod<=14?4:2,borderSkipped:false}];
+  if(mode!=='free')calDatasets.push({label:'目標',data:goalLine,type:'line',borderColor:'#378ADD',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0,stepped:true});
+  const legGoalEl=document.getElementById('legGoal');
+  if(legGoalEl)legGoalEl.style.display=mode==='free'?'none':'';
   calChartInst=new Chart(document.getElementById('calChart'),{
     type:'bar',
-    data:{labels,datasets:[
-      {label:'摂取',data:calVals,backgroundColor:colors,borderRadius:graphPeriod<=14?4:2,borderSkipped:false},
-      {label:'目標',data:goalLine,type:'line',borderColor:'#378ADD',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0,stepped:true}
-    ]},
+    data:{labels,datasets:calDatasets},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:'easeInOutQuart'},plugins:{legend:{display:false}},
     onClick:(evt,elements)=>{if(elements&&elements.length){openDayDetail(elements[0].index-(graphPeriod-1));}},
     scales:{
@@ -2562,90 +2652,20 @@ function applyNewDailyTarget(kcal){
 let stampCalYear=new Date().getFullYear();
 let stampCalMonth=new Date().getMonth();
 
-// getDayStatusByKey用キャッシュ（同一レンダリング内で使い回す）
+// [v45] getDayStatusByKey / calcStreakCore / calcStreak（日次判定ロジック）は未使用のため削除済み。
+// 置き換え先: 週次版 getWeekStatus() / calcWeekStreakCore()（週目標システム、docs/meetings/v45_design_review.md参照）
+// _statusCache / clearStatusCache は getDayStatusByKey 専用キャッシュとして導入されたものだが、
+// renderStampCalendar()（下記）から呼ばれる生きたコードのため、関数自体は削除せず残す。
 let _statusCache={goals:null,prof:null};
 function clearStatusCache(){_statusCache={goals:null,prof:null};}
-
-function getDayStatusByKey(dateKey){
-  const s=localStorage.getItem('diet_day_'+dateKey);
-  if(!s)return 'none';
-  const data=safeParse(s,null);
-  if(!data)return 'none';
-  const t=calcTotals(data);
-  if(t.cal===0)return 'none';
-  // キャッシュからgoals/profを取得
-  if(!_statusCache.goals)_statusCache.goals=loadGoals();
-  if(!_statusCache.prof)_statusCache.prof=loadProfileData();
-  const goals=_statusCache.goals;
-  const prof=_statusCache.prof;
-  // goalCalスナップショットがあればそちらを優先（目標変更の影響を受けない）
-  const effectiveCal=data.goalCal||goals.cal;
-  const proteinOk=t.p>=goals.protein;
-  if(data.cheatDay==='unlimited'){
-    return proteinOk?'perfect':'achieved';
-  }
-  if(data.cheatDay==='cheat'){
-    // v39: 上限超過をfailedにしない（たがのゆるみ効果対策。チートデイは常に成功扱い）
-    return proteinOk?'perfect':'achieved';
-  }
-  // 通常日
-  const bw=prof&&prof.weight?prof.weight:70;
-  const wkS=localStorage.getItem('diet_workout_'+dateKey);
-  const wkBonus=wkS?calcWorkoutCal(safeParse(wkS,[]),bw)*0.5:0;
-  const effectiveGoal=effectiveCal+wkBonus;
-  const calOk=t.cal<=effectiveGoal;
-  if(!calOk)return 'failed';
-  return proteinOk?'perfect':'achieved';
-}
-
-function calcStreakCore(skipToday){
-  clearStatusCache(); // ループ前にキャッシュリセット
-  let streak=0,perfectStreak=0,perfectDone=false,i=skipToday?1:0;
-  while(i<365){
-    const d=new Date();d.setDate(d.getDate()-i);
-    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const status=getDayStatusByKey(key);
-    if(status==='none'){if(i===0){i++;continue;}break;}
-    if(status==='failed')break;
-    streak++;
-    if(!perfectDone){
-      if(status==='perfect')perfectStreak++;
-      else perfectDone=true; // achievedで連続終了、以降は加算しない
-    }
-    i++;
-  }
-  return{streak,perfectStreak};
-}
-function calcStreak(){return calcStreakCore(false);}
 
 function loadRewards(){return safeParse(localStorage.getItem('diet_rewards'),{cheat:0,unlimited:0,bonusCheat:0});}
 function saveRewards(r){localStorage.setItem('diet_rewards',JSON.stringify(r));}
 
-function checkAndGrantRewards(){
-  const {streak,perfectStreak}=calcStreak();
-  const rewards=loadRewards();
-  let updated=false;
-  let lastCheat=parseInt(localStorage.getItem('diet_last_cheat_streak')||'0');
-  let lastPerfect=parseInt(localStorage.getItem('diet_last_perfect_streak')||'0');
-  let last31=parseInt(localStorage.getItem('diet_last_31_streak')||'0');
-  // ストリークが過去日で確実に切れた場合は基準値を同期する
-  // （今日の未確定状態＝食事・タンパク質が途中の状態では誤リセットしないよう、今日を除いて判定）
-  const stable=calcStreakCore(true);
-  if(stable.streak<lastCheat){lastCheat=stable.streak;localStorage.setItem('diet_last_cheat_streak',String(lastCheat));}
-  if(stable.perfectStreak<lastPerfect){lastPerfect=stable.perfectStreak;localStorage.setItem('diet_last_perfect_streak',String(lastPerfect));}
-  if(stable.streak<last31){last31=stable.streak;localStorage.setItem('diet_last_31_streak',String(last31));}
-  if(streak>=6&&Math.floor(streak/6)>Math.floor(lastCheat/6)){
-    rewards.cheat++;updated=true;localStorage.setItem('diet_last_cheat_streak',String(streak));
-  }
-  if(perfectStreak>=6&&Math.floor(perfectStreak/6)>Math.floor(lastPerfect/6)){
-    rewards.bonusCheat++;updated=true;localStorage.setItem('diet_last_perfect_streak',String(perfectStreak));
-  }
-  if(streak>=31&&Math.floor(streak/31)>Math.floor(last31/31)){
-    rewards.unlimited++;updated=true;localStorage.setItem('diet_last_31_streak',String(streak));
-  }
-  if(updated)saveRewards(rewards);
-  return rewards;
-}
+// [v45] checkAndGrantRewards（日次版の報酬判定）は未使用のため削除済み。loadRewards/saveRewardsは他箇所で使用中のため残置。
+// diet_last_cheat_streak / diet_last_perfect_streak / diet_last_31_streak の各localStorageキーは
+// export（データエクスポート処理）/ import（データインポート処理）が直接読み書きするため維持するが、
+// 本関数削除により今後これらのキーへの書き込み元は存在しなくなる（値は削除時点で凍結され、以後はexport/importの往復のみ）。
 
 function calcCheatCalLimit(){
   const prof=loadProfileData();
@@ -2674,6 +2694,10 @@ function calcCheatCalLimit(){
 
 
 /* ---- weekly goal system (v37) ---- */
+/* v45修正フェーズ検証済み（2026-07-21）: 週跨ぎ・記録空白期間を含む実データシナリオ（チートデイ後に数日記録が途切れるケース含む）でgetWeekStatus/calcWeekStreakCoreの挙動を検証。
+   空白日はcalcWeekTotalsの集計から除外されるだけで'failed'要因にはならない。週境界を跨ぐ空白（先週末〜今週頭）でも、現在進行中の週が0件（'none'）である間はcalcWeekStreakCoreの
+   「i===0のみ'none'を1週分許容してスキップ」ルールにより連続記録（streak）は途切れない。丸ごと1週間分（過去週）が無記録だった場合のみstreakがリセットされる（設計上の意図通り、
+   'failed'による罰ではなく単に「追跡データがない週は連続カウントに含められない」という扱い）。検証シナリオ・結果の詳細は docs/meetings/v45_fix.md を参照。 */
 function getWeekStartKey(dateKey){
   const [y,m,d]=dateKey.split('-').map(Number);
   const dt=new Date(y,m-1,d);
@@ -3684,6 +3708,14 @@ function sanitizeStoredNumbers(){
 sanitizeStoredNumbers();
 
 render();
+checkBlankGapBanner();
+checkBuiltinOverrideNotice();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&blankGapLastCheckedKey!==getKey(0))checkBlankGapBanner();
+});
+window.addEventListener('pageshow',()=>{
+  if(blankGapLastCheckedKey!==getKey(0))checkBlankGapBanner();
+});
 
 // Service Worker登録（オフライン対応）
 if('serviceWorker' in navigator){

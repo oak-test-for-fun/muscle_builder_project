@@ -306,6 +306,18 @@
   .export-status-icon{font-size:20px;flex-shrink:0;line-height:1}
   .export-status-title{font-size:13px;font-weight:600}
   .export-status-sub{font-size:11px;margin-top:1px}
+
+  /* ---- Blank gap banner (记录空白提醒) ---- */
+  .blank-gap-banner{display:none;align-items:center;gap:10px;justify-content:space-between;background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px}
+  .blank-gap-text{font-size:12.5px;color:var(--text2);line-height:1.5;flex:1}
+  .blank-gap-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .blank-gap-resume{background:var(--green);color:#fff;border:none;border-radius:var(--radius-xs);padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .blank-gap-dismiss{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;line-height:1}
+  .builtin-override-notice{display:none;align-items:center;gap:10px;justify-content:space-between;background:var(--card);border:0.5px solid var(--border);border-left:3px solid var(--text3);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px}
+  .builtin-override-text{font-size:12.5px;color:var(--text2);line-height:1.5;flex:1}
+  .builtin-override-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .builtin-override-goto{background:none;color:var(--text2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .builtin-override-dismiss{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;line-height:1}
 </style>
 
 <body>
@@ -323,16 +335,34 @@
       <button class="nav-btn" onclick="chgDay(1)">›</button>
     </div>
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('diary',this)"><span class="tab-icon">📝</span>记录</button>
+      <button class="tab active" id="tabBtnDiary" onclick="switchTab('diary',this)"><span class="tab-icon">📝</span>记录</button>
       <button class="tab" onclick="switchTab('graph',this)"><span class="tab-icon">📊</span>图表</button>
       <button class="tab" onclick="switchTab('workout',this)"><span class="tab-icon">🏋️</span>健身</button>
       <button class="tab" id="tabBtnStamp" onclick="switchTab('stamp',this)"><span class="tab-icon">🏆</span>成就</button>
-      <button class="tab" onclick="switchTab('foods',this)"><span class="tab-icon">🥗</span>食品</button>
+      <button class="tab" id="tabBtnFoods" onclick="switchTab('foods',this)"><span class="tab-icon">🥗</span>食品</button>
       <button class="tab" onclick="switchTab('settings',this)"><span class="tab-icon">⚙️</span>设置</button>
     </div>
   </div>
 
   <div class="content">
+
+    <!-- 记录空白提醒 -->
+    <div class="blank-gap-banner" id="blankGapBanner">
+      <div class="blank-gap-text">已经3天没有记录了，从下一餐开始重新记录就可以。</div>
+      <div class="blank-gap-actions">
+        <button class="blank-gap-resume" onclick="resumeFromBlankGapBanner()">去记录</button>
+        <button class="blank-gap-dismiss" onclick="dismissBlankGapBanner()" aria-label="关闭">✕</button>
+      </div>
+    </div>
+
+    <!-- 内置食品覆盖导致unitMode被打消的提示 -->
+    <div class="builtin-override-notice" id="builtinOverrideNotice">
+      <div class="builtin-override-text">部分内置食品的显示单位规格已更新。记录、统计可能受到影响(过去已记录的数据不会自动变更)。如有需要，可通过"确认"进行查看。</div>
+      <div class="builtin-override-actions">
+        <button class="builtin-override-goto" onclick="goToBuiltinOverrideCheck()">确认</button>
+        <button class="builtin-override-dismiss" onclick="dismissBuiltinOverrideNotice()" aria-label="关闭">✕</button>
+      </div>
+    </div>
 
     <!-- ======= 记录标签 ======= -->
     <div id="tab-diary">
@@ -398,7 +428,7 @@
         </div>
         <div class="chart-legend">
           <span class="leg" id="legIntake"><span class="leg-sq" style="background:var(--green)"></span>摄入</span>
-          <span class="leg"><span class="leg-sq" style="background:var(--border);border:1px dashed var(--blue)"></span>目标</span>
+          <span class="leg" id="legGoal"><span class="leg-sq" style="background:var(--border);border:1px dashed var(--blue)"></span>目标</span>
           <span class="leg"><span style="font-size:12px">🏋️</span>力量训练／<span style="font-size:12px">🏃</span>有氧</span>
           <span class="leg" id="legCheat"><span class="leg-sq" style="background:#7C3AED"></span>欺骗日（计划）</span>
         </div>
@@ -1006,6 +1036,67 @@ function getRecoveryFactor(offset){
 }
 
 function getKey(offset){const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+/* ---- 记录空白检测＋轻松重启引导 ---- */
+const BLANK_GAP_THRESHOLD_DAYS=3;
+let blankGapLastCheckedKey=null;
+function getDaysSinceLastRecord(){
+  for(let i=0;i<365;i++){
+    const key=getKey(-i);
+    if(localStorage.getItem('diet_day_'+key)||localStorage.getItem('diet_workout_'+key))return i;
+  }
+  return 365;
+}
+function checkBlankGapBanner(){
+  const todayKey=getKey(0);
+  blankGapLastCheckedKey=todayKey;
+  const banner=document.getElementById('blankGapBanner');
+  if(!banner)return;
+  if(localStorage.getItem('diet_blankgap_dismissed_date')===todayKey){banner.style.display='none';return;}
+  banner.style.display=getDaysSinceLastRecord()>=BLANK_GAP_THRESHOLD_DAYS?'flex':'none';
+}
+function dismissBlankGapBanner(){
+  localStorage.setItem('diet_blankgap_dismissed_date',getKey(0));
+  const banner=document.getElementById('blankGapBanner');
+  if(banner)banner.style.display='none';
+}
+function resumeFromBlankGapBanner(){
+  dismissBlankGapBanner();
+  currentDay=0;
+  switchTab('diary',document.getElementById('tabBtnDiary'));
+  render();
+  const weightInput=document.getElementById('todayWeight');
+  if(weightInput)weightInput.focus();
+}
+
+/* ---- 内置食品覆盖导致unitMode被打消的提示(v47・待办事项#11) ---- */
+// 注意(v47修正フェーズ・死んだコード状態): 本ファイルのBUILTIN配列(上記)にはunitMode:'count'の食品が
+// 1件も存在しないため、hasLegacyBuiltinOverride()は現状常にfalseを返し、この通知は実際には発火しない。
+// index.htmlとの機能同期のためコードは実装済みだが、将来index-zh.htmlのBUILTINに個数単位(unitMode:'count')の
+// 食品を追加した場合、その瞬間から本通知が発火するようになる(非対称・気づきにくい挙動変化)。
+// 追加する際は本コメントを参照し、通知の表示条件・文言が意図通りかを再確認すること。詳細はdocs/REQUIREMENTS.mdバックログ#11参照。
+function hasLegacyBuiltinOverride(){
+  const ov=loadBuiltinOverrides();
+  return BUILTIN.some((f,i)=>f.unitMode==='count'&&ov[i]&&ov[i].unitMode!=='count');
+}
+function checkBuiltinOverrideNotice(){
+  const notice=document.getElementById('builtinOverrideNotice');
+  if(!notice)return;
+  if(sessionStorage.getItem('diet_builtin_override_notice_seen')){notice.style.display='none';return;}
+  const gapBanner=document.getElementById('blankGapBanner');
+  if(gapBanner&&gapBanner.style.display!=='none'){notice.style.display='none';return;} // 优先显示blankGapBanner。不标记为已读,下次启动时重新判定
+  notice.style.display=hasLegacyBuiltinOverride()?'flex':'none';
+}
+function dismissBuiltinOverrideNotice(){
+  sessionStorage.setItem('diet_builtin_override_notice_seen','1');
+  const notice=document.getElementById('builtinOverrideNotice');
+  if(notice)notice.style.display='none';
+}
+function goToBuiltinOverrideCheck(){
+  dismissBuiltinOverrideNotice();
+  switchTab('foods',document.getElementById('tabBtnFoods'));
+}
+
 function getDateStr(offset){
   const d=new Date();d.setDate(d.getDate()+offset);
   const w=['日','一','二','三','四','五','六'][d.getDay()];
@@ -1812,12 +1903,13 @@ function renderCharts(){
     }
   };
 
+  const calDatasets=[{label:'摂取',data:calVals,backgroundColor:colors,borderRadius:graphPeriod<=14?4:2,borderSkipped:false}];
+  if(mode!=='free')calDatasets.push({label:'目標',data:goalLine,type:'line',borderColor:'#378ADD',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0,stepped:true});
+  const legGoalEl=document.getElementById('legGoal');
+  if(legGoalEl)legGoalEl.style.display=mode==='free'?'none':'';
   calChartInst=new Chart(document.getElementById('calChart'),{
     type:'bar',
-    data:{labels,datasets:[
-      {label:'摂取',data:calVals,backgroundColor:colors,borderRadius:graphPeriod<=14?4:2,borderSkipped:false},
-      {label:'目標',data:goalLine,type:'line',borderColor:'#378ADD',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0,stepped:true}
-    ]},
+    data:{labels,datasets:calDatasets},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:'easeInOutQuart'},plugins:{legend:{display:false}},
     onClick:(evt,elements)=>{if(elements&&elements.length){openDayDetail(elements[0].index-(graphPeriod-1));}},
     scales:{
@@ -2597,6 +2689,10 @@ function calcCheatCalLimit(){
 
 
 /* ---- weekly goal system (v37) ---- */
+/* v45修正フェーズ検証済み（2026-07-21）: 週跨ぎ・記録空白期間を含む実データシナリオ（チートデイ後に数日記録が途切れるケース含む）でgetWeekStatus/calcWeekStreakCoreの挙動を検証。
+   空白日はcalcWeekTotalsの集計から除外されるだけで'failed'要因にはならない。週境界を跨ぐ空白（先週末〜今週頭）でも、現在進行中の週が0件（'none'）である間はcalcWeekStreakCoreの
+   「i===0のみ'none'を1週分許容してスキップ」ルールにより連続記録（streak）は途切れない。丸ごと1週間分（過去週）が無記録だった場合のみstreakがリセットされる（設計上の意図通り、
+   'failed'による罰ではなく単に「追跡データがない週は連続カウントに含められない」という扱い）。検証シナリオ・結果の詳細は docs/meetings/v45_fix.md を参照。 */
 function getWeekStartKey(dateKey){
   const [y,m,d]=dateKey.split('-').map(Number);
   const dt=new Date(y,m-1,d);
@@ -3594,6 +3690,14 @@ function sanitizeStoredNumbers(){
 sanitizeStoredNumbers();
 
 render();
+checkBlankGapBanner();
+checkBuiltinOverrideNotice();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&blankGapLastCheckedKey!==getKey(0))checkBlankGapBanner();
+});
+window.addEventListener('pageshow',()=>{
+  if(blankGapLastCheckedKey!==getKey(0))checkBlankGapBanner();
+});
 
 // Service Worker登録（オフライン対応）
 if('serviceWorker' in navigator){

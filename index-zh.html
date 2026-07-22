@@ -1483,6 +1483,14 @@ function parseFoodItemName(name){
 function _avgArr(arr){return arr.length?arr.reduce((s,v)=>s+v,0)/arr.length:0;}
 
 // 从历史记录中提取「尚未注册的常吃食品」，按频率排序（前20个）
+// 注意(v49・条件付き再同期トリガー): index.html側のcollectFrequentFoods()には
+// LEGACY_FOOD_BASE_ALIASES（例: 卵1個→卵）による表示専用の名寄せロジックが存在するが、
+// 本ファイル(index-zh.html)のBUILTINには個数括弧埋め込みの命名（例:「◯◯1個」「◯◯1枚」）が
+// 現状存在しないため、本ファイルでは意図的に未実装（v49設計レビュー会議決定）。
+// 【将来トリガー】index-zh.html のBUILTIN配列に個数括弧埋め込み命名の食品（unitMode:'count'相当）が
+// 追加された場合は、本関数にindex.html同様のLEGACY_FOOD_BASE_ALIASES相当ロジックを同期移植すること。
+// 移植を怠ると、v46/v49で発生したのと同種の「よく食べるもの」候補への旧名重複表示バグが
+// 本ファイルでも再発しうる。詳細はdocs/REQUIREMENTS.md「中国語版・未同期の変更」参照。
 function collectFrequentFoods(){
   const registeredNames=new Set();
   getBuiltin().forEach(f=>registeredNames.add(f.n));

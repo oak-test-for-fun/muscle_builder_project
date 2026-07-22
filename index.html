@@ -1029,6 +1029,18 @@ function getRecoveryFactor(offset){
   if(d1&&(d1.cheatDay==='cheat'||d1.cheatDay==='unlimited'))return 1.15;
   const d2=safeParse(localStorage.getItem('diet_day_'+getKey(offset-2)),null);
   if(d2&&(d2.cheatDay==='cheat'||d2.cheatDay==='unlimited'))return 1.10;
+  // モード制度A（v51）: cheatDayフラグが立っていない「未記録」または「目標を大幅超過」の乱れが
+  // 2日以上連続した場合も、同じ段階的な復帰バファーを自動で効かせる。ユーザーがcheatDayとして
+  // マークしていない過食・記録空白（チートデイ後に数日過食が続いたが記録もしなかった、等）にも対応する。
+  const isDisruptedDay=(rec)=>{
+    if(!rec)return true; // 未記録
+    const goalCal=rec.goalCal||loadGoals().cal;
+    return calcTotals(rec).cal>goalCal*1.3; // 目標を3割以上超過
+  };
+  const disrupted1=isDisruptedDay(d1),disrupted2=isDisruptedDay(d2);
+  if(disrupted1&&disrupted2)return 1.15;
+  const d3=safeParse(localStorage.getItem('diet_day_'+getKey(offset-3)),null);
+  if(disrupted2&&isDisruptedDay(d3))return 1.10;
   return 1;
 }
 
@@ -1529,6 +1541,9 @@ function _avgArr(arr){return arr.length?arr.reduce((s,v)=>s+v,0)/arr.length:0;}
 
 // 過去の記録から「まだ登録されていない、よく食べるもの」を頻度順に抽出（上位20件）
 function collectFrequentFoods(){
+  // 旧BUILTIN命名（個数括弧埋め込み）からの表示専用エイリアス吸収。
+  // diet_day_* 等の既存データは書き換えず、候補集計時の名寄せにのみ使う（v49 バックログ#10）。
+  const LEGACY_FOOD_BASE_ALIASES={'卵1個':'卵','Baseブレッド(1枚)':'Baseブレッド','最中(1個)':'最中','大福(1個)':'大福','バナナ(1本)':'バナナ'};
   const registeredNames=new Set();
   getBuiltin().forEach(f=>registeredNames.add(f.n));
   loadCustomFoods().forEach(f=>registeredNames.add(f.n));
@@ -1547,9 +1562,10 @@ function collectFrequentFoods(){
     allItems.forEach(it=>{
       if(!it||!it.n)return;
       const parsed=parseFoodItemName(it.n);
-      if(registeredNames.has(it.n)||registeredBase.has(parsed.base))return;
-      const key=parsed.base+'|'+parsed.type+'|'+(parsed.unit||'');
-      if(!groups[key])groups[key]={base:parsed.base,type:parsed.type,unit:parsed.unit,occurrences:[],dates:new Set()};
+      const base=LEGACY_FOOD_BASE_ALIASES[parsed.base]||parsed.base;
+      if(registeredNames.has(it.n)||registeredBase.has(base))return;
+      const key=base+'|'+parsed.type+'|'+(parsed.unit||'');
+      if(!groups[key])groups[key]={base:base,type:parsed.type,unit:parsed.unit,occurrences:[],dates:new Set()};
       groups[key].occurrences.push({qty:parsed.qty||1,k:it.k||0,p:it.p||0,f:it.f||0,c:it.c||0,date:dateKey});
       groups[key].dates.add(dateKey);
     });

@@ -500,7 +500,7 @@
       <div class="section-title sec-toggle" onclick="toggleFoodSection('frequent')"><span class="section-title-label">よく食べるもの候補</span><span class="section-arrow" id="arrow_frequent">▾</span></div>
       <div id="content_frequent">
         <div style="font-size:11px;color:var(--text3);margin:-3px 0 6px 2px">過去の記録から、まだ登録されていない食品を頻度順に表示します</div>
-        <div class="card card-pad" id="frequentFoodList"></div>
+        <div class="card" id="frequentFoodList"></div>
       </div>
       <div class="section-title sec-toggle" onclick="toggleFoodSection('builtin')"><span class="section-title-label">プリセット食品（編集可能）</span><span class="section-arrow" id="arrow_builtin">▾</span></div>
       <div id="content_builtin">
@@ -856,8 +856,15 @@
 
     <div class="field-label" style="margin-top:0">食品名</div>
     <input type="text" id="inp_name" placeholder="例：ご飯、鶏むね肉...">
-    <div class="section-sep">よく食べるもの <span style="font-weight:400;color:var(--green);font-size:10px">●緑=自分登録</span></div>
-    <div class="quick-wrap" id="quickWrap"></div>
+
+    <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('frequent')"><span class="section-title-label">よく食べるもの</span><span class="section-arrow" id="qarrow_frequent">▾</span></div>
+    <div id="qcontent_frequent"><div class="card" id="quickFrequentWrap"></div></div>
+
+    <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('custom')"><span class="section-title-label">登録済み食品</span><span class="section-arrow" id="qarrow_custom">▾</span></div>
+    <div id="qcontent_custom"><div class="card" id="quickCustomWrap"></div></div>
+
+    <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('builtin')"><span class="section-title-label">プリセット</span><span class="section-arrow" id="qarrow_builtin">▾</span></div>
+    <div id="qcontent_builtin"><div class="card" id="quickBuiltinWrap"></div></div>
 
     <!-- 単位切り替え -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
@@ -1454,12 +1461,72 @@ function setCUnit(mode){
   document.getElementById('cUnitBtn_g').classList.toggle('active',mode==='g');
   document.getElementById('cUnitBtn_count').classList.toggle('active',mode==='count');
 }
+// 「食事を追加」モーダルの食品候補：登録済み/よく食べるもの/プリセットの3カテゴリ折りたたみ（2026-07-22）
+const QUICK_FOOD_SECTIONS=['frequent','custom','builtin'];
+const QUICK_FOOD_SECTION_DEFAULT_COLLAPSED={frequent:false,custom:true,builtin:true};
+function toggleQuickFoodSection(id){
+  const content=document.getElementById('qcontent_'+id);
+  const arrow=document.getElementById('qarrow_'+id);
+  if(!content)return;
+  const collapsed=content.style.display==='none';
+  content.style.display=collapsed?'':'none';
+  if(arrow)arrow.textContent=collapsed?'▾':'▸';
+  localStorage.setItem('diet_quickfoodsection_collapsed_'+id,collapsed?'0':'1');
+}
+function initQuickFoodSectionState(){
+  QUICK_FOOD_SECTIONS.forEach(id=>{
+    const stored=localStorage.getItem('diet_quickfoodsection_collapsed_'+id);
+    const collapsed=stored===null?QUICK_FOOD_SECTION_DEFAULT_COLLAPSED[id]:stored==='1';
+    const content=document.getElementById('qcontent_'+id);
+    const arrow=document.getElementById('qarrow_'+id);
+    if(content)content.style.display=collapsed?'none':'';
+    if(arrow)arrow.textContent=collapsed?'▸':'▾';
+  });
+}
+let _modalFrequentCandidates=[];
 function renderQuickTags(){
   const customs=loadCustomFoods();
   const builtins=getBuiltin();
-  document.getElementById('quickWrap').innerHTML=
-    builtins.map((q,i)=>`<button class="qtag" onclick="fillQ(${i},false)">${escapeHtml(q.n)}</button>`).join('')+
-    customs.map((q,i)=>`<button class="qtag custom" onclick="fillQ(${i},true)">${escapeHtml(q.n)}</button>`).join('');
+  _modalFrequentCandidates=collectFrequentFoods();
+
+  document.getElementById('quickFrequentWrap').innerHTML=_modalFrequentCandidates.length
+    ?_modalFrequentCandidates.map((c,i)=>`<div class="custom-food-row" onclick="fillFromFrequent(${i})"><div><div class="custom-food-name">${escapeHtml(c.name)}<span style="font-size:10px;color:var(--text3);margin-left:6px">(${c.freq}日)</span></div><div class="custom-food-detail">${c.k}kcal / P:${c.p}g F:${c.f}g C:${c.c}g（${c.unitLabel}・過去記録の平均）</div></div></div>`).join('')
+    :'<div class="empty-state">候補はありません</div>';
+
+  document.getElementById('quickCustomWrap').innerHTML=customs.length
+    ?customs.map((q,i)=>{
+      const unitLabel=q.unitMode==='count'?`1${q.unitName||'個'}あたり`:'100gあたり';
+      return`<div class="custom-food-row" onclick="fillQ(${i},true)"><div><div class="custom-food-name">${escapeHtml(q.n)}</div><div class="custom-food-detail">${q.k}kcal / P:${q.p}g F:${q.f}g C:${q.c}g（${unitLabel}）</div></div></div>`;
+    }).join('')
+    :'<div class="empty-state">まだ食品が登録されていません</div>';
+
+  document.getElementById('quickBuiltinWrap').innerHTML=builtins.map((q,i)=>{
+    const unitLabel=q.unitMode==='count'?`1${q.unitName||'個'}あたり${q.unitGramNote?`(参考:約${q.unitGramNote}g)`:''}${q.varianceNote?`・${q.varianceNote}`:''}`:'100gあたり';
+    return`<div class="custom-food-row" onclick="fillQ(${i},false)"><div><div class="custom-food-name">${escapeHtml(q.n)}</div><div class="custom-food-detail">${q.k}kcal / P:${q.p}g F:${q.f}g C:${q.c}g（${unitLabel}）</div></div></div>`;
+  }).join('');
+
+  initQuickFoodSectionState();
+}
+function fillFromFrequent(i){
+  const c=_modalFrequentCandidates[i];
+  if(!c)return;
+  if(c.unitMode==='count'){
+    setUnit('count');
+    document.getElementById('inp_name').value=c.name;
+    document.getElementById('inp_cal_c').value=c.k;
+    document.getElementById('inp_p_c').value=c.p;
+    document.getElementById('inp_f_c').value=c.f;
+    document.getElementById('inp_c_c').value=c.c;
+    if(document.getElementById('inp_unit_name'))document.getElementById('inp_unit_name').value=c.unit;
+  }else{
+    setUnit('g');
+    document.getElementById('inp_name').value=c.name;
+    document.getElementById('inp_cal').value=c.k;
+    document.getElementById('inp_p').value=c.p;
+    document.getElementById('inp_f').value=c.f;
+    document.getElementById('inp_c').value=c.c;
+  }
+  calcPreview();
 }
 function fillQ(i,isCustom){
   const q=isCustom?loadCustomFoods()[i]:getBuiltin()[i];

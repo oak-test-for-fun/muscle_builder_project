@@ -208,6 +208,10 @@
   .custom-food-row:last-child{border-bottom:none}
   .custom-food-name{font-size:13px;color:var(--text);font-weight:500}
   .custom-food-detail{font-size:10px;color:var(--text3);margin-top:2px}
+  .qsrc-badge{font-size:9px;padding:1px 5px;border-radius:8px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+  .qsrc-badge.qsrc-custom{background:var(--green);color:#fff}
+  .qsrc-badge.qsrc-builtin{background:var(--border2);color:var(--text3)}
+  .qsrc-badge.qsrc-frequent{background:var(--blue-light);color:var(--blue)}
   .custom-actions{display:flex;gap:4px;flex-shrink:0}
   .icon-btn{background:none;border:none;cursor:pointer;font-size:12px;padding:5px 7px;font-family:inherit;border-radius:var(--radius-xs);font-weight:500;min-height:44px;display:flex;align-items:center}
   .icon-btn:active{opacity:0.55}
@@ -855,16 +859,19 @@
     </div>
 
     <div class="field-label" style="margin-top:0">食品名</div>
-    <input type="text" id="inp_name" placeholder="例：ご飯、鶏むね肉...">
+    <input type="text" id="inp_name" placeholder="例：ご飯、鶏むね肉..." oninput="filterQuickFoodCandidates()">
 
-    <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('frequent')"><span class="section-title-label">よく食べるもの</span><span class="section-arrow" id="qarrow_frequent">▾</span></div>
-    <div id="qcontent_frequent"><div class="card" id="quickFrequentWrap"></div></div>
+    <div id="quickCategorized">
+      <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('frequent')"><span class="section-title-label">よく食べるもの</span><span class="section-arrow" id="qarrow_frequent">▾</span></div>
+      <div id="qcontent_frequent"><div class="card" id="quickFrequentWrap"></div></div>
 
-    <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('custom')"><span class="section-title-label">登録済み食品</span><span class="section-arrow" id="qarrow_custom">▾</span></div>
-    <div id="qcontent_custom"><div class="card" id="quickCustomWrap"></div></div>
+      <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('custom')"><span class="section-title-label">登録済み食品</span><span class="section-arrow" id="qarrow_custom">▾</span></div>
+      <div id="qcontent_custom"><div class="card" id="quickCustomWrap"></div></div>
 
-    <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('builtin')"><span class="section-title-label">プリセット</span><span class="section-arrow" id="qarrow_builtin">▾</span></div>
-    <div id="qcontent_builtin"><div class="card" id="quickBuiltinWrap"></div></div>
+      <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('builtin')"><span class="section-title-label">プリセット</span><span class="section-arrow" id="qarrow_builtin">▾</span></div>
+      <div id="qcontent_builtin"><div class="card" id="quickBuiltinWrap"></div></div>
+    </div>
+    <div id="quickSearchResults" style="display:none"><div class="card" id="quickSearchResultsWrap"></div></div>
 
     <!-- 単位切り替え -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
@@ -1386,6 +1393,7 @@ function openModal(mealKey){
   document.getElementById('calcHint').textContent='';
   setUnit('g');
   renderQuickTags();
+  resetQuickSearchView();
   renderCopyTags(data, allMeals, allLabels);
   document.getElementById('overlay').classList.add('open');
   setTimeout(()=>document.getElementById('inp_name').focus(),300);
@@ -1507,6 +1515,48 @@ function renderQuickTags(){
 
   initQuickFoodSectionState();
 }
+// 自動補完（提案1、2026-07-22）: 食品名入力中は登録済み/プリセット/過去履歴を横断的に絞り込んで表示する。
+// 検索中はカテゴリ分けを無視し1つの一致リストにまとめる（ペルソナ会議の指摘: 分類は「何も探していない時にブラウズする」ためのものであり、検索中はむしろ邪魔）。
+function filterQuickFoodCandidates(){
+  const q=document.getElementById('inp_name').value.trim().toLowerCase();
+  const categorized=document.getElementById('quickCategorized');
+  const results=document.getElementById('quickSearchResults');
+  if(!q){
+    categorized.style.display='';
+    results.style.display='none';
+    return;
+  }
+  categorized.style.display='none';
+  results.style.display='';
+  const customs=loadCustomFoods();
+  const builtins=getBuiltin();
+  const matches=[];
+  customs.forEach((cf,i)=>{
+    if(cf.n.toLowerCase().includes(q))matches.push({source:'custom',i,n:cf.n,k:cf.k,p:cf.p,f:cf.f,c:cf.c,
+      unitLabel:cf.unitMode==='count'?`1${cf.unitName||'個'}あたり`:'100gあたり'});
+  });
+  builtins.forEach((bf,i)=>{
+    if(bf.n.toLowerCase().includes(q))matches.push({source:'builtin',i,n:bf.n,k:bf.k,p:bf.p,f:bf.f,c:bf.c,
+      unitLabel:bf.unitMode==='count'?`1${bf.unitName||'個'}あたり${bf.unitGramNote?`(参考:約${bf.unitGramNote}g)`:''}${bf.varianceNote?`・${bf.varianceNote}`:''}`:'100gあたり'});
+  });
+  _modalFrequentCandidates.forEach((c,i)=>{
+    if(c.name.toLowerCase().includes(q))matches.push({source:'frequent',i,n:c.name,k:c.k,p:c.p,f:c.f,c:c.c,unitLabel:c.unitLabel+'・過去記録の平均',freq:c.freq});
+  });
+  // 優先順位: 登録済み→過去履歴→プリセット（自分のデータを優先表示）
+  const order={custom:0,frequent:1,builtin:2};
+  matches.sort((a,b)=>order[a.source]-order[b.source]);
+  document.getElementById('quickSearchResultsWrap').innerHTML=matches.length?matches.map(m=>{
+    const onclick=m.source==='custom'?`fillQ(${m.i},true)`:m.source==='builtin'?`fillQ(${m.i},false)`:`fillFromFrequent(${m.i})`;
+    const badge=m.source==='custom'?'<span class="qsrc-badge qsrc-custom">登録済み</span>'
+      :m.source==='builtin'?'<span class="qsrc-badge qsrc-builtin">プリセット</span>'
+      :`<span class="qsrc-badge qsrc-frequent">履歴${m.freq}日</span>`;
+    return`<div class="custom-food-row" onclick="${onclick}"><div><div class="custom-food-name">${escapeHtml(m.n)}${badge}</div><div class="custom-food-detail">${m.k}kcal / P:${m.p}g F:${m.f}g C:${m.c}g（${m.unitLabel}）</div></div></div>`;
+  }).join(''):'<div class="empty-state">一致する食品がありません</div>';
+}
+function resetQuickSearchView(){
+  document.getElementById('quickCategorized').style.display='';
+  document.getElementById('quickSearchResults').style.display='none';
+}
 function fillFromFrequent(i){
   const c=_modalFrequentCandidates[i];
   if(!c)return;
@@ -1527,6 +1577,7 @@ function fillFromFrequent(i){
     document.getElementById('inp_c').value=c.c;
   }
   calcPreview();
+  resetQuickSearchView();
 }
 function fillQ(i,isCustom){
   const q=isCustom?loadCustomFoods()[i]:getBuiltin()[i];
@@ -1548,6 +1599,7 @@ function fillQ(i,isCustom){
     document.getElementById('inp_c').value=q.c;
   }
   calcPreview();
+  resetQuickSearchView();
 }
 function calcPreview(){
   const k=+document.getElementById('inp_cal').value||0;

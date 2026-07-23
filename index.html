@@ -56,7 +56,7 @@
 
   /* ---- Cards ---- */
   .card{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);box-shadow:var(--shadow);margin-bottom:8px}
-  .card-pad{padding:13px 15px}
+  .card-pad{padding:13px 14px}
   .section-title{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.6px;text-transform:uppercase;margin:14px 0 5px 2px}
   .section-title.sec-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:32px;padding:4px 2px 4px 0;margin:10px 0 5px 0;-webkit-tap-highlight-color:transparent}
   .section-title-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -109,7 +109,7 @@
   .alert-save{margin-top:6px;padding:8px;width:100%;background:var(--red);color:white;border:none;border-radius:var(--radius-xs);font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
 
   /* ---- Meal blocks ---- */
-  .meal-block{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:7px;overflow:hidden;box-shadow:var(--shadow)}
+  .meal-block,.workout-block{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow)}
   .meal-header{display:flex;justify-content:space-between;align-items:center;padding:8px 13px;background:var(--bg);border-bottom:0.5px solid var(--border2)}
   .meal-pfc-sub{font-size:10px;color:var(--text3);padding:0 13px 6px;background:var(--bg);border-bottom:0.5px solid var(--border2)}
   .meal-title{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:0.3px}
@@ -151,7 +151,7 @@
   .calc-hint{font-size:12px;color:var(--green);margin-top:5px;min-height:16px;font-weight:500}
 
   /* ---- Graph tab ---- */
-  .chart-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:13px 13px 11px;margin-bottom:8px;box-shadow:var(--shadow)}
+  .chart-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
   .chart-title{font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text)}
   .chart-legend{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
   .leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2)}
@@ -168,7 +168,7 @@
   .log-comment{font-size:10px;color:var(--text3);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   /* ---- Settings tab ---- */
-  .form-card{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
+  .form-card,.prof-section{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
   .form-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
   .save-btn{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:10px;min-height:48px;transition:opacity .15s}
   .save-btn:active{opacity:0.82}
@@ -179,7 +179,6 @@
   .success-msg{font-size:12px;color:var(--green-dark);background:var(--green-light);border:0.5px solid var(--green);border-radius:var(--radius-xs);padding:8px 11px;margin-top:7px;display:none}
 
   /* ---- Profile / toggle / radio ---- */
-  .prof-section{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
   .prof-section-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px}
   .toggle-row{display:flex;justify-content:space-between;align-items:center}
   .toggle{position:relative;display:inline-block;width:44px;height:26px;flex-shrink:0}
@@ -259,7 +258,6 @@
   .set-list-del{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 4px;opacity:.6}
 
   /* ---- Workout tab ---- */
-  .workout-block{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:7px;overflow:hidden;box-shadow:var(--shadow)}
   .workout-header{display:flex;justify-content:space-between;align-items:center;padding:10px 13px;background:var(--bg);border-bottom:0.5px solid var(--border2);cursor:pointer;user-select:none;min-height:48px}
   .wk-collapse-icon{width:18px;height:18px;border:0.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:10px;transition:transform .2s;flex-shrink:0}
   .wk-collapse-icon.open{transform:rotate(180deg)}
@@ -498,6 +496,7 @@
     <div id="tab-foods" style="display:none">
       <div class="section-title sec-toggle" onclick="toggleFoodSection('custom')"><span class="section-title-label">自分で登録した食品</span><span class="section-arrow" id="arrow_custom">▾</span></div>
       <div id="content_custom">
+        <div style="font-size:11px;color:var(--text3);margin:-3px 0 6px 2px">よく使うものは登録しなくても「よく食べるもの」から直接記録できます。値を固定したい・名前を統一したい時だけ登録してください</div>
         <button class="save-btn" style="margin-bottom:10px" onclick="openCustomFoodModal(null)">＋ 新しい食品を登録</button>
         <div class="card" id="customFoodList"></div>
       </div>
@@ -1675,6 +1674,9 @@ function parseFoodItemName(name){
 function _avgArr(arr){return arr.length?arr.reduce((s,v)=>s+v,0)/arr.length:0;}
 
 // 過去の記録から「まだ登録されていない、よく食べるもの」を頻度順に抽出（上位20件）
+// 過去履歴の肥大化対策（2026-07-22、旧バックログ#0）: 全期間スキャンだと「今は食べていない過去の定番」が
+// 頻度で居座り続けるため、直近90日のみを集計対象にする。90日以前の記録は候補にも平均値にも反映されない。
+const FREQUENT_FOOD_WINDOW_DAYS=90;
 function collectFrequentFoods(){
   // 旧BUILTIN命名（個数括弧埋め込み）からの表示専用エイリアス吸収。
   // diet_day_* 等の既存データは書き換えず、候補集計時の名寄せにのみ使う（v49 バックログ#10）。
@@ -1684,11 +1686,13 @@ function collectFrequentFoods(){
   loadCustomFoods().forEach(f=>registeredNames.add(f.n));
   const registeredBase=new Set([...registeredNames].map(n=>parseFoodItemName(n).base));
 
+  const cutoffKey=getKey(-FREQUENT_FOOD_WINDOW_DAYS);
   const groups={};
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
     if(!k||!k.startsWith('diet_day_'))continue;
     const dateKey=k.replace('diet_day_','');
+    if(dateKey<cutoffKey)continue; // 直近90日より前の記録は候補集計の対象外
     const raw=safeParse(localStorage.getItem(k),null);
     if(!raw||!raw.meals)continue;
     const allItems=[];

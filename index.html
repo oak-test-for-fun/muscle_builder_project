@@ -313,6 +313,7 @@
   .blank-gap-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
   .blank-gap-resume{background:var(--green);color:#fff;border:none;border-radius:var(--radius-xs);padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
   .blank-gap-dismiss{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;line-height:1}
+  .blank-gap-soft{display:none;font-size:11.5px;color:var(--text3);line-height:1.5;margin-bottom:8px;padding:0 2px}
   .builtin-override-notice{display:none;align-items:center;gap:10px;justify-content:space-between;background:var(--card);border:0.5px solid var(--border);border-left:3px solid var(--text3);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px}
   .builtin-override-text{font-size:12.5px;color:var(--text2);line-height:1.5;flex:1}
   .builtin-override-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -346,9 +347,10 @@
 
   <div class="content">
 
-    <!-- 記録空白検知バナー -->
+    <!-- 記録空白検知（食事のみ対象。運動記録は指標を分離し対象外） -->
+    <div class="blank-gap-soft" id="blankGapSoft"></div>
     <div class="blank-gap-banner" id="blankGapBanner">
-      <div class="blank-gap-text">記録が3日間ありません。次の食事から記録を再開できます。</div>
+      <div class="blank-gap-text">食事の記録が3日間ありません。次の食事から記録を再開できます。</div>
       <div class="blank-gap-actions">
         <button class="blank-gap-resume" onclick="resumeFromBlankGapBanner()">記録する</button>
         <button class="blank-gap-dismiss" onclick="dismissBlankGapBanner()" aria-label="閉じる">✕</button>
@@ -971,7 +973,7 @@ const BUILTIN=[
   {n:'プロテイン',k:400,p:80.0,f:5.0,c:10.0,unitMode:'g'},{n:'クレアチン',k:0,p:0,f:0,c:0,unitMode:'g'},
   {n:'EAA',k:40,p:9.0,f:0,c:1.0,unitMode:'g'},{n:'はちみつ',k:294,p:0.2,f:0,c:79.7,unitMode:'g'},
   {n:'ご飯',k:156,p:2.5,f:0.3,c:34.6,unitMode:'g'},{n:'卵',k:76,p:6.2,f:5.1,c:0.2,unitMode:'count',unitName:'個',unitGramNote:60},
-  {n:'サラダチキン',k:105,p:24.0,f:0.8,c:0,unitMode:'g'},{n:'バナナ',k:86,p:1.1,f:0.2,c:22.5,unitMode:'count',unitName:'本'},
+  {n:'サラダチキン',k:105,p:24.0,f:0.8,c:0,unitMode:'g'},{n:'バナナ',k:86,p:1.1,f:0.2,c:22.5,unitMode:'count',unitName:'本',varianceNote:'個体差大(80〜150g目安)'},
   {n:'ヨーグルト',k:62,p:3.6,f:3.0,c:4.9,unitMode:'g'},
 ];
 const BASE_MEALS=['朝食','昼食','夕食'];
@@ -1046,13 +1048,19 @@ function getRecoveryFactor(offset){
 
 function getKey(offset){const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 
-/* ---- 記録空白検知＋やさしい再開導線 ---- */
-const BLANK_GAP_THRESHOLD_DAYS=3;
+/* ---- 記録空白検知＋やさしい再開導線 ----
+   バックログ#7対応（2026-07-22）: 食事記録と運動記録の指標を分離した。
+   運動記録（diet_workout_）は休養日・怪我回復中などの意図的な非記録が正常な行動であるため、
+   本バナー・控えめ通知の対象から外す（トレーナー視点の指摘）。食事記録（diet_day_）は
+   体重管理上のリスクがより高いため（栄養士視点）、引き続き検知対象とし、かつ1日目から
+   控えめな一言（blankGapSoft）→3日目で従来の強めのバナー、という2段階表示にする
+   （ユーザー視点の「3日目では手遅れ感がある」という指摘への対応）。 */
+const BLANK_GAP_SOFT_DAYS=1;
+const BLANK_GAP_STRONG_DAYS=3;
 let blankGapLastCheckedKey=null;
-function getDaysSinceLastRecord(){
+function getDaysSinceLastMealRecord(){
   for(let i=0;i<365;i++){
-    const key=getKey(-i);
-    if(localStorage.getItem('diet_day_'+key)||localStorage.getItem('diet_workout_'+key))return i;
+    if(localStorage.getItem('diet_day_'+getKey(-i)))return i;
   }
   return 365;
 }
@@ -1060,9 +1068,17 @@ function checkBlankGapBanner(){
   const todayKey=getKey(0);
   blankGapLastCheckedKey=todayKey;
   const banner=document.getElementById('blankGapBanner');
-  if(!banner)return;
-  if(localStorage.getItem('diet_blankgap_dismissed_date')===todayKey){banner.style.display='none';return;}
-  banner.style.display=getDaysSinceLastRecord()>=BLANK_GAP_THRESHOLD_DAYS?'flex':'none';
+  const soft=document.getElementById('blankGapSoft');
+  if(!banner||!soft)return;
+  const mealDays=getDaysSinceLastMealRecord();
+  if(localStorage.getItem('diet_blankgap_dismissed_date')===todayKey){
+    banner.style.display='none';
+  }else{
+    banner.style.display=mealDays>=BLANK_GAP_STRONG_DAYS?'flex':'none';
+  }
+  const showSoft=mealDays>=BLANK_GAP_SOFT_DAYS&&mealDays<BLANK_GAP_STRONG_DAYS;
+  soft.style.display=showSoft?'block':'none';
+  if(showSoft)soft.textContent=`食事の記録が${mealDays}日間ありません。`;
 }
 function dismissBlankGapBanner(){
   localStorage.setItem('diet_blankgap_dismissed_date',getKey(0));
@@ -1602,9 +1618,10 @@ function renderFrequentFoodList(){
   _frequentCandidates=collectFrequentFoods();
   const el=document.getElementById('frequentFoodList');
   if(!_frequentCandidates.length){el.innerHTML='<div class="empty-state">候補はありません</div>';return;}
-  el.innerHTML=`<div class="quick-wrap">`+_frequentCandidates.map((c,i)=>
-    `<button class="qtag" onclick="openCandidateRegisterModal(${i})">${escapeHtml(c.name)}<span style="color:var(--text3);font-size:10px;margin-left:4px">(${c.freq}日)</span></button>`
-  ).join('')+`</div>`;
+  // v52: custom/builtinと表示形式を統一（1行1品目・名称+kcal/PFC+単位）。過去記録の平均値である旨を明示。
+  el.innerHTML=_frequentCandidates.map((c,i)=>
+    `<div class="custom-food-row"><div><div class="custom-food-name">${escapeHtml(c.name)}<span style="font-size:10px;color:var(--text3);margin-left:6px">(${c.freq}日)</span></div><div class="custom-food-detail">${c.k}kcal / P:${c.p}g F:${c.f}g C:${c.c}g（${c.unitLabel}・過去記録の平均）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openCandidateRegisterModal(${i})" style="color:var(--blue)">登録する</button></div></div>`
+  ).join('');
 }
 function openCandidateRegisterModal(idx){
   const c=_frequentCandidates[idx];
@@ -1628,6 +1645,9 @@ function openCandidateRegisterModal(idx){
 
 // 食品タブの各セクション折りたたみ
 const FOOD_SECTIONS=['custom','frequent','builtin'];
+// 初期状態（localStorageに開閉履歴がない場合のデフォルト）。「よく食べるもの」は最も使用頻度が高いためデフォルト展開、
+// 「登録済み」「プリセット」は件数が多く埋もれがちなためデフォルト折りたたみ（2026-07-22、ユーザー確認済み）。
+const FOOD_SECTION_DEFAULT_COLLAPSED={custom:true,frequent:false,builtin:true};
 function toggleFoodSection(id){
   const content=document.getElementById('content_'+id);
   const arrow=document.getElementById('arrow_'+id);
@@ -1639,7 +1659,8 @@ function toggleFoodSection(id){
 }
 function initFoodSectionState(){
   FOOD_SECTIONS.forEach(id=>{
-    const collapsed=localStorage.getItem('diet_foodsection_collapsed_'+id)==='1';
+    const stored=localStorage.getItem('diet_foodsection_collapsed_'+id);
+    const collapsed=stored===null?FOOD_SECTION_DEFAULT_COLLAPSED[id]:stored==='1';
     const content=document.getElementById('content_'+id);
     const arrow=document.getElementById('arrow_'+id);
     if(content)content.style.display=collapsed?'none':'';
@@ -1663,7 +1684,7 @@ function renderBuiltinFoodList(){
   el.innerHTML=BUILTIN.map((f,i)=>{
     const cur=ov[i]?{...f,...ov[i]}:f;
     const edited=!!ov[i];
-    const unitLabel=cur.unitMode==='count'?`1${cur.unitName||'個'}あたり${cur.unitGramNote?`(約${cur.unitGramNote}g換算)`:''}`:'100gあたり';
+    const unitLabel=cur.unitMode==='count'?`1${cur.unitName||'個'}あたり${cur.unitGramNote?`(参考:約${cur.unitGramNote}g)`:''}${cur.varianceNote?`・${cur.varianceNote}`:''}`:'100gあたり';
     return`<div class="custom-food-row"><div><div class="custom-food-name">${cur.n}${edited?'<span style="font-size:10px;color:var(--green);margin-left:6px">編集済</span>':''}</div><div class="custom-food-detail">${cur.k}kcal / P:${cur.p}g F:${cur.f}g C:${cur.c}g（${unitLabel}）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openBuiltinEditModal(${i})" style="color:var(--blue)">編集</button>${edited?`<button class="icon-btn" onclick="resetBuiltin(${i})" style="color:var(--text3)">戻す</button>`:''}</div></div>`;
   }).join('');
 }

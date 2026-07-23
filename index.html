@@ -269,14 +269,16 @@
   .set-info{font-size:13px;color:var(--text);font-weight:500}
   .set-detail{font-size:10px;color:var(--text3);margin-top:2px}
   .set-badge{font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;white-space:nowrap}
-  .set-badge.up{background:var(--green-light);color:var(--green-dark)}
-  .set-badge.down{background:var(--red-light);color:var(--red-dark)}
+  /* 2026-07-23: 前回比較バッジは「達成/失敗を強調しない」というモード制度の思想に合わせ、
+     up/downとも評価色（緑/赤）を使わず中立トーンに統一する（デロード・体調不良等での意図的な減量を否定的に見せないため） */
+  .set-badge.up{background:var(--bg);color:var(--text2)}
+  .set-badge.down{background:var(--bg);color:var(--text2)}
   .set-badge.same{background:var(--bg);color:var(--text3)}
   .set-badge.new{background:var(--blue-light);color:var(--blue)}
   .muscle-chip{padding:10px 14px;border:0.5px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;background:var(--bg);color:var(--text2);font-family:inherit;font-weight:500;min-height:44px;display:flex;align-items:center}
-  .muscle-chip.sel{background:var(--amber-light);border-color:var(--amber);color:#92400E;font-weight:600}
+  .muscle-chip.sel{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:600}
   .exercise-chip{padding:10px 14px;border:0.5px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;background:var(--bg);color:var(--text2);font-family:inherit;white-space:nowrap;min-height:44px;display:flex;align-items:center}
-  .exercise-chip.sel{background:var(--amber-light);border-color:var(--amber);color:#92400E;font-weight:600}
+  .exercise-chip.sel{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:600}
   .workout-stat{font-size:11px;color:var(--text2)}
   .workout-stat span{font-weight:600;color:var(--text)}
 
@@ -1002,6 +1004,13 @@ function safeParse(str,fallback){
 function escapeHtml(str){
   if(str==null)return '';
   return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// onclick="fn(this,'...')"のように、単一引用符で囲んだJS文字列リテラルをHTML属性（二重引用符）内に
+// 埋め込む場合専用のエスケープ。escapeHtml()のHTML実体参照はHTML解析時にデコードされてしまいJS文字列の
+// 区切り崩壊を防げないため、バックスラッシュ・単一引用符はJS側でエスケープし、二重引用符のみHTML実体参照にする。
+function escapeForJsAttr(str){
+  if(str==null)return '';
+  return String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
 }
 function loadGoals(){const s=localStorage.getItem('diet_goals');return safeParse(s,{cal:1800,protein:80,fat:50,carb:200});}
 function saveGoals(){
@@ -2418,7 +2427,7 @@ function exportMarkdown(){
       if(weightEx.length){
         md+=`**筋トレ：** `;
         md+=weightEx.map(ex=>{
-          const isBW=isBodyweightEx(ex.name);
+          const isBW=ex.bodyweight!=null?ex.bodyweight:isBodyweightEx(ex.name);
           const sets=(ex.sets||[]).map((s,i)=>isBW?`S${i+1}:${s.reps}回`:`S${i+1}:${s.weight}kg×${s.reps}回`).join(' ');
           return`${ex.name}（${sets}）`;
         }).join('　')+'\n';
@@ -3108,7 +3117,8 @@ function openDayDetail(offset){
       if(ex.type==='cardio'){
         html+=`<div class="detail-item"><span>${ex.icon||'🏃'} ${escapeHtml(ex.name)}${ex.extraWeight?`（荷重${ex.extraWeight}kg）`:''}</span><span>${ex.minutes}分・${ex.cal}kcal</span></div>`;
       }else{
-        const setsStr=(ex.sets||[]).map((s,i)=>isBodyweightEx(ex.name)?`${s.reps}回`:`${s.weight}kg×${s.reps}`).join(' ');
+        const exIsBW=ex.bodyweight!=null?ex.bodyweight:isBodyweightEx(ex.name);
+        const setsStr=(ex.sets||[]).map((s,i)=>exIsBW?`${s.reps}回`:`${s.weight}kg×${s.reps}`).join(' ');
         html+=`<div class="detail-item"><span>${escapeHtml(ex.name)}（${escapeHtml(ex.muscle||'')}）</span><span>${setsStr}</span></div>`;
       }
     });
@@ -3440,7 +3450,7 @@ function renderWorkoutModalExercises(){
       const isCustom=customs.find(e=>e.name===ex);
       if(isCustom){
         const isSel=ex===selExercise;
-        const safeEx=ex.replace(/'/g,"\'");
+        const safeEx=escapeForJsAttr(ex);
         return`<div style="display:flex;align-items:center;gap:4px">`+
           `<button class="exercise-chip${isSel?' sel':''}" style="flex:1" onclick="selectExercise(this,'${safeEx}')">${escapeHtml(ex)}<span style="font-size:9px;color:var(--green);margin-left:3px">●</span></button>`+
           `<button onclick="openCustomExerciseModal('${safeEx}');event.stopPropagation()" style="padding:6px 8px;font-size:11px;border:0.5px solid var(--border);border-radius:var(--radius-xs);background:var(--bg);color:var(--text2);cursor:pointer;min-height:36px">編集</button>`+
@@ -3468,7 +3478,9 @@ function calcWorkoutCal(exercises,bw){
   let total=0;
   exercises.forEach(ex=>{
     if(ex.type==='cardio'){total+=ex.cal||0;return;}
-    const isBW=isBodyweightEx(ex.name);
+    // v57: カスタム種目の体重種目フラグは記録時にスナップショット（ex.bodyweight）される。
+    // 未設定（v56以前の既存データ）の場合のみ現在の種目定義を参照する後方互換フォールバック。
+    const isBW=ex.bodyweight!=null?ex.bodyweight:isBodyweightEx(ex.name);
     const isUni=ex.unilateral||false;
     const coef=MUSCLE_COEF[ex.muscle]!=null?MUSCLE_COEF[ex.muscle]:1;
     let exTotal=0;
@@ -3496,9 +3508,17 @@ function getPrevWorkout(exName){
   for(let i=1;i<=60;i++){
     const data=loadWorkoutDay(-i);
     const found=data.find(e=>e.name===exName);
-    if(found&&found.sets&&found.sets.length)return{date:getKey(-i),sets:found.sets};
+    if(found&&found.sets&&found.sets.length)return{date:getKey(-i),daysAgo:i,sets:found.sets,unilateral:found.unilateral||false,bodyweight:found.bodyweight};
   }
   return null;
+}
+// 種目の総負荷量（ボリューム）。体重種目は総レップ数、ウェイト種目は重量×レップの合計（片手種目は2倍換算）。
+function calcExerciseVolume(sets,isBW,isUni){
+  return (sets||[]).reduce((sum,s)=>{
+    if(isBW)return sum+(s.reps||0);
+    const w=isUni?(s.weight||0)*2:(s.weight||0);
+    return sum+w*(s.reps||0);
+  },0);
 }
 
 function openWorkoutModal(){
@@ -3529,11 +3549,13 @@ function selectExercise(btn,ex){
   const prev=getPrevWorkout(ex);
   const prevEl=document.getElementById('prevWorkoutInfo');
   if(prev){
+    // 前回記録時点の体重種目フラグを優先（種目定義を後から変更しても前回表示が変わらないように）
+    const prevIsBW=prev.bodyweight!=null?prev.bodyweight:isBW;
     const lines=prev.sets.map((s,i)=>{
-      const txt=isBW?`${s.reps}回`:`${s.weight}kg × ${s.reps}回`;
+      const txt=prevIsBW?`${s.reps}回`:`${s.weight}kg × ${s.reps}回`;
       return`セット${i+1}：${txt}`;
     }).join('　');
-    prevEl.textContent=`前回（${prev.date}）　${lines}`;
+    prevEl.textContent=`前回（${prev.date}・${prev.daysAgo}日前）　${lines}`;
     const s=prev.sets[0];
     if(!isBW)document.getElementById('wk_weight').value=s.weight||'';
     document.getElementById('wk_reps').value=s.reps||'';
@@ -3620,8 +3642,8 @@ function saveWorkout(){
   const isUni=!isBW&&document.getElementById('wk_unilateral').checked;
   const data=loadWorkoutDay(currentDay);
   const existing=data.find(e=>e.name===selExercise);
-  if(existing){existing.sets.push(...pendingSets);existing.unilateral=isUni;}
-  else data.push({name:selExercise,muscle:selMuscle,unilateral:isUni,sets:pendingSets});
+  if(existing){existing.sets.push(...pendingSets);existing.unilateral=isUni;existing.bodyweight=isBW;}
+  else data.push({name:selExercise,muscle:selMuscle,unilateral:isUni,bodyweight:isBW,sets:pendingSets});
   saveWorkoutDay(currentDay,data);
   document.getElementById('workoutOverlay').classList.remove('open');
   render();renderWorkoutTab();
@@ -3650,13 +3672,27 @@ function deleteSet(exIdx,setIdx){
   saveWorkoutDay(currentDay,data);render();renderWorkoutTab();
 }
 
+// 運動ボーナス込みの実質目標カロリーを計算する共通関数（v57、renderWorkoutTab/renderWorkoutBonusの重複実装を統合）。
+// 過去日はgoalCalスナップショットを使用し、当日はrecoveryFactorを反映。チートデイ/無制限デイは
+// 目標自体が上限扱いされない特別枠のため、ボーナスは加算しない（render()の食事タブと同じ考え方）。
+function getEffectiveWorkoutGoal(offset,workoutCal){
+  const data=loadDay(offset);
+  const goals=loadGoals();
+  let goalCal=(offset!==0&&data.goalCal)?data.goalCal:goals.cal;
+  if(offset===0){
+    const recoveryFactor=getRecoveryFactor(0);
+    if(recoveryFactor>1)goalCal=Math.round(goalCal*recoveryFactor);
+  }
+  const isCheatOrUnlimited=data.cheatDay==='cheat'||data.cheatDay==='unlimited';
+  const bonus=Math.round((workoutCal||0)*0.5);
+  return{bonus:isCheatOrUnlimited?0:bonus,effectiveGoal:isCheatOrUnlimited?goalCal:goalCal+bonus,isCheatOrUnlimited};
+}
 function renderWorkoutTab(){
   const data=loadWorkoutDay(currentDay);
   const prof=loadProfileData();const bw=prof&&prof.weight?prof.weight:70;
   const totalCal=calcWorkoutCal(data,bw);
-  const goals=loadGoals();const foodCal=calcTotals(loadDay(currentDay)).cal;
-  const wkBonus=Math.round(totalCal*0.5);
-  const effectiveGoal=goals.cal+wkBonus;
+  const foodCal=calcTotals(loadDay(currentDay)).cal;
+  const{bonus:wkBonus,effectiveGoal,isCheatOrUnlimited}=getEffectiveWorkoutGoal(currentDay,totalCal);
   const effectiveRemain=effectiveGoal-foodCal;
   const calCard=document.getElementById('workoutCalCard');
   const weightData=data.filter(e=>e.type!=='cardio');
@@ -3667,12 +3703,14 @@ function renderWorkoutTab(){
     const detail=weightCal>0&&cardioCal>0
       ?`筋トレ ${weightCal} kcal ＋ 有酸素 ${cardioCal} kcal`
       :weightCal>0?`筋トレ ${weightCal} kcal`:`有酸素 ${cardioCal} kcal`;
+    const bonusText=isCheatOrUnlimited?'チートデイ中は未加算':`+${wkBonus} kcal`;
     calCard.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">🏋️ 今日の運動消費</div>
       <div class="result-row"><span class="result-label">運動消費</span><span class="result-val" style="color:var(--amber)">${totalCal} kcal</span></div>
       <div style="font-size:10px;color:var(--text3);margin:-4px 0 6px">${detail}</div>
-      <div class="result-row"><span class="result-label">ボーナス加算（×0.5）</span><span class="result-val" style="color:#7C3AED">+${wkBonus} kcal</span></div>
+      <div class="result-row"><span class="result-label">ボーナス加算（×0.5）</span><span class="result-val" style="color:#7C3AED">${bonusText}</span></div>
       <div class="result-row"><span class="result-label">食事摂取</span><span class="result-val">${foodCal} kcal</span></div>
-      <div class="result-row"><span class="result-label">実質残りカロリー</span><span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span></div>`;
+      <div class="result-row"><span class="result-label">実質残りカロリー</span>${isCheatOrUnlimited?'<span class="result-val" style="color:var(--text3)">チートデイ中は集計対象外</span>':`<span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span>`}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">※週次判定（達成タブ）には運動ボーナスは反映されません</div>`;
   }else{
     calCard.innerHTML='<div style="font-size:12px;color:var(--text3)">種目を追加するとカロリーが表示されます</div>';
   }
@@ -3682,18 +3720,20 @@ function renderWorkoutTab(){
   else{
     list.innerHTML=data.map((ex,exIdx)=>{
       if(ex.type==='cardio')return'';
-      const isBW=isBodyweightEx(ex.name);
+      const isBW=ex.bodyweight!=null?ex.bodyweight:isBodyweightEx(ex.name);
       const exCal=calcWorkoutCal([ex],bw);
-      const best=getBestSet(ex.sets,isBW);
       const prev=getPrevWorkout(ex.name);
       let badge='';
       if(prev&&prev.sets.length){
-        const prevBest=getBestSet(prev.sets,isBW);
-        const diff=isBW
-          ?(best.reps||0)-(prevBest.reps||0)
-          :Math.round(((best.weight||0)-(prevBest.weight||0))*10)/10;
-        const unit=isBW?'回':'kg';
-        badge=diff>0?`<span class="set-badge up">↑ +${diff}${unit}</span>`:diff<0?`<span class="set-badge down">↓ ${diff}${unit}</span>`:`<span class="set-badge same">→ 同じ</span>`;
+        // v57: ベストセット比較（1セットの最大値のみ）から総負荷量（全セット合計）比較へ変更。
+        // 例えば同じ重量でもレップ数やセット数が伸びた進歩を「同じ」と誤判定しないようにする。
+        // 前回分は記録当時のbodyweightスナップショットを優先し、種目定義の後からの変更に影響されないようにする。
+        const prevIsBW=prev.bodyweight!=null?prev.bodyweight:isBW;
+        const todayVol=calcExerciseVolume(ex.sets,isBW,ex.unilateral||false);
+        const prevVol=calcExerciseVolume(prev.sets,prevIsBW,prev.unilateral||false);
+        const diff=isBW?todayVol-prevVol:Math.round((todayVol-prevVol)*10)/10;
+        const unit=isBW?'回':'';
+        badge=diff>0?`<span class="set-badge up">↑ 総負荷+${diff}${unit}</span>`:diff<0?`<span class="set-badge down">↓ 総負荷${diff}${unit}</span>`:`<span class="set-badge same">→ 総負荷同じ</span>`;
       }else badge='<span class="set-badge new">初記録</span>';
       const setsHtml=ex.sets.map((s,si)=>{
         const txt=isBW?`${s.reps}回`:`${s.weight}kg × ${s.reps}回`;
@@ -3739,22 +3779,22 @@ function setWorkoutGraphMode(mode,btn){
 
 function renderWorkoutGraph(){
   const ex=document.getElementById('workoutGraphSelect').value;
-  const isBW=isBodyweightEx(ex);
+  const isBWDefault=isBodyweightEx(ex);
   const labels=[],vals=[];
   for(let i=89;i>=0;i--){
     const data=loadWorkoutDay(-i);
     const found=data.find(e=>e.name===ex&&e.type!=='cardio');
     if(found&&found.sets&&found.sets.length){
+      // v57: 記録当時のbodyweightスナップショットを優先（種目定義を後から変更しても過去のグラフが変わらないように）
+      const isBW=found.bodyweight!=null?found.bodyweight:isBWDefault;
       const d=new Date();d.setDate(d.getDate()-i);
       labels.push(`${d.getMonth()+1}/${d.getDate()}`);
       if(workoutGraphMode==='best'){
         const best=getBestSet(found.sets,isBW);
         vals.push(isBW?best.reps||0:Math.round((best.weight||0)*10)/10);
       }else{
-        // 総負荷量
-        const vol=found.sets.reduce((s,st)=>
-          isBW?s+(st.reps||0):s+(st.weight||0)*(st.reps||0),0);
-        vals.push(Math.round(vol*10)/10);
+        // 総負荷量（片手種目は2倍換算。calcExerciseVolumeで一本化し、以前は考慮されていなかった片手係数も反映）
+        vals.push(Math.round(calcExerciseVolume(found.sets,isBW,found.unilateral||false)*10)/10);
       }
     }
   }
@@ -3764,24 +3804,24 @@ function renderWorkoutGraph(){
     return;
   }
   const isBestMode=workoutGraphMode==='best';
-  const yLabel=isBestMode?(isBW?'回':'kg'):'kg';
+  const yLabel=isBestMode?(isBWDefault?'回':'kg'):'kg';
   const lineColor=isBestMode?'#D97706':'#7C3AED';
   const fillColor=isBestMode?'rgba(217,119,6,0.1)':'rgba(124,58,237,0.1)';
   workoutChartInst=new Chart(document.getElementById('workoutChart'),{
     type:'line',
     data:{labels,datasets:[{
-      label:isBestMode?(isBW?'最大レップ数（ベストセット）':'最高重量（ベストセット）'):'総負荷量（kg）',
+      label:isBestMode?(isBWDefault?'最大レップ数（ベストセット）':'最高重量（ベストセット）'):'総負荷量（kg）',
       data:vals,borderColor:lineColor,backgroundColor:fillColor,
       borderWidth:2,pointRadius:4,pointBackgroundColor:lineColor,tension:0.3,fill:true
     }]},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{display:false}},scales:{
-      y:{ticks:{font:{size:10},color:'#999',callback:v=>isBestMode?(isBW?`${Math.round(v)}回`:`${Math.round(v*10)/10}kg`):`${Math.round(v)}kg`},grid:{color:'rgba(128,128,128,0.1)'}},
+      y:{ticks:{font:{size:10},color:'#999',callback:v=>isBestMode?(isBWDefault?`${Math.round(v)}回`:`${Math.round(v*10)/10}kg`):`${Math.round(v)}kg`},grid:{color:'rgba(128,128,128,0.1)'}},
       x:{ticks:{font:{size:9},color:'#999',maxRotation:30,autoSkip:true},grid:{display:false}}
     }}
   });
   const maxVal=Math.max(...vals),latestVal=vals[vals.length-1],firstVal=vals[0];
   const diff=Math.round((latestVal-firstVal)*10)/10;
-  const unit=isBestMode?(isBW?'回':'kg'):'kg';
+  const unit=isBestMode?(isBWDefault?'回':'kg'):'kg';
   const modeLabel=isBestMode?'最高':'総負荷量';
   document.getElementById('workoutGraphStats').innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap">
     <span class="workout-stat">${modeLabel}最大：<span>${maxVal}${unit}</span></span>
@@ -3799,17 +3839,21 @@ function renderWorkoutBonus(){
   const bonusDetail=document.getElementById('workoutBonusDetail');
   const bonusRemain=document.getElementById('workoutBonusRemain');
   if(wCal>0){
-    const bonus=Math.round(wCal*0.5);
+    const{bonus,effectiveGoal,isCheatOrUnlimited}=getEffectiveWorkoutGoal(currentDay,wCal);
     bonusRow.style.cssText='display:flex;margin-top:8px;align-items:center;justify-content:space-between';
-    document.getElementById('workoutBonusCal').textContent=`+${bonus} kcal`;
+    document.getElementById('workoutBonusCal').textContent=isCheatOrUnlimited?'チートデイ中は未加算':`+${bonus} kcal`;
     bonusDetail.style.display='block';
     bonusDetail.textContent=`運動消費 ${wCal} kcal`;
-    const goals=loadGoals();const foodCal=calcTotals(loadDay(currentDay)).cal;
-    const effectiveGoal=goals.cal+bonus;
+    const foodCal=calcTotals(loadDay(currentDay)).cal;
     const remain=effectiveGoal-foodCal;
     bonusRemain.style.display='block';
-    bonusRemain.style.color=remain>=0?'var(--green-dark)':'var(--red-dark)';
-    bonusRemain.textContent=remain>=0?`実質残り ${remain} kcal`:`実質 ${Math.abs(remain)} kcal 超過`;
+    if(isCheatOrUnlimited){
+      bonusRemain.style.color='var(--text3)';
+      bonusRemain.textContent='チートデイ中は集計対象外';
+    }else{
+      bonusRemain.style.color=remain>=0?'var(--green-dark)':'var(--red-dark)';
+      bonusRemain.textContent=remain>=0?`実質残り ${remain} kcal`:`実質 ${Math.abs(remain)} kcal 超過`;
+    }
   }else{
     bonusRow.style.cssText='display:none';
     bonusDetail&&(bonusDetail.style.display='none');

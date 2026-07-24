@@ -56,7 +56,7 @@
 
   /* ---- Cards ---- */
   .card{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);box-shadow:var(--shadow);margin-bottom:8px}
-  .card-pad{padding:13px 15px}
+  .card-pad{padding:13px 14px}
   .section-title{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.6px;text-transform:uppercase;margin:14px 0 5px 2px}
   .section-title.sec-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:32px;padding:4px 2px 4px 0;margin:10px 0 5px 0;-webkit-tap-highlight-color:transparent}
   .section-title-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -109,7 +109,7 @@
   .alert-save{margin-top:6px;padding:8px;width:100%;background:var(--red);color:white;border:none;border-radius:var(--radius-xs);font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
 
   /* ---- Meal blocks ---- */
-  .meal-block{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:7px;overflow:hidden;box-shadow:var(--shadow)}
+  .meal-block,.workout-block{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow)}
   .meal-header{display:flex;justify-content:space-between;align-items:center;padding:8px 13px;background:var(--bg);border-bottom:0.5px solid var(--border2)}
   .meal-pfc-sub{font-size:10px;color:var(--text3);padding:0 13px 6px;background:var(--bg);border-bottom:0.5px solid var(--border2)}
   .meal-title{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:0.3px}
@@ -151,7 +151,7 @@
   .calc-hint{font-size:12px;color:var(--green);margin-top:5px;min-height:16px;font-weight:500}
 
   /* ---- Graph tab ---- */
-  .chart-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:13px 13px 11px;margin-bottom:8px;box-shadow:var(--shadow)}
+  .chart-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
   .chart-title{font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text)}
   .chart-legend{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
   .leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2)}
@@ -168,7 +168,7 @@
   .log-comment{font-size:10px;color:var(--text3);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   /* ---- Settings tab ---- */
-  .form-card{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
+  .form-card,.prof-section{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
   .form-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px}
   .save-btn{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:10px;min-height:48px;transition:opacity .15s}
   .save-btn:active{opacity:0.82}
@@ -179,7 +179,6 @@
   .success-msg{font-size:12px;color:var(--green-dark);background:var(--green-light);border:0.5px solid var(--green);border-radius:var(--radius-xs);padding:8px 11px;margin-top:7px;display:none}
 
   /* ---- Profile / toggle / radio ---- */
-  .prof-section{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
   .prof-section-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px}
   .toggle-row{display:flex;justify-content:space-between;align-items:center}
   .toggle{position:relative;display:inline-block;width:44px;height:26px;flex-shrink:0}
@@ -212,6 +211,10 @@
   .icon-btn{background:none;border:none;cursor:pointer;font-size:12px;padding:5px 7px;font-family:inherit;border-radius:var(--radius-xs);font-weight:500;min-height:44px;display:flex;align-items:center}
   .icon-btn:active{opacity:0.55}
   .empty-state{padding:22px;text-align:center;font-size:13px;color:var(--text3)}
+  .qsrc-badge{font-size:9px;padding:1px 5px;border-radius:8px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+  .qsrc-badge.qsrc-custom{background:var(--green);color:#fff}
+  .qsrc-badge.qsrc-builtin{background:var(--border2);color:var(--text3)}
+  .qsrc-badge.qsrc-frequent{background:var(--blue-light);color:var(--blue)}
 
   /* ---- Stamp calendar ---- */
   .stamp-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
@@ -255,7 +258,6 @@
   .set-list-del{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 4px;opacity:.6}
 
   /* ---- Workout tab ---- */
-  .workout-block{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:7px;overflow:hidden;box-shadow:var(--shadow)}
   .workout-header{display:flex;justify-content:space-between;align-items:center;padding:10px 13px;background:var(--bg);border-bottom:0.5px solid var(--border2);cursor:pointer;user-select:none;min-height:48px}
   .wk-collapse-icon{width:18px;height:18px;border:0.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:10px;transition:transform .2s;flex-shrink:0}
   .wk-collapse-icon.open{transform:rotate(180deg)}
@@ -267,14 +269,14 @@
   .set-info{font-size:13px;color:var(--text);font-weight:500}
   .set-detail{font-size:10px;color:var(--text3);margin-top:2px}
   .set-badge{font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;white-space:nowrap}
-  .set-badge.up{background:var(--green-light);color:var(--green-dark)}
-  .set-badge.down{background:var(--red-light);color:var(--red-dark)}
+  .set-badge.up{background:var(--bg);color:var(--text2)}
+  .set-badge.down{background:var(--bg);color:var(--text2)}
   .set-badge.same{background:var(--bg);color:var(--text3)}
   .set-badge.new{background:var(--blue-light);color:var(--blue)}
   .muscle-chip{padding:10px 14px;border:0.5px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;background:var(--bg);color:var(--text2);font-family:inherit;font-weight:500;min-height:44px;display:flex;align-items:center}
-  .muscle-chip.sel{background:var(--amber-light);border-color:var(--amber);color:#92400E;font-weight:600}
+  .muscle-chip.sel{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:600}
   .exercise-chip{padding:10px 14px;border:0.5px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;background:var(--bg);color:var(--text2);font-family:inherit;white-space:nowrap;min-height:44px;display:flex;align-items:center}
-  .exercise-chip.sel{background:var(--amber-light);border-color:var(--amber);color:#92400E;font-weight:600}
+  .exercise-chip.sel{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:600}
   .workout-stat{font-size:11px;color:var(--text2)}
   .workout-stat span{font-weight:600;color:var(--text)}
 
@@ -308,6 +310,7 @@
   .export-status-sub{font-size:11px;margin-top:1px}
 
   /* ---- Blank gap banner (记录空白提醒) ---- */
+  .blank-gap-soft{display:none;font-size:11.5px;color:var(--text3);line-height:1.5;margin-bottom:8px;padding:0 2px}
   .blank-gap-banner{display:none;align-items:center;gap:10px;justify-content:space-between;background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px}
   .blank-gap-text{font-size:12.5px;color:var(--text2);line-height:1.5;flex:1}
   .blank-gap-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -346,9 +349,10 @@
 
   <div class="content">
 
-    <!-- 记录空白提醒 -->
+    <!-- 记录空白提醒（仅针对饮食记录。运动记录指标已分离，不作为提醒对象） -->
+    <div class="blank-gap-soft" id="blankGapSoft"></div>
     <div class="blank-gap-banner" id="blankGapBanner">
-      <div class="blank-gap-text">已经3天没有记录了，从下一餐开始重新记录就可以。</div>
+      <div class="blank-gap-text">饮食记录已经3天没有更新了，从下一餐开始重新记录就可以。</div>
       <div class="blank-gap-actions">
         <button class="blank-gap-resume" onclick="resumeFromBlankGapBanner()">去记录</button>
         <button class="blank-gap-dismiss" onclick="dismissBlankGapBanner()" aria-label="关闭">✕</button>
@@ -376,7 +380,7 @@
           </div>
         </div>
         <div class="cal-section">
-          <div id="cheatBanner" style="display:none;background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:8px;line-height:1.4"></div>
+          <div id="cheatBanner" style="display:none;background:var(--purple);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:8px;line-height:1.4"></div>
           <div class="cal-top">
             <div class="cal-left">
               <div><span class="cal-num" id="totalCal">0</span><span class="cal-unit">kcal</span></div>
@@ -390,12 +394,12 @@
           <!-- 进度条 -->
           <div class="progress-track" style="position:relative;overflow:hidden">
             <div class="progress-fill ok" id="calBar" style="width:0%;position:relative;z-index:1"></div>
-            <div id="bonusBar" style="width:0%;height:100%;background:#7C3AED;opacity:0.5;position:absolute;right:0;top:0;transition:width 0.5s cubic-bezier(.4,0,.2,1);z-index:1"></div>
+            <div id="bonusBar" style="width:0%;height:100%;background:var(--purple);opacity:0.5;position:absolute;right:0;top:0;transition:width 0.5s cubic-bezier(.4,0,.2,1);z-index:1"></div>
             <div id="goalMarker" style="display:none;position:absolute;top:0;bottom:0;width:2.5px;background:rgba(200,200,200,0.9);border-radius:1px;z-index:3;transition:left 0.5s cubic-bezier(.4,0,.2,1)"></div>
           </div>
           <div id="workoutBonusRow" style="display:none;margin-top:8px;align-items:center;justify-content:space-between">
-            <span style="font-size:12px;color:#7C3AED;font-weight:500">🏋️ 健身奖励</span>
-            <span style="font-size:13px;font-weight:700;color:#7C3AED" id="workoutBonusCal">+0 kcal</span>
+            <span style="font-size:12px;color:var(--purple);font-weight:500">🏋️ 健身奖励</span>
+            <span style="font-size:13px;font-weight:700;color:var(--purple)" id="workoutBonusCal">+0 kcal</span>
           </div>
           <div id="workoutBonusDetail" style="display:none;font-size:10px;color:var(--text3);text-align:right;margin-top:1px"></div>
           <div id="workoutBonusRemain" style="display:none;font-size:11px;color:var(--text3);margin-top:3px;text-align:right"></div>
@@ -430,7 +434,7 @@
           <span class="leg" id="legIntake"><span class="leg-sq" style="background:var(--green)"></span>摄入</span>
           <span class="leg" id="legGoal"><span class="leg-sq" style="background:var(--border);border:1px dashed var(--blue)"></span>目标</span>
           <span class="leg"><span style="font-size:12px">🏋️</span>力量训练／<span style="font-size:12px">🏃</span>有氧</span>
-          <span class="leg" id="legCheat"><span class="leg-sq" style="background:#7C3AED"></span>欺骗日（计划）</span>
+          <span class="leg" id="legCheat"><span class="leg-sq" style="background:var(--purple)"></span>欺骗日（计划）</span>
         </div>
         <div style="position:relative;" id="calChartWrap"><canvas id="calChart"></canvas></div>
       </div>
@@ -438,7 +442,7 @@
       <div class="chart-card">
         <div class="chart-title">体重趋势</div>
         <div class="chart-legend">
-          <span class="leg"><span class="leg-sq" style="background:#7C3AED"></span>实测</span>
+          <span class="leg"><span class="leg-sq" style="background:var(--purple)"></span>实测</span>
           <span class="leg"><span class="leg-sq" style="background:#0EA5E9"></span>7天移动平均</span>
           <span class="leg"><span class="leg-sq" style="background:#F59E0B"></span>理论值</span>
         </div>
@@ -492,6 +496,7 @@
     <div id="tab-foods" style="display:none">
       <div class="section-title sec-toggle" onclick="toggleFoodSection('custom')"><span class="section-title-label">自定义食品</span><span class="section-arrow" id="arrow_custom">▾</span></div>
       <div id="content_custom">
+        <div style="font-size:11px;color:var(--text3);margin:-3px 0 6px 2px">常吃的食物无需注册也可以直接从"常吃的食物"记录。只有想固定数值・统一名称时才需要注册</div>
         <button class="save-btn" style="margin-bottom:10px" onclick="openCustomFoodModal(null)">＋ 添加新食品</button>
         <div class="card" id="customFoodList"></div>
       </div>
@@ -624,6 +629,9 @@
       <!-- 今日热量消耗 -->
       <div class="card card-pad" id="workoutCalCard" style="margin-bottom:8px"></div>
 
+      <!-- 本周各部位训练情况 -->
+      <div class="card card-pad" id="workoutWeekCard" style="margin-bottom:8px"></div>
+
       <!-- 项目趋势图（上方） -->
       <div class="section-title" style="margin-top:4px">项目趋势图</div>
       <div class="chart-card">
@@ -743,17 +751,23 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div class="sheet-title" style="margin-bottom:0">🏋️ 添加项目</div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button id="wkBackBtn" onclick="wkModalBack()" style="display:none;background:none;border:none;font-size:20px;color:var(--text2);cursor:pointer;padding:0 4px 0 0;line-height:1">‹</button>
+        <div class="sheet-title" style="margin-bottom:0">🏋️ 添加项目</div>
+      </div>
       <button onclick="document.getElementById('workoutOverlay').classList.remove('open')" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:0 4px;line-height:1">×</button>
     </div>
-    <!-- 部位选择 -->
-    <div class="section-sep">部位</div>
-    <div class="quick-wrap" id="muscleGroupWrap"></div>
-    <!-- 项目选择 -->
-    <div class="section-sep">项目</div>
-    <div class="quick-wrap" id="exerciseWrap"></div>
-    <button onclick="openCustomExerciseModal()" style="font-size:12px;color:var(--green);font-weight:500;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;margin-bottom:4px">＋ 添加自定义项目</button>
-    <!-- 输入表单 -->
+    <!-- 步骤1：部位・项目选择 -->
+    <div id="wkStep1">
+      <!-- 部位选择 -->
+      <div class="section-sep">部位</div>
+      <div class="quick-wrap" id="muscleGroupWrap"></div>
+      <!-- 项目选择 -->
+      <div class="section-sep">项目</div>
+      <div class="quick-wrap" id="exerciseWrap"></div>
+      <button onclick="openCustomExerciseModal()" style="font-size:12px;color:var(--green);font-weight:500;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;margin-bottom:4px">＋ 添加自定义项目</button>
+    </div>
+    <!-- 步骤2：组数输入表单 -->
     <div id="workoutForm" style="display:none">
       <div style="font-size:13px;font-weight:600;color:var(--text);margin:10px 0 6px" id="selectedExerciseLabel"></div>
       <!-- 上次记录 -->
@@ -781,6 +795,10 @@
         <button onclick="addSet()" style="padding:10px 12px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:42px">＋添加</button>
       </div>
       <div class="calc-hint" id="workoutCalHint"></div>
+      <div style="margin-bottom:10px">
+        <div class="field-label" style="margin-top:0">强度（RPE 1〜10・可选）</div>
+        <input type="number" id="wk_rpe" min="1" max="10" placeholder="例：8">
+      </div>
       <button class="add-btn" onclick="saveWorkout()">记录</button>
       <div id="customExDeleteRow" style="display:none;margin-top:8px;text-align:center">
         <button onclick="deleteCustomExerciseFromForm()" style="background:none;border:none;color:var(--red-dark);font-size:12px;cursor:pointer;text-decoration:underline;padding:4px">删除此项目</button>
@@ -853,9 +871,19 @@
     </div>
 
     <div class="field-label" style="margin-top:0">食品名称</div>
-    <input type="text" id="inp_name" placeholder="例：米饭、鸡胸肉...">
-    <div class="section-sep">常用食品 <span style="font-weight:400;color:var(--green);font-size:10px">●绿=自定义</span></div>
-    <div class="quick-wrap" id="quickWrap"></div>
+    <input type="text" id="inp_name" placeholder="例：米饭、鸡胸肉..." oninput="filterQuickFoodCandidates()">
+
+    <div id="quickCategorized">
+      <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('frequent')"><span class="section-title-label">常吃的食物</span><span class="section-arrow" id="qarrow_frequent">▾</span></div>
+      <div id="qcontent_frequent"><div class="card" id="quickFrequentWrap"></div></div>
+
+      <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('custom')"><span class="section-title-label">已注册食品</span><span class="section-arrow" id="qarrow_custom">▾</span></div>
+      <div id="qcontent_custom"><div class="card" id="quickCustomWrap"></div></div>
+
+      <div class="section-title sec-toggle" onclick="toggleQuickFoodSection('builtin')"><span class="section-title-label">预设食品</span><span class="section-arrow" id="qarrow_builtin">▾</span></div>
+      <div id="qcontent_builtin"><div class="card" id="quickBuiltinWrap"></div></div>
+    </div>
+    <div id="quickSearchResults" style="display:none"><div class="card" id="quickSearchResultsWrap"></div></div>
 
     <!-- 单位切换 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
@@ -960,23 +988,28 @@
 
 
 <script>
+// v59同期（バックログ#46/#49分析）：本文件のBUILTIN配列は個数括弧埋め込み名・unitModeフィールドが
+// 元々存在せず、index.htmlのv46/v49で対応したバグ（個数単位食品の名前二重括弧・g換算按分誤り・
+// 旧名エイリアス残存）は本ファイルには実害として発生しない。ただし将来個数単位の食品を追加する際に
+// 備え、既存14件全件に明示的にunitMode:'g'を付与しておく（挙動不変。実消費箇所はf.unitMode==='count'
+// のみ判定するため、'g'の明示付与は既存の暗黙のデフォルト動作と同一）。
 const BUILTIN=[
-  {n:'白米饭',k:130,p:2.7,f:0.3,c:28},
-  {n:'馒头',k:223,p:7,f:1,c:47},
-  {n:'花卷',k:211,p:6,f:2,c:43},
-  {n:'粉丝',k:335,p:0.1,f:0.1,c:84},
-  {n:'中华面',k:149,p:5,f:0.6,c:31},
-  {n:'猪五花肉',k:395,p:14,f:37,c:0},
-  {n:'蒸鸡胸肉',k:108,p:22,f:1.5,c:0},
-  {n:'鲤鱼(炖)',k:109,p:17,f:4,c:0},
-  {n:'豆腐',k:72,p:7,f:4,c:2},
-  {n:'鸡蛋',k:151,p:12,f:10,c:1},
-  {n:'白菜',k:16,p:1.2,f:0.2,c:3},
-  {n:'菠菜',k:24,p:2.9,f:0.5,c:3},
-  {n:'豆芽',k:15,p:1.7,f:0.1,c:2},
-  {n:'黄瓜',k:14,p:0.7,f:0.1,c:3},
-  {n:'苹果',k:54,p:0.2,f:0.1,c:14},
-  {n:'香蕉',k:86,p:1.1,f:0.2,c:23},
+  {n:'白米饭',k:130,p:2.7,f:0.3,c:28,unitMode:'g'},
+  {n:'馒头',k:223,p:7,f:1,c:47,unitMode:'g'},
+  {n:'花卷',k:211,p:6,f:2,c:43,unitMode:'g'},
+  {n:'粉丝',k:335,p:0.1,f:0.1,c:84,unitMode:'g'},
+  {n:'中华面',k:149,p:5,f:0.6,c:31,unitMode:'g'},
+  {n:'猪五花肉',k:395,p:14,f:37,c:0,unitMode:'g'},
+  {n:'蒸鸡胸肉',k:108,p:22,f:1.5,c:0,unitMode:'g'},
+  {n:'鲤鱼(炖)',k:109,p:17,f:4,c:0,unitMode:'g'},
+  {n:'豆腐',k:72,p:7,f:4,c:2,unitMode:'g'},
+  {n:'鸡蛋',k:151,p:12,f:10,c:1,unitMode:'g'},
+  {n:'白菜',k:16,p:1.2,f:0.2,c:3,unitMode:'g'},
+  {n:'菠菜',k:24,p:2.9,f:0.5,c:3,unitMode:'g'},
+  {n:'豆芽',k:15,p:1.7,f:0.1,c:2,unitMode:'g'},
+  {n:'黄瓜',k:14,p:0.7,f:0.1,c:3,unitMode:'g'},
+  {n:'苹果',k:54,p:0.2,f:0.1,c:14,unitMode:'g'},
+  {n:'香蕉',k:86,p:1.1,f:0.2,c:23,unitMode:'g'},
 ];
 const BASE_MEALS=['早餐','午餐','晚餐'];
 let currentDay=0, selMealKey='早餐', graphPeriod=7, calChartInst=null, pfcChartInst=null, weightChartInst=null, unitMode='g', cUnitMode='g';
@@ -991,6 +1024,11 @@ function safeParse(str,fallback){
 function escapeHtml(str){
   if(str==null)return '';
   return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// v57同期：JS文字列リテラル用のエスケープ（バックスラッシュ・シングル/ダブルクォート）
+function escapeForJsAttr(str){
+  if(str==null)return '';
+  return String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
 }
 function loadGoals(){const s=localStorage.getItem('diet_goals');return safeParse(s,{cal:1800,protein:80,fat:50,carb:200});}
 function saveGoals(){
@@ -1028,22 +1066,38 @@ function renderModeUI(){
     :'🍃 自由模式：不区分好坏日，按周宽松管理。不使用欺骗日和连续达成的概念。达成情况可在图表标签中查看。';
 }
 function getRecoveryFactor(offset){
+  // 作弊日/无限制日之后的1〜2天自动放宽目标（恢复缓冲）
   const d1=safeParse(localStorage.getItem('diet_day_'+getKey(offset-1)),null);
   if(d1&&(d1.cheatDay==='cheat'||d1.cheatDay==='unlimited'))return 1.15;
   const d2=safeParse(localStorage.getItem('diet_day_'+getKey(offset-2)),null);
   if(d2&&(d2.cheatDay==='cheat'||d2.cheatDay==='unlimited'))return 1.10;
+  // 模式制度A（v51同期）：即使没有明确标记cheatDay，"未记录"或"大幅超过目标"的紊乱状态
+  // 连续2天以上时，也自动生效相同的阶段性恢复缓冲。
+  const isDisruptedDay=(rec)=>{
+    if(!rec)return true; // 未记录
+    const goalCal=rec.goalCal||loadGoals().cal;
+    return calcTotals(rec).cal>goalCal*1.3; // 超过目标30%以上
+  };
+  const disrupted1=isDisruptedDay(d1),disrupted2=isDisruptedDay(d2);
+  if(disrupted1&&disrupted2)return 1.15;
+  const d3=safeParse(localStorage.getItem('diet_day_'+getKey(offset-3)),null);
+  if(disrupted2&&isDisruptedDay(d3))return 1.10;
   return 1;
 }
 
 function getKey(offset){const d=new Date();d.setDate(d.getDate()+offset);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 
-/* ---- 记录空白检测＋轻松重启引导 ---- */
-const BLANK_GAP_THRESHOLD_DAYS=3;
+/* ---- 记录空白检测＋轻松重启引导 ----
+   v52同期：将饮食记录和运动记录的指标分离。运动记录（diet_workout_）休息日/伤病恢复期等
+   有意不记录属于正常行为，因此本提醒不将其纳入判定对象。饮食记录（diet_day_）在体重管理上
+   风险更高，因此继续作为检测对象，并采用从第1天起显示低调提示（blankGapSoft）→第3天起显示
+   原有较强提醒的两阶段显示方式。 */
+const BLANK_GAP_SOFT_DAYS=1;
+const BLANK_GAP_STRONG_DAYS=3;
 let blankGapLastCheckedKey=null;
-function getDaysSinceLastRecord(){
+function getDaysSinceLastMealRecord(){
   for(let i=0;i<365;i++){
-    const key=getKey(-i);
-    if(localStorage.getItem('diet_day_'+key)||localStorage.getItem('diet_workout_'+key))return i;
+    if(localStorage.getItem('diet_day_'+getKey(-i)))return i;
   }
   return 365;
 }
@@ -1051,9 +1105,17 @@ function checkBlankGapBanner(){
   const todayKey=getKey(0);
   blankGapLastCheckedKey=todayKey;
   const banner=document.getElementById('blankGapBanner');
-  if(!banner)return;
-  if(localStorage.getItem('diet_blankgap_dismissed_date')===todayKey){banner.style.display='none';return;}
-  banner.style.display=getDaysSinceLastRecord()>=BLANK_GAP_THRESHOLD_DAYS?'flex':'none';
+  const soft=document.getElementById('blankGapSoft');
+  if(!banner||!soft)return;
+  const mealDays=getDaysSinceLastMealRecord();
+  if(localStorage.getItem('diet_blankgap_dismissed_date')===todayKey){
+    banner.style.display='none';
+  }else{
+    banner.style.display=mealDays>=BLANK_GAP_STRONG_DAYS?'flex':'none';
+  }
+  const showSoft=mealDays>=BLANK_GAP_SOFT_DAYS&&mealDays<BLANK_GAP_STRONG_DAYS;
+  soft.style.display=showSoft?'block':'none';
+  if(showSoft)soft.textContent=`饮食记录已经${mealDays}天没有更新了。`;
 }
 function dismissBlankGapBanner(){
   localStorage.setItem('diet_blankgap_dismissed_date',getKey(0));
@@ -1248,7 +1310,7 @@ function renderCheatActionArea(data){
   if(data.cheatDay){
     const label=data.cheatDay==='unlimited'?'🎉 无限日设置中':'🍕 欺骗日设置中';
     area.style.display='block';
-    area.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;gap:8px"><span>${label}</span><button onclick="cancelCheatDay()" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;white-space:nowrap">取消</button></div>`;
+    area.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--purple);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;gap:8px"><span>${label}</span><button onclick="cancelCheatDay()" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;white-space:nowrap">取消</button></div>`;
   }else{
     const rewards=loadRewards();
     const hasDays=rewards.cheat>0||rewards.bonusCheat>0||rewards.unlimited>0;
@@ -1306,6 +1368,7 @@ function openModal(mealKey){
   document.getElementById('calcHint').textContent='';
   setUnit('g');
   renderQuickTags();
+  resetQuickSearchView();
   renderCopyTags(data, allMeals, allLabels);
   document.getElementById('overlay').classList.add('open');
   setTimeout(()=>document.getElementById('inp_name').focus(),300);
@@ -1381,12 +1444,114 @@ function setCUnit(mode){
   document.getElementById('cUnitBtn_g').classList.toggle('active',mode==='g');
   document.getElementById('cUnitBtn_count').classList.toggle('active',mode==='count');
 }
+// v54同期：「添加饮食」弹窗的食品候选：已注册/常吃的食物/预设的3类可折叠展示
+const QUICK_FOOD_SECTIONS=['frequent','custom','builtin'];
+const QUICK_FOOD_SECTION_DEFAULT_COLLAPSED={frequent:false,custom:true,builtin:true};
+function toggleQuickFoodSection(id){
+  const content=document.getElementById('qcontent_'+id);
+  const arrow=document.getElementById('qarrow_'+id);
+  if(!content)return;
+  const collapsed=content.style.display==='none';
+  content.style.display=collapsed?'':'none';
+  if(arrow)arrow.textContent=collapsed?'▾':'▸';
+  localStorage.setItem('diet_quickfoodsection_collapsed_'+id,collapsed?'0':'1');
+}
+function initQuickFoodSectionState(){
+  QUICK_FOOD_SECTIONS.forEach(id=>{
+    const stored=localStorage.getItem('diet_quickfoodsection_collapsed_'+id);
+    const collapsed=stored===null?QUICK_FOOD_SECTION_DEFAULT_COLLAPSED[id]:stored==='1';
+    const content=document.getElementById('qcontent_'+id);
+    const arrow=document.getElementById('qarrow_'+id);
+    if(content)content.style.display=collapsed?'none':'';
+    if(arrow)arrow.textContent=collapsed?'▸':'▾';
+  });
+}
+let _modalFrequentCandidates=[];
 function renderQuickTags(){
   const customs=loadCustomFoods();
   const builtins=getBuiltin();
-  document.getElementById('quickWrap').innerHTML=
-    builtins.map((q,i)=>`<button class="qtag" onclick="fillQ(${i},false)">${escapeHtml(q.n)}</button>`).join('')+
-    customs.map((q,i)=>`<button class="qtag custom" onclick="fillQ(${i},true)">${escapeHtml(q.n)}</button>`).join('');
+  _modalFrequentCandidates=collectFrequentFoods();
+
+  document.getElementById('quickFrequentWrap').innerHTML=_modalFrequentCandidates.length
+    ?_modalFrequentCandidates.map((c,i)=>`<div class="custom-food-row" onclick="fillFromFrequent(${i})"><div><div class="custom-food-name">${escapeHtml(c.name)}<span style="font-size:10px;color:var(--text3);margin-left:6px">(${c.freq}天)</span></div><div class="custom-food-detail">${c.k}kcal / P:${c.p}g F:${c.f}g C:${c.c}g（${c.unitLabel}・历史记录平均值）</div></div></div>`).join('')
+    :'<div class="empty-state">暂无候选</div>';
+
+  document.getElementById('quickCustomWrap').innerHTML=customs.length
+    ?customs.map((q,i)=>{
+      const unitLabel=q.unitMode==='count'?`每1${q.unitName||'个'}`:'每100g';
+      return`<div class="custom-food-row" onclick="fillQ(${i},true)"><div><div class="custom-food-name">${escapeHtml(q.n)}</div><div class="custom-food-detail">${q.k}kcal / P:${q.p}g F:${q.f}g C:${q.c}g（${unitLabel}）</div></div></div>`;
+    }).join('')
+    :'<div class="empty-state">还没有注册食品</div>';
+
+  document.getElementById('quickBuiltinWrap').innerHTML=builtins.map((q,i)=>{
+    const unitLabel=q.unitMode==='count'?`每1${q.unitName||'个'}`:'每100g';
+    return`<div class="custom-food-row" onclick="fillQ(${i},false)"><div><div class="custom-food-name">${escapeHtml(q.n)}</div><div class="custom-food-detail">${q.k}kcal / P:${q.p}g F:${q.f}g C:${q.c}g（${unitLabel}）</div></div></div>`;
+  }).join('');
+
+  initQuickFoodSectionState();
+}
+// v55同期：自动补完。输入食品名称时横向筛选已注册/预设/历史记录，搜索中不分类，合并为一个匹配列表显示。
+function filterQuickFoodCandidates(){
+  const q=document.getElementById('inp_name').value.trim().toLowerCase();
+  const categorized=document.getElementById('quickCategorized');
+  const results=document.getElementById('quickSearchResults');
+  if(!q){
+    categorized.style.display='';
+    results.style.display='none';
+    return;
+  }
+  categorized.style.display='none';
+  results.style.display='';
+  const customs=loadCustomFoods();
+  const builtins=getBuiltin();
+  const matches=[];
+  customs.forEach((cf,i)=>{
+    if(cf.n.toLowerCase().includes(q))matches.push({source:'custom',i,n:cf.n,k:cf.k,p:cf.p,f:cf.f,c:cf.c,
+      unitLabel:cf.unitMode==='count'?`每1${cf.unitName||'个'}`:'每100g'});
+  });
+  builtins.forEach((bf,i)=>{
+    if(bf.n.toLowerCase().includes(q))matches.push({source:'builtin',i,n:bf.n,k:bf.k,p:bf.p,f:bf.f,c:bf.c,
+      unitLabel:bf.unitMode==='count'?`每1${bf.unitName||'个'}`:'每100g'});
+  });
+  _modalFrequentCandidates.forEach((c,i)=>{
+    if(c.name.toLowerCase().includes(q))matches.push({source:'frequent',i,n:c.name,k:c.k,p:c.p,f:c.f,c:c.c,unitLabel:c.unitLabel+'・历史记录平均值',freq:c.freq});
+  });
+  // 优先级：已注册→历史记录→预设（优先显示自己的数据）
+  const order={custom:0,frequent:1,builtin:2};
+  matches.sort((a,b)=>order[a.source]-order[b.source]);
+  document.getElementById('quickSearchResultsWrap').innerHTML=matches.length?matches.map(m=>{
+    const onclick=m.source==='custom'?`fillQ(${m.i},true)`:m.source==='builtin'?`fillQ(${m.i},false)`:`fillFromFrequent(${m.i})`;
+    const badge=m.source==='custom'?'<span class="qsrc-badge qsrc-custom">已注册</span>'
+      :m.source==='builtin'?'<span class="qsrc-badge qsrc-builtin">预设</span>'
+      :`<span class="qsrc-badge qsrc-frequent">历史${m.freq}天</span>`;
+    return`<div class="custom-food-row" onclick="${onclick}"><div><div class="custom-food-name">${escapeHtml(m.n)}${badge}</div><div class="custom-food-detail">${m.k}kcal / P:${m.p}g F:${m.f}g C:${m.c}g（${m.unitLabel}）</div></div></div>`;
+  }).join(''):'<div class="empty-state">没有匹配的食品</div>';
+}
+function resetQuickSearchView(){
+  document.getElementById('quickCategorized').style.display='';
+  document.getElementById('quickSearchResults').style.display='none';
+}
+function fillFromFrequent(i){
+  const c=_modalFrequentCandidates[i];
+  if(!c)return;
+  if(c.unitMode==='count'){
+    setUnit('count');
+    document.getElementById('inp_name').value=c.name;
+    document.getElementById('inp_cal_c').value=c.k;
+    document.getElementById('inp_p_c').value=c.p;
+    document.getElementById('inp_f_c').value=c.f;
+    document.getElementById('inp_c_c').value=c.c;
+    if(document.getElementById('inp_unit_name'))document.getElementById('inp_unit_name').value=c.unit;
+  }else{
+    setUnit('g');
+    document.getElementById('inp_name').value=c.name;
+    document.getElementById('inp_cal').value=c.k;
+    document.getElementById('inp_p').value=c.p;
+    document.getElementById('inp_f').value=c.f;
+    document.getElementById('inp_c').value=c.c;
+  }
+  calcPreview();
+  resetQuickSearchView();
 }
 function fillQ(i,isCustom){
   const q=isCustom?loadCustomFoods()[i]:getBuiltin()[i];
@@ -1408,6 +1573,7 @@ function fillQ(i,isCustom){
     document.getElementById('inp_c').value=q.c;
   }
   calcPreview();
+  resetQuickSearchView();
 }
 function calcPreview(){
   const k=+document.getElementById('inp_cal').value||0;
@@ -1491,17 +1657,22 @@ function _avgArr(arr){return arr.length?arr.reduce((s,v)=>s+v,0)/arr.length:0;}
 // 追加された場合は、本関数にindex.html同様のLEGACY_FOOD_BASE_ALIASES相当ロジックを同期移植すること。
 // 移植を怠ると、v46/v49で発生したのと同種の「よく食べるもの」候補への旧名重複表示バグが
 // 本ファイルでも再発しうる。詳細はdocs/REQUIREMENTS.md「中国語版・未同期の変更」参照。
+// v56同期：候补统计的时间窗口。90天以前的记录不再纳入「常吃的食物」候选统计
+// （避免"现在已经不吃的过去常吃食品"一直占据候选列表）。
+const FREQUENT_FOOD_WINDOW_DAYS=90;
 function collectFrequentFoods(){
   const registeredNames=new Set();
   getBuiltin().forEach(f=>registeredNames.add(f.n));
   loadCustomFoods().forEach(f=>registeredNames.add(f.n));
   const registeredBase=new Set([...registeredNames].map(n=>parseFoodItemName(n).base));
 
+  const cutoffKey=getKey(-FREQUENT_FOOD_WINDOW_DAYS);
   const groups={};
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
     if(!k||!k.startsWith('diet_day_'))continue;
     const dateKey=k.replace('diet_day_','');
+    if(dateKey<cutoffKey)continue; // 90天以前的记录不纳入候选统计
     const raw=safeParse(localStorage.getItem(k),null);
     if(!raw||!raw.meals)continue;
     const allItems=[];
@@ -1545,13 +1716,14 @@ function collectFrequentFoods(){
 }
 
 let _frequentCandidates=[];
+// v53同期：与已注册/预设食品统一为同样的显示形式（1行1项目・名称+kcal/PFC+单位），并明确标注为历史记录的平均值。
 function renderFrequentFoodList(){
   _frequentCandidates=collectFrequentFoods();
   const el=document.getElementById('frequentFoodList');
   if(!_frequentCandidates.length){el.innerHTML='<div class="empty-state">暂无候选</div>';return;}
-  el.innerHTML=`<div class="quick-wrap">`+_frequentCandidates.map((c,i)=>
-    `<button class="qtag" onclick="openCandidateRegisterModal(${i})">${escapeHtml(c.name)}<span style="color:var(--text3);font-size:10px;margin-left:4px">(${c.freq}天)</span></button>`
-  ).join('')+`</div>`;
+  el.innerHTML=_frequentCandidates.map((c,i)=>
+    `<div class="custom-food-row"><div><div class="custom-food-name">${escapeHtml(c.name)}<span style="font-size:10px;color:var(--text3);margin-left:6px">(${c.freq}天)</span></div><div class="custom-food-detail">${c.k}kcal / P:${c.p}g F:${c.f}g C:${c.c}g（${c.unitLabel}・历史记录平均值）</div></div><div class="custom-actions"><button class="icon-btn" onclick="openCandidateRegisterModal(${i})" style="color:var(--blue)">注册</button></div></div>`
+  ).join('');
 }
 function openCandidateRegisterModal(idx){
   const c=_frequentCandidates[idx];
@@ -1575,6 +1747,8 @@ function openCandidateRegisterModal(idx){
 
 // 食品タブの各セクション折りたたみ
 const FOOD_SECTIONS=['custom','frequent','builtin'];
+// v53同期：默认展开状态。「常吃的食物（历史记录）」默认展开，「已注册」「预设」默认折叠。
+const FOOD_SECTION_DEFAULT_COLLAPSED={custom:true,frequent:false,builtin:true};
 function toggleFoodSection(id){
   const content=document.getElementById('content_'+id);
   const arrow=document.getElementById('arrow_'+id);
@@ -1586,7 +1760,8 @@ function toggleFoodSection(id){
 }
 function initFoodSectionState(){
   FOOD_SECTIONS.forEach(id=>{
-    const collapsed=localStorage.getItem('diet_foodsection_collapsed_'+id)==='1';
+    const stored=localStorage.getItem('diet_foodsection_collapsed_'+id);
+    const collapsed=stored===null?FOOD_SECTION_DEFAULT_COLLAPSED[id]:stored==='1';
     const content=document.getElementById('content_'+id);
     const arrow=document.getElementById('arrow_'+id);
     if(content)content.style.display=collapsed?'none':'';
@@ -1784,7 +1959,7 @@ function renderWeekSummary(){
     }).join('');
 
     const totalBonus=w.dayDetails.reduce((s,d)=>s+d.wkBonus,0);
-    const bonusTxt=totalBonus>0?`<span style="font-size:9px;color:#7C3AED;margin-left:4px">+${totalBonus}kcal运动</span>`:'';
+    const bonusTxt=totalBonus>0?`<span style="font-size:9px;color:var(--purple);margin-left:4px">+${totalBonus}kcal运动</span>`:'';
 
     html+=`<div style="margin-bottom:${wi<weeks.length-1?'16':'0'}px">`+
       `<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">`+
@@ -1850,7 +2025,7 @@ function renderCharts(){
       // v41: フリーモードでは達成度による色分けをせず、中立色で統一
       colors.push('#7BA7D9');
     }else if(dayData.cheatDay==='unlimited'){
-      colors.push('#7C3AED');
+      colors.push('#7C3AED'); // 传递给Chart.js(Canvas)的值，CSS变量无法在此解析，保持字面量
     }else if(dayData.cheatDay==='cheat'){
       colors.push('#7C3AED');
     }else{
@@ -2591,85 +2766,19 @@ function applyNewDailyTarget(kcal){
 let stampCalYear=new Date().getFullYear();
 let stampCalMonth=new Date().getMonth();
 
+// [v45同期] getDayStatusByKey / calcStreakCore / calcStreak（日次判定ロジック）は未使用のため削除済み。
+// 置き換え先: 週次版 getWeekStatus() / calcWeekStreakCore()（週目標システム、docs/meetings/v45_design_review.md参照）
+// _statusCache / clearStatusCache は getDayStatusByKey 専用キャッシュとして導入されたものだが、
+// renderStampCalendar()（下記）から呼ばれる生きたコードのため、関数自体は削除せず残す。
 let _statusCache={goals:null,prof:null};
 function clearStatusCache(){_statusCache={goals:null,prof:null};}
-
-function getDayStatusByKey(dateKey){
-  const s=localStorage.getItem('diet_day_'+dateKey);
-  if(!s)return 'none';
-  const data=safeParse(s,null);
-  if(!data)return 'none';
-  const t=calcTotals(data);
-  if(t.cal===0)return 'none';
-  if(!_statusCache.goals)_statusCache.goals=loadGoals();
-  if(!_statusCache.prof)_statusCache.prof=loadProfileData();
-  const goals=_statusCache.goals;
-  const prof=_statusCache.prof;
-  const effectiveCal=data.goalCal||goals.cal;
-  const proteinOk=t.p>=goals.protein;
-  if(data.cheatDay==='unlimited'){
-    return proteinOk?'perfect':'achieved';
-  }
-  if(data.cheatDay==='cheat'){
-    // v39: 上限超過をfailedにしない（たがのゆるみ効果対策。チートデイは常に成功扱い）
-    return proteinOk?'perfect':'achieved';
-  }
-  const bw=prof&&prof.weight?prof.weight:70;
-  const wkS=localStorage.getItem('diet_workout_'+dateKey);
-  const wkBonus=wkS?calcWorkoutCal(safeParse(wkS,[]),bw)*0.5:0;
-  const effectiveGoal=effectiveCal+wkBonus;
-  const calOk=t.cal<=effectiveGoal;
-  if(!calOk)return 'failed';
-  return proteinOk?'perfect':'achieved';
-}
-
-function calcStreakCore(skipToday){
-  clearStatusCache();
-  let streak=0,perfectStreak=0,perfectDone=false,i=skipToday?1:0;
-  while(i<365){
-    const d=new Date();d.setDate(d.getDate()-i);
-    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const status=getDayStatusByKey(key);
-    if(status==='none'){if(i===0){i++;continue;}break;}
-    if(status==='failed')break;
-    streak++;
-    if(!perfectDone){
-      if(status==='perfect')perfectStreak++;
-      else perfectDone=true;
-    }
-    i++;
-  }
-  return{streak,perfectStreak};
-}
-function calcStreak(){return calcStreakCore(false);}
 
 function loadRewards(){return safeParse(localStorage.getItem('diet_rewards'),{cheat:0,unlimited:0,bonusCheat:0});}
 function saveRewards(r){localStorage.setItem('diet_rewards',JSON.stringify(r));}
 
-function checkAndGrantRewards(){
-  const {streak,perfectStreak}=calcStreak();
-  const rewards=loadRewards();
-  let updated=false;
-  let lastCheat=parseInt(localStorage.getItem('diet_last_cheat_streak')||'0');
-  let lastPerfect=parseInt(localStorage.getItem('diet_last_perfect_streak')||'0');
-  let last31=parseInt(localStorage.getItem('diet_last_31_streak')||'0');
-  // 连续中断时同步基准值（排除今天的未确定状态）
-  const stable=calcStreakCore(true);
-  if(stable.streak<lastCheat){lastCheat=stable.streak;localStorage.setItem('diet_last_cheat_streak',String(lastCheat));}
-  if(stable.perfectStreak<lastPerfect){lastPerfect=stable.perfectStreak;localStorage.setItem('diet_last_perfect_streak',String(lastPerfect));}
-  if(stable.streak<last31){last31=stable.streak;localStorage.setItem('diet_last_31_streak',String(last31));}
-  if(streak>=6&&Math.floor(streak/6)>Math.floor(lastCheat/6)){
-    rewards.cheat++;updated=true;localStorage.setItem('diet_last_cheat_streak',String(streak));
-  }
-  if(perfectStreak>=6&&Math.floor(perfectStreak/6)>Math.floor(lastPerfect/6)){
-    rewards.bonusCheat++;updated=true;localStorage.setItem('diet_last_perfect_streak',String(perfectStreak));
-  }
-  if(streak>=31&&Math.floor(streak/31)>Math.floor(last31/31)){
-    rewards.unlimited++;updated=true;localStorage.setItem('diet_last_31_streak',String(streak));
-  }
-  if(updated)saveRewards(rewards);
-  return rewards;
-}
+// [v45同期] checkAndGrantRewards（日次版の報酬判定）は未使用のため削除済み。loadRewards/saveRewardsは他箇所で使用中のため残置。
+// diet_last_cheat_streak / diet_last_perfect_streak / diet_last_31_streak の各localStorageキーは
+// export/import が直接読み書きするため維持するが、以後は書き込み元が存在しない凍結データとなる。
 
 function calcCheatCalLimit(){
   const prof=loadProfileData();
@@ -2707,14 +2816,26 @@ function getWeekStartKey(dateKey){
   dt.setDate(dt.getDate()-dt.getDay());
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
 }
+// v59同期：追加totalWorkoutBonus（バックログ#19）。运动加成沿用与日卡相同的getEffectiveWorkoutGoal()逻辑，
+// 按周内每天累加（无论当天是否记录饮食，只要有运动记录就计入）。
 function calcWeekTotals(weekStartKey){
   const [y,m,d]=weekStartKey.split('-').map(Number);
   const start=new Date(y,m-1,d);
   const goals=loadGoals();
-  let totalCal=0,totalProtein=0,recordedDays=0,bigOverageDays=0;
+  const prof=loadProfileData();const bw=prof&&prof.weight?prof.weight:70;
+  const today=new Date();today.setHours(0,0,0,0);
+  let totalCal=0,totalProtein=0,recordedDays=0,bigOverageDays=0,totalWorkoutBonus=0;
   for(let i=0;i<7;i++){
     const dd=new Date(start);dd.setDate(start.getDate()+i);
     const key=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
+    const wkData=safeParse(localStorage.getItem('diet_workout_'+key),[]);
+    if(wkData.length){
+      const workoutCal=calcWorkoutCal(wkData,bw);
+      if(workoutCal>0){
+        const offset=Math.round((dd.getTime()-today.getTime())/86400000);
+        totalWorkoutBonus+=getEffectiveWorkoutGoal(offset,workoutCal).bonus;
+      }
+    }
     const s=localStorage.getItem('diet_day_'+key);
     if(!s)continue;
     const data=safeParse(s,null);
@@ -2733,13 +2854,13 @@ function calcWeekTotals(weekStartKey){
     totalCal+=calContribution;
     totalProtein+=t.p;
   }
-  return{totalCal,totalProtein,recordedDays,bigOverageDays};
+  return{totalCal,totalProtein,recordedDays,bigOverageDays,totalWorkoutBonus};
 }
 function getWeekStatus(weekStartKey){
   const goals=loadGoals();
   const wt=calcWeekTotals(weekStartKey);
   if(wt.recordedDays===0)return 'none';
-  const weekGoalCal=goals.cal*7;
+  const weekGoalCal=goals.cal*7+wt.totalWorkoutBonus; // v59同期：周判定也反映运动加成
   const weekGoalProtein=goals.protein*7;
   const calOk=wt.totalCal<=weekGoalCal;
   const proteinOk=wt.totalProtein>=weekGoalProtein;
@@ -2861,12 +2982,14 @@ function renderStamp(){
   const goals=loadGoals();
   const thisWeekKey=getWeekStartKey(getKey(0));
   const wt=calcWeekTotals(thisWeekKey);
-  const weekGoalCal=goals.cal*7;
+  const weekGoalCal=goals.cal*7+wt.totalWorkoutBonus; // v59同期：反映运动加成
   const weekRemain=weekGoalCal-wt.totalCal;
+  const wkBonusRow=wt.totalWorkoutBonus>0?`<div class="streak-row"><span class="streak-label">运动加成（本周合计）</span><span class="streak-val" style="color:var(--purple)">+${wt.totalWorkoutBonus} kcal</span></div>`:'';
   if(mode==='free'){
     document.getElementById('streakCard').innerHTML=`
       <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🍃 自由模式运行中</div>
       <div class="streak-row"><span class="streak-label">本周剩余</span><span class="streak-val" style="color:${weekRemain>=0?'var(--green-dark)':'var(--red-dark)'}">${weekRemain>=0?weekRemain+'kcal':'+'+Math.abs(weekRemain)+'kcal超出'}</span></div>
+      ${wkBonusRow}
       <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">不区分好坏日，按周宽松管理。不使用奖励和连续达成的概念。</div>
     `;
     document.getElementById('cheatCard').innerHTML='';
@@ -2888,6 +3011,7 @@ function renderStamp(){
     <div class="streak-row"><span class="streak-label">当前连续达成</span><span class="streak-val green">${streak}周</span></div>
     <div class="streak-row"><span class="streak-label">完美达成连续</span><span class="streak-val ${perfectStreak>=2?'green':''}">⭐ ${perfectStreak}周</span></div>
     <div class="streak-row"><span class="streak-label">本周剩余</span><span class="streak-val" style="color:${weekRemain>=0?'var(--green-dark)':'var(--red-dark)'}">${weekRemain>=0?weekRemain+'kcal':'+'+Math.abs(weekRemain)+'kcal超出'}</span></div>
+    ${wkBonusRow}
     <div class="streak-row"><span class="streak-label">普通欺骗日／奖励</span><span class="streak-val" style="color:var(--amber)">${cheatGrantedThisWeek?'本周已达成':'本周达成即可获得'}</span></div>
     <div class="streak-row"><span class="streak-label">距无限日</span><span class="streak-val">🎉 还需${nextUnlimitedWeeks}周</span></div>
   `;
@@ -2916,9 +3040,9 @@ function openDayDetail(offset){
   const goals=loadGoals();
   let html=`<div style="font-size:13px;color:var(--text3);margin-bottom:10px">${ds.main} ${ds.sub}</div>`;
   if(data.cheatDay==='unlimited'){
-    html+=`<div style="background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px">🎉 无限日</div>`;
+    html+=`<div style="background:var(--purple);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px">🎉 无限日</div>`;
   }else if(data.cheatDay==='cheat'){
-    html+=`<div style="background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px">🍕 欺骗日${data.cheatCalLimit!=null?`（上限 ${data.cheatCalLimit} kcal）`:''}</div>`;
+    html+=`<div style="background:var(--purple);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px">🍕 欺骗日${data.cheatCalLimit!=null?`（上限 ${data.cheatCalLimit} kcal）`:''}</div>`;
   }
   if(t.cal===0&&data.weight==null&&!data.comment&&!wkData.length){
     html+=`<div style="font-size:13px;color:var(--text3);padding:12px 0">此日暂无记录</div>`;
@@ -3011,7 +3135,7 @@ function renderStampCalendar(){
       cls+=' '+(mode==='free'?'none':(status==='none'?'none':status));
       if(isInProgress)cls+=' inprogress';
       if(wt.recordedDays>0){
-        const remain=weekGoalCal-wt.totalCal;
+        const remain=weekGoalCal+wt.totalWorkoutBonus-wt.totalCal; // v59同期：反映运动加成
         diffHtml=`<span class="week-diff" style="color:${remain>=0?'var(--green-dark)':'var(--red-dark)'}">${remain>=0?remain+'kcal剩余':'+'+Math.abs(remain)+'kcal超出'}</span>`;
       }
       let hasCheat=false,hasUnlimited=false,hasWk=false;
@@ -3044,15 +3168,16 @@ function openWeekDetail(weekStartKey){
   const start=new Date(wy,wm-1,wd);
   const end=new Date(start);end.setDate(start.getDate()+6);
   const goals=loadGoals();
-  const weekGoalCal=goals.cal*7,weekGoalProtein=goals.protein*7;
   const wt=calcWeekTotals(weekStartKey);
+  const weekGoalCal=goals.cal*7+wt.totalWorkoutBonus,weekGoalProtein=goals.protein*7; // v59同期：反映运动加成
   const status=getWeekStatus(weekStartKey);
   const remain=weekGoalCal-wt.totalCal;
   const fmt=dt=>`${dt.getMonth()+1}/${dt.getDate()}`;
   const statusLabel={perfect:'⭐ 完美达成',achieved:'🌸 达成',failed:'💔 未达成',none:'无记录'}[status]||'';
+  const weekGoalLabel=wt.totalWorkoutBonus>0?`${weekGoalCal}（运动+${wt.totalWorkoutBonus}）`:`${weekGoalCal}`;
   let html=`<div style="font-size:13px;color:var(--text3);margin-bottom:10px">${fmt(start)}〜${fmt(end)}周</div>`;
   html+=`<div class="macro-grid" style="margin-bottom:10px">`+
-    `<div class="macro-card"><div class="macro-val ok">${wt.totalCal}kcal</div><div class="macro-label">本周合计（目标${weekGoalCal}）</div></div>`+
+    `<div class="macro-card"><div class="macro-val ok">${wt.totalCal}kcal</div><div class="macro-label">本周合计（目标${weekGoalLabel}）</div></div>`+
     `<div class="macro-card"><div class="macro-val ok">${Math.round(wt.totalProtein*10)/10}g</div><div class="macro-label">蛋白质（目标${weekGoalProtein}g）</div></div>`+
     `<div class="macro-card"><div class="macro-val ok">${statusLabel}</div><div class="macro-label">${remain>=0?'剩余'+remain+'kcal':'超出'+Math.abs(remain)+'kcal'}</div></div>`+
     `</div>`;
@@ -3099,9 +3224,33 @@ const PRESET_BODYWEIGHT=['双杠臂屈伸','引体向上','腹轮'];
 // プリ组のデフォルト片手種目
 const PRESET_UNILATERAL=['单手哑铃划船','哑铃弯举','上斜哑铃弯举','锤式弯举','侧平举','俯身飞鸟','保加利亚分腿蹲','上斜哑铃飞鸟'];
 
-// カスタム種目のCRUD
+// 自定义项目的CRUD
 function loadCustomExercises(){return safeParse(localStorage.getItem('diet_custom_exercises'),[]);}
 function saveCustomExercises(data){localStorage.setItem('diet_custom_exercises',JSON.stringify(data));}
+function genExerciseId(){return'cex_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+
+// v59同期：项目的ID化。给自定义项目附加id（首次启动时补充），记录（diet_workout_）中也快照exerciseId，
+// 这样即使重命名自定义项目，"上次记录"和"趋势图表"也能继续追踪到同一项目。
+// 已有数据不做删除/转换，只做"追加id字段"的一次性批量迁移（幂等，多次执行也无害）。
+// 迁移前就已经改过名的历史记录无法追溯（没有可以还原对应关系的线索）。
+function migrateCustomExerciseIds(){
+  const customs=loadCustomExercises();
+  if(!customs.length)return;
+  let changed=false;
+  customs.forEach(c=>{if(!c.id){c.id=genExerciseId();changed=true;}});
+  if(changed)saveCustomExercises(customs);
+  const nameToId={};
+  customs.forEach(c=>{nameToId[c.name]=c.id;});
+  Object.keys(localStorage).filter(k=>k.startsWith('diet_workout_')).forEach(key=>{
+    const data=safeParse(localStorage.getItem(key),[]);
+    let dayChanged=false;
+    data.forEach(ex=>{
+      if(ex.type==='cardio'||ex.exerciseId)return;
+      if(nameToId[ex.name]){ex.exerciseId=nameToId[ex.name];dayChanged=true;}
+    });
+    if(dayChanged)localStorage.setItem(key,JSON.stringify(data));
+  });
+}
 
 // 体重種目かどうかを判定
 function isBodyweightEx(name){
@@ -3130,6 +3279,8 @@ function getAllExercises(){
 }
 
 let selMuscle='',selExercise='',workoutChartInst=null,workoutGraphMode='best';
+let selExerciseId=null; // 当前选中的自定义项目id（预设项目则为null）
+let selPrevData=null; // 当前选中项目的上次记录（用于一键复制）
 let pendingSets=[];
 let cexMuscle='胸';
 let cexEditName=null;
@@ -3168,14 +3319,15 @@ function saveCustomExercise(){
     const idx=customs.findIndex(e=>e.name===cexEditName);
     if(idx===-1)return;
     if(name!==cexEditName&&customs.find(e=>e.name===name)){alert('已存在同名项目');return;}
-    customs[idx]={name,muscle:cexMuscle,bodyweight,unilateral};
+    // v59同期：id在重命名后依然保留（保持与过去记录的关联）
+    customs[idx]={id:customs[idx].id||genExerciseId(),name,muscle:cexMuscle,bodyweight,unilateral};
     saveCustomExercises(customs);
     document.getElementById('customExOverlay').classList.remove('open');
     selMuscle=cexMuscle;selExercise=name;
     renderWorkoutModalExercises();
   }else{
     if(customs.find(e=>e.name===name)){alert('已存在同名项目');return;}
-    customs.push({name,muscle:cexMuscle,bodyweight,unilateral});
+    customs.push({id:genExerciseId(),name,muscle:cexMuscle,bodyweight,unilateral});
     saveCustomExercises(customs);
     document.getElementById('customExOverlay').classList.remove('open');
     selMuscle=cexMuscle;selExercise=name;
@@ -3187,7 +3339,7 @@ function deleteCustomExercise(name){
   if(!confirm(`删除「${name}」？\n过去的记录将保留。`))return;
   const customs=loadCustomExercises().filter(e=>e.name!==name);
   saveCustomExercises(customs);
-  if(selExercise===name){selExercise='';}
+  if(selExercise===name){selExercise='';selExerciseId=null;}
   renderWorkoutModalExercises();
 }
 
@@ -3277,7 +3429,7 @@ function renderWorkoutModalExercises(){
       const isCustom=customs.find(e=>e.name===ex);
       if(isCustom){
         const isSel=ex===selExercise;
-        const safeEx=ex.replace(/'/g,"\'");
+        const safeEx=escapeForJsAttr(ex);
         return`<div style="display:flex;align-items:center;gap:4px">` +
           `<button class="exercise-chip${isSel?' sel':''}" style="flex:1" onclick="selectExercise(this,'${safeEx}')">${escapeHtml(ex)}<span style="font-size:9px;color:var(--green);margin-left:3px">●</span></button>` +
           `<button onclick="openCustomExerciseModal('${safeEx}');event.stopPropagation()" style="padding:6px 8px;font-size:11px;border:0.5px solid var(--border);border-radius:var(--radius-xs);background:var(--bg);color:var(--text2);cursor:pointer;min-height:36px">编辑</button>` +
@@ -3290,7 +3442,7 @@ function renderWorkoutModalExercises(){
       const isBW=isBodyweightEx(selExercise);
       document.getElementById('setWeightWrap').style.display=isBW?'none':'block';
       document.getElementById('selectedExerciseLabel').textContent=selExercise;
-      document.getElementById('workoutForm').style.display='block';
+      wkGoToStep2();
       renderSetList();
     }
   }
@@ -3305,7 +3457,9 @@ function calcWorkoutCal(exercises,bw){
   let total=0;
   exercises.forEach(ex=>{
     if(ex.type==='cardio'){total+=ex.cal||0;return;}
-    const isBW=isBodyweightEx(ex.name);
+    // v57同期：自定义项目的自重标志在记录时会被快照（ex.bodyweight）。
+    // 仅当未设置（v56以前的旧数据）时才回退参照当前的项目定义。
+    const isBW=ex.bodyweight!=null?ex.bodyweight:isBodyweightEx(ex.name);
     const isUni=ex.unilateral||false;
     const coef=MUSCLE_COEF[ex.muscle]!=null?MUSCLE_COEF[ex.muscle]:1;
     let exTotal=0;
@@ -3328,18 +3482,78 @@ function getBestSet(sets,isBW){
   return sets.reduce((best,s)=>(s.weight||0)>(best.weight||0)?s:best,sets[0]);
 }
 
-function getPrevWorkout(exName){
+// v59同期：传入exId时优先按ID匹配（仅当记录没有id时才用名称兜底），
+// 这样重命名自定义项目后，"上次记录"/"趋势图表"依然能被追踪到。
+function getPrevWorkout(exName,exId){
   for(let i=1;i<=60;i++){
     const data=loadWorkoutDay(-i);
-    const found=data.find(e=>e.name===exName);
-    if(found&&found.sets&&found.sets.length)return{date:getKey(-i),sets:found.sets};
+    const found=data.find(e=>exId?(e.exerciseId===exId||(!e.exerciseId&&e.name===exName)):e.name===exName);
+    if(found&&found.sets&&found.sets.length)return{date:getKey(-i),daysAgo:i,sets:found.sets,unilateral:found.unilateral||false,bodyweight:found.bodyweight};
   }
   return null;
 }
+// 项目的总负荷量（自重项目为总次数，负重项目为重量×次数的合计。单手项目按2倍计算）
+function calcExerciseVolume(sets,isBW,isUni){
+  return (sets||[]).reduce((sum,s)=>{
+    if(isBW)return sum+(s.reps||0);
+    const w=isUni?(s.weight||0)*2:(s.weight||0);
+    return sum+w*(s.reps||0);
+  },0);
+}
+
+// v58同期：本周（周日开始）各部位训练汇总。由于自重项目（总次数）和负重项目（重量×次数）单位不同，
+// 跨部位汇总时统一使用calcWorkoutCal（kcal）作为共同指标。
+function calcWorkoutWeekSummary(){
+  const prof=loadProfileData();const bw=prof&&prof.weight?prof.weight:70;
+  const today=new Date();
+  const sunday=new Date(today);
+  sunday.setDate(today.getDate()-today.getDay());
+  sunday.setHours(0,0,0,0);
+  const summary={};
+  Object.keys(EXERCISES).forEach(m=>{summary[m]={sets:0,cal:0};});
+  for(let d=0;d<7;d++){
+    const dd=new Date(sunday);dd.setDate(sunday.getDate()+d);
+    if(dd>today)break;
+    const key=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
+    const data=safeParse(localStorage.getItem('diet_workout_'+key),[]);
+    data.forEach(ex=>{
+      if(ex.type==='cardio')return;
+      const m=ex.muscle;
+      if(!summary[m])summary[m]={sets:0,cal:0};
+      summary[m].sets+=(ex.sets||[]).length;
+      summary[m].cal+=calcWorkoutCal([ex],bw);
+    });
+  }
+  return summary;
+}
+
+function renderWorkoutWeekSummary(){
+  const summary=calcWorkoutWeekSummary();
+  const card=document.getElementById('workoutWeekCard');
+  const rows=Object.keys(EXERCISES).map(m=>{
+    const s=summary[m]||{sets:0,cal:0};
+    const valText=s.sets>0?`${s.sets}组・${s.cal}kcal`:'暂无记录';
+    return`<div class="result-row"><span class="result-label">${m}</span><span class="result-val" style="${s.sets>0?'':'color:var(--text3)'}">${valText}</span></div>`;
+  }).join('');
+  card.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">📊 本周各部位训练情况（周日〜）</div>${rows}`;
+}
+
+// 添加项目弹窗的两步导航（部位・项目选择→组数输入）
+function wkGoToStep1(){
+  document.getElementById('workoutForm').style.display='none';
+  document.getElementById('wkStep1').style.display='block';
+  document.getElementById('wkBackBtn').style.display='none';
+}
+function wkGoToStep2(){
+  document.getElementById('wkStep1').style.display='none';
+  document.getElementById('workoutForm').style.display='block';
+  document.getElementById('wkBackBtn').style.display='inline-flex';
+}
+function wkModalBack(){wkGoToStep1();}
 
 function openWorkoutModal(){
-  selMuscle='';selExercise='';pendingSets=[];
-  document.getElementById('workoutForm').style.display='none';
+  selMuscle='';selExercise='';pendingSets=[];selExerciseId=null;selPrevData=null;
+  wkGoToStep1();
   document.getElementById('muscleGroupWrap').innerHTML=Object.keys(getAllExercises()).map(g=>`<button class="muscle-chip" onclick="selectMuscleGroup(this,'${g}')">${g}</button>`).join('');
   document.getElementById('exerciseWrap').innerHTML='';
   document.getElementById('workoutOverlay').classList.add('open');
@@ -3354,22 +3568,28 @@ function selectMuscleGroup(btn,group){
 
 function selectExercise(btn,ex){
   selExercise=ex;pendingSets=[];
+  const customObj=loadCustomExercises().find(e=>e.name===ex);
+  selExerciseId=customObj?customObj.id:null;
   document.querySelectorAll('.exercise-chip').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');
   const isBW=isBodyweightEx(ex);
   const isUni=isUnilateralEx(ex);
   document.getElementById('setWeightWrap').style.display=isBW?'none':'block';
   document.getElementById('unilateralRow').style.display=isBW?'none':'flex';
   document.getElementById('wk_unilateral').checked=isUni;
-  document.getElementById('selectedExerciseLabel').textContent=ex+(isUni?' (片手)':'');
+  document.getElementById('selectedExerciseLabel').textContent=ex+(isUni?' (单手)':'');
   document.getElementById('workoutCalHint').textContent='';
-  const prev=getPrevWorkout(ex);
+  document.getElementById('wk_rpe').value='';
+  const prev=getPrevWorkout(ex,selExerciseId);
+  selPrevData=prev;
   const prevEl=document.getElementById('prevWorkoutInfo');
   if(prev){
+    // v57同期：优先使用上次记录时的自重标志快照（即使之后修改了项目定义，上次记录的显示也不会变）
+    const prevIsBW=prev.bodyweight!=null?prev.bodyweight:isBW;
     const lines=prev.sets.map((s,i)=>{
-      const txt=isBW?`${s.reps}回`:`${s.weight}kg × ${s.reps}回`;
-      return`组${i+1}：${txt}`;
+      const txt=prevIsBW?`${s.reps}次`:`${s.weight}kg × ${s.reps}次`;
+      return`第${i+1}组：${txt}`;
     }).join('　');
-    prevEl.textContent=`上次（${prev.date}） ${lines}`;
+    prevEl.innerHTML=`上次（${prev.date}・${prev.daysAgo}天前） ${lines}<button onclick="duplicatePrevSets()" style="display:block;margin-top:6px;padding:6px 10px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-xs);font-size:11px;font-weight:600;cursor:pointer">＋ 复制上次的内容</button>`;
     const s=prev.sets[0];
     if(!isBW)document.getElementById('wk_weight').value=s.weight||'';
     document.getElementById('wk_reps').value=s.reps||'';
@@ -3379,18 +3599,28 @@ function selectExercise(btn,ex){
     document.getElementById('wk_reps').value='';
   }
   renderSetList();
-  document.getElementById('workoutForm').style.display='block';
+  wkGoToStep2();
   updateSetCalHint();
   const isCustom=loadCustomExercises().some(e=>e.name===ex);
   document.getElementById('customExDeleteRow').style.display=isCustom?'block':'none';
+}
+
+// 将上次记录的全部组（含单手标志）一次性复制到当前正在输入的组
+function duplicatePrevSets(){
+  if(!selPrevData||!selPrevData.sets||!selPrevData.sets.length)return;
+  if(pendingSets.length>0&&!confirm('要用上次的内容替换当前正在输入的组吗？'))return;
+  const isUni=selPrevData.unilateral||false;
+  pendingSets=selPrevData.sets.map(s=>({weight:s.weight||0,reps:s.reps||0,unilateral:isUni}));
+  if(!isBodyweightEx(selExercise))document.getElementById('wk_unilateral').checked=isUni;
+  renderSetList();
 }
 
 function deleteCustomExerciseFromForm(){
   if(!confirm(`删除「${selExercise}」？\n过去的记录将保留。`))return;
   const customs=loadCustomExercises().filter(e=>e.name!==selExercise);
   saveCustomExercises(customs);
-  selExercise='';
-  document.getElementById('workoutForm').style.display='none';
+  selExercise='';selExerciseId=null;
+  wkGoToStep1();
   document.getElementById('customExDeleteRow').style.display='none';
   renderWorkoutModalExercises();
 }
@@ -3453,11 +3683,22 @@ function saveWorkout(){
   if(!pendingSets.length){alert('请添加组数');return;}
   const isBW=isBodyweightEx(selExercise);
   const isUni=!isBW&&document.getElementById('wk_unilateral').checked;
+  const rpeRaw=parseInt(document.getElementById('wk_rpe').value);
+  const rpe=(rpeRaw>=1&&rpeRaw<=10)?rpeRaw:null;
   const data=loadWorkoutDay(currentDay);
-  const existing=data.find(e=>e.name===selExercise);
-  if(existing){existing.sets.push(...pendingSets);existing.unilateral=isUni;}
-  else data.push({name:selExercise,muscle:selMuscle,unilateral:isUni,sets:pendingSets});
+  const existing=data.find(e=>selExerciseId?(e.exerciseId===selExerciseId||(!e.exerciseId&&e.name===selExercise)):e.name===selExercise);
+  if(existing){
+    existing.sets.push(...pendingSets);existing.unilateral=isUni;existing.bodyweight=isBW;
+    if(rpe!=null)existing.rpe=rpe;
+    if(selExerciseId)existing.exerciseId=selExerciseId; // v59同期：未打标的旧记录在追加时补上id
+  }else{
+    const entry={name:selExercise,muscle:selMuscle,unilateral:isUni,bodyweight:isBW,sets:pendingSets};
+    if(rpe!=null)entry.rpe=rpe;
+    if(selExerciseId)entry.exerciseId=selExerciseId;
+    data.push(entry);
+  }
   saveWorkoutDay(currentDay,data);
+  document.getElementById('wk_rpe').value='';
   document.getElementById('workoutOverlay').classList.remove('open');
   render();renderWorkoutTab();
 }
@@ -3485,13 +3726,27 @@ function deleteSet(exIdx,setIdx){
   saveWorkoutDay(currentDay,data);render();renderWorkoutTab();
 }
 
+// v57同期：运动加成计算的统一函数（此前render()/renderWorkoutTab()/renderWorkoutBonus()三处重复实现，
+// 且后两者未考虑作弊日判定/历史日快照）。过去日使用当天的goalCal快照，当天则反映recoveryFactor。
+// 作弊日/无限制日期间目标本身作为特殊上限处理，因此不叠加运动加成。
+function getEffectiveWorkoutGoal(offset,workoutCal){
+  const data=loadDay(offset);
+  const goals=loadGoals();
+  let goalCal=(offset!==0&&data.goalCal)?data.goalCal:goals.cal;
+  if(offset===0){
+    const recoveryFactor=getRecoveryFactor(0);
+    if(recoveryFactor>1)goalCal=Math.round(goalCal*recoveryFactor);
+  }
+  const isCheatOrUnlimited=data.cheatDay==='cheat'||data.cheatDay==='unlimited';
+  const bonus=Math.round((workoutCal||0)*0.5);
+  return{bonus:isCheatOrUnlimited?0:bonus,effectiveGoal:isCheatOrUnlimited?goalCal:goalCal+bonus,isCheatOrUnlimited};
+}
 function renderWorkoutTab(){
   const data=loadWorkoutDay(currentDay);
   const prof=loadProfileData();const bw=prof&&prof.weight?prof.weight:70;
   const totalCal=calcWorkoutCal(data,bw);
-  const goals=loadGoals();const foodCal=calcTotals(loadDay(currentDay)).cal;
-  const wkBonus=Math.round(totalCal*0.5);
-  const effectiveGoal=goals.cal+wkBonus;
+  const foodCal=calcTotals(loadDay(currentDay)).cal;
+  const{bonus:wkBonus,effectiveGoal,isCheatOrUnlimited}=getEffectiveWorkoutGoal(currentDay,totalCal);
   const effectiveRemain=effectiveGoal-foodCal;
   const calCard=document.getElementById('workoutCalCard');
   const weightData=data.filter(e=>e.type!=='cardio');
@@ -3502,32 +3757,36 @@ function renderWorkoutTab(){
     const detail=weightCal>0&&cardioCal>0
       ?`训练 ${weightCal} kcal ＋ 有氧 ${cardioCal} kcal`
       :weightCal>0?`训练 ${weightCal} kcal`:`有氧 ${cardioCal} kcal`;
+    const bonusText=isCheatOrUnlimited?'作弊日期间不计加成':`+${wkBonus} kcal`;
     calCard.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">🏋️ 今日运动消耗</div>
       <div class="result-row"><span class="result-label">运动消耗</span><span class="result-val" style="color:var(--amber)">${totalCal} kcal</span></div>
       <div style="font-size:10px;color:var(--text3);margin:-4px 0 6px">${detail}</div>
-      <div class="result-row"><span class="result-label">加成（×0.5）</span><span class="result-val" style="color:#7C3AED">+${wkBonus} kcal</span></div>
+      <div class="result-row"><span class="result-label">加成（×0.5）</span><span class="result-val" style="color:var(--purple)">${bonusText}</span></div>
       <div class="result-row"><span class="result-label">饮食摄入</span><span class="result-val">${foodCal} kcal</span></div>
-      <div class="result-row"><span class="result-label">剩余热量</span><span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span></div>`;
+      <div class="result-row"><span class="result-label">实际剩余热量</span>${isCheatOrUnlimited?'<span class="result-val" style="color:var(--text3)">作弊日期间不计入统计</span>':`<span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span>`}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">※周目标判定（成就标签）也会反映运动加成</div>`;
   }else{
     calCard.innerHTML='<div style="font-size:12px;color:var(--text3)">添加项目后显示热量消耗</div>';
   }
+  renderWorkoutWeekSummary();
   const list=document.getElementById('workoutList');
   if(!weightData.length){list.innerHTML='<div class="empty-state">今日还没有训练记录</div>';}
   else{
     list.innerHTML=data.map((ex,exIdx)=>{
       if(ex.type==='cardio')return'';
-      const isBW=isBodyweightEx(ex.name);
+      const isBW=ex.bodyweight!=null?ex.bodyweight:isBodyweightEx(ex.name);
       const exCal=calcWorkoutCal([ex],bw);
-      const best=getBestSet(ex.sets,isBW);
-      const prev=getPrevWorkout(ex.name);
+      const prev=getPrevWorkout(ex.name,ex.exerciseId);
       let badge='';
       if(prev&&prev.sets.length){
-        const prevBest=getBestSet(prev.sets,isBW);
-        const diff=isBW
-          ?(best.reps||0)-(prevBest.reps||0)
-          :Math.round(((best.weight||0)-(prevBest.weight||0))*10)/10;
-        const unit=isBW?'次':'kg';
-        badge=diff>0?`<span class="set-badge up">↑ +${diff}${unit}</span>`:diff<0?`<span class="set-badge down">↓ ${diff}${unit}</span>`:`<span class="set-badge same">→ 相同</span>`;
+        // v57同期：与"最佳组"比较改为与"总负荷量"（全部组合计）比较，避免重量不变但次数/组数增加时被误判为"无变化"。
+        // 上次记录优先使用记录当时的自重快照，不受之后修改项目定义的影响。
+        const prevIsBW=prev.bodyweight!=null?prev.bodyweight:isBW;
+        const todayVol=calcExerciseVolume(ex.sets,isBW,ex.unilateral||false);
+        const prevVol=calcExerciseVolume(prev.sets,prevIsBW,prev.unilateral||false);
+        const diff=isBW?todayVol-prevVol:Math.round((todayVol-prevVol)*10)/10;
+        const unit=isBW?'次':'';
+        badge=diff>0?`<span class="set-badge up">↑ 总负荷+${diff}${unit}</span>`:diff<0?`<span class="set-badge down">↓ 总负荷${diff}${unit}</span>`:`<span class="set-badge same">→ 总负荷相同</span>`;
       }else badge='<span class="set-badge new">首次记录</span>';
       const setsHtml=ex.sets.map((s,si)=>{
         const txt=isBW?`${s.reps}次`:`${s.weight}kg × ${s.reps}次`;
@@ -3535,7 +3794,8 @@ function renderWorkoutTab(){
         return`<div class="set-row"><div><div class="set-info">S${si+1}：${txt}</div><div class="set-detail">${sCal} kcal</div></div><button class="food-del" onclick="deleteSet(${exIdx},${si})">×</button></div>`;
       }).join('');
       const collapseId=`sets-${exIdx}`;
-      return`<div class="workout-block"><div class="workout-header" onclick="toggleSets('${collapseId}',this)"><div><div class="workout-title">${escapeHtml(ex.name)}</div><div class="workout-muscle">${escapeHtml(ex.muscle)}　${ex.sets.length}组・${exCal}kcal</div></div><div style="display:flex;align-items:center;gap:6px">${badge}<span class="wk-collapse-icon open">▼</span><button class="workout-del" onclick="event.stopPropagation();deleteWorkout(${exIdx})">×</button></div></div><div class="wk-sets-wrap" id="${collapseId}">${setsHtml}</div></div>`;
+      const rpeText=ex.rpe?`　RPE ${ex.rpe}`:'';
+      return`<div class="workout-block"><div class="workout-header" onclick="toggleSets('${collapseId}',this)"><div><div class="workout-title">${escapeHtml(ex.name)}</div><div class="workout-muscle">${escapeHtml(ex.muscle)}　${ex.sets.length}组・${exCal}kcal${rpeText}</div></div><div style="display:flex;align-items:center;gap:6px">${badge}<span class="wk-collapse-icon open">▼</span><button class="workout-del" onclick="event.stopPropagation();deleteWorkout(${exIdx})">×</button></div></div><div class="wk-sets-wrap" id="${collapseId}">${setsHtml}</div></div>`;
     }).join('');
   }
   const cardioSec=document.getElementById('cardioSection');
@@ -3551,7 +3811,12 @@ function renderWorkoutTab(){
   }
   const sel=document.getElementById('workoutGraphSelect');
   const allEx=[...new Set(Object.values(getAllExercises()).flat())];
-  const hasRecord=ex=>{for(let i=0;i<89;i++){const d=loadWorkoutDay(-i);if(d.find(e=>e.name===ex&&e.type!=='cardio'))return true;}return false;};
+  const customsForRecord=loadCustomExercises();
+  const hasRecord=ex=>{
+    const exId=(customsForRecord.find(c=>c.name===ex)||{}).id;
+    for(let i=0;i<89;i++){const d=loadWorkoutDay(-i);if(d.find(e=>e.type!=='cardio'&&(exId?(e.exerciseId===exId||(!e.exerciseId&&e.name===ex)):e.name===ex)))return true;}
+    return false;
+  };
   const withRec=allEx.filter(e=>hasRecord(e));
   const withoutRec=allEx.filter(e=>!hasRecord(e));
   const sorted=[...withRec,...withoutRec];
@@ -3571,22 +3836,23 @@ function setWorkoutGraphMode(mode,btn){
 
 function renderWorkoutGraph(){
   const ex=document.getElementById('workoutGraphSelect').value;
-  const isBW=isBodyweightEx(ex);
+  const exId=(loadCustomExercises().find(c=>c.name===ex)||{}).id;
+  const isBWDefault=isBodyweightEx(ex);
   const labels=[],vals=[];
   for(let i=89;i>=0;i--){
     const data=loadWorkoutDay(-i);
-    const found=data.find(e=>e.name===ex&&e.type!=='cardio');
+    const found=data.find(e=>e.type!=='cardio'&&(exId?(e.exerciseId===exId||(!e.exerciseId&&e.name===ex)):e.name===ex));
     if(found&&found.sets&&found.sets.length){
+      // v57同期：优先使用记录当时的自重快照
+      const isBW=found.bodyweight!=null?found.bodyweight:isBWDefault;
       const d=new Date();d.setDate(d.getDate()-i);
       labels.push(`${d.getMonth()+1}/${d.getDate()}`);
       if(workoutGraphMode==='best'){
         const best=getBestSet(found.sets,isBW);
         vals.push(isBW?best.reps||0:Math.round((best.weight||0)*10)/10);
       }else{
-        // 総負荷量
-        const vol=found.sets.reduce((s,st)=>
-          isBW?s+(st.reps||0):s+(st.weight||0)*(st.reps||0),0);
-        vals.push(Math.round(vol*10)/10);
+        // 总负荷量（单手项目按2倍计算。统一使用calcExerciseVolume）
+        vals.push(Math.round(calcExerciseVolume(found.sets,isBW,found.unilateral||false)*10)/10);
       }
     }
   }
@@ -3596,24 +3862,24 @@ function renderWorkoutGraph(){
     return;
   }
   const isBestMode=workoutGraphMode==='best';
-  const yLabel=isBestMode?(isBW?'回':'kg'):'kg';
-  const lineColor=isBestMode?'#D97706':'#7C3AED';
+  const yLabel=isBestMode?(isBWDefault?'回':'kg'):'kg';
+  const lineColor=isBestMode?'#D97706':'#7C3AED'; // 传递给Chart.js(Canvas)的值，CSS变量无法在此解析
   const fillColor=isBestMode?'rgba(217,119,6,0.1)':'rgba(124,58,237,0.1)';
   workoutChartInst=new Chart(document.getElementById('workoutChart'),{
     type:'line',
     data:{labels,datasets:[{
-      label:isBestMode?(isBW?'最大次数（最佳组）':'最高重量（最佳组）'):'总负荷量（kg）',
+      label:isBestMode?(isBWDefault?'最大次数（最佳组）':'最高重量（最佳组）'):'总负荷量（kg）',
       data:vals,borderColor:lineColor,backgroundColor:fillColor,
       borderWidth:2,pointRadius:4,pointBackgroundColor:lineColor,tension:0.3,fill:true
     }]},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{display:false}},scales:{
-      y:{ticks:{font:{size:10},color:'#999',callback:v=>isBestMode?(isBW?`${Math.round(v)}次`:`${Math.round(v*10)/10}kg`):`${Math.round(v)}kg`},grid:{color:'rgba(128,128,128,0.1)'}},
+      y:{ticks:{font:{size:10},color:'#999',callback:v=>isBestMode?(isBWDefault?`${Math.round(v)}次`:`${Math.round(v*10)/10}kg`):`${Math.round(v)}kg`},grid:{color:'rgba(128,128,128,0.1)'}},
       x:{ticks:{font:{size:9},color:'#999',maxRotation:30,autoSkip:true},grid:{display:false}}
     }}
   });
   const maxVal=Math.max(...vals),latestVal=vals[vals.length-1],firstVal=vals[0];
   const diff=Math.round((latestVal-firstVal)*10)/10;
-  const unit=isBestMode?(isBW?'回':'kg'):'kg';
+  const unit=isBestMode?(isBWDefault?'回':'kg'):'kg';
   const modeLabel=isBestMode?'最高':'総負荷量';
   document.getElementById('workoutGraphStats').innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap">
     <span class="workout-stat">${modeLabel}最大：<span>${maxVal}${unit}</span></span>
@@ -3631,17 +3897,21 @@ function renderWorkoutBonus(){
   const bonusDetail=document.getElementById('workoutBonusDetail');
   const bonusRemain=document.getElementById('workoutBonusRemain');
   if(wCal>0){
-    const bonus=Math.round(wCal*0.5);
+    const{bonus,effectiveGoal,isCheatOrUnlimited}=getEffectiveWorkoutGoal(currentDay,wCal);
     bonusRow.style.cssText='display:flex;margin-top:8px;align-items:center;justify-content:space-between';
-    document.getElementById('workoutBonusCal').textContent=`+${bonus} kcal`;
+    document.getElementById('workoutBonusCal').textContent=isCheatOrUnlimited?'作弊日期间不计加成':`+${bonus} kcal`;
     bonusDetail.style.display='block';
     bonusDetail.textContent=`运动消耗 ${wCal} kcal`;
-    const goals=loadGoals();const foodCal=calcTotals(loadDay(currentDay)).cal;
-    const effectiveGoal=goals.cal+bonus;
+    const foodCal=calcTotals(loadDay(currentDay)).cal;
     const remain=effectiveGoal-foodCal;
     bonusRemain.style.display='block';
-    bonusRemain.style.color=remain>=0?'var(--green-dark)':'var(--red-dark)';
-    bonusRemain.textContent=remain>=0?`实际剩余 ${remain} kcal`:`实际超出 ${Math.abs(remain)} kcal`;
+    if(isCheatOrUnlimited){
+      bonusRemain.style.color='var(--text3)';
+      bonusRemain.textContent='作弊日期间不计入统计';
+    }else{
+      bonusRemain.style.color=remain>=0?'var(--green-dark)':'var(--red-dark)';
+      bonusRemain.textContent=remain>=0?`实际剩余 ${remain} kcal`:`实际超出 ${Math.abs(remain)} kcal`;
+    }
   }else{
     bonusRow.style.cssText='display:none';
     bonusDetail&&(bonusDetail.style.display='none');
@@ -3696,6 +3966,7 @@ function sanitizeStoredNumbers(){
   localStorage.setItem('diet_float_sanitized','1');
 }
 sanitizeStoredNumbers();
+migrateCustomExerciseIds();
 
 render();
 checkBlankGapBanner();

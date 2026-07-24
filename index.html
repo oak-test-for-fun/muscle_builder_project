@@ -382,7 +382,7 @@
           </div>
         </div>
         <div class="cal-section">
-          <div id="cheatBanner" style="display:none;background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:8px;line-height:1.4"></div>
+          <div id="cheatBanner" style="display:none;background:var(--purple);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:8px;line-height:1.4"></div>
           <div class="cal-top">
             <div class="cal-left">
               <div><span class="cal-num" id="totalCal">0</span><span class="cal-unit">kcal</span></div>
@@ -396,12 +396,12 @@
           <!-- プログレスバー（縦線マーカー付き） -->
           <div class="progress-track" style="position:relative;overflow:hidden">
             <div class="progress-fill ok" id="calBar" style="width:0%;position:relative;z-index:1"></div>
-            <div id="bonusBar" style="width:0%;height:100%;background:#7C3AED;opacity:0.5;position:absolute;right:0;top:0;transition:width 0.5s cubic-bezier(.4,0,.2,1);z-index:1"></div>
+            <div id="bonusBar" style="width:0%;height:100%;background:var(--purple);opacity:0.5;position:absolute;right:0;top:0;transition:width 0.5s cubic-bezier(.4,0,.2,1);z-index:1"></div>
             <div id="goalMarker" style="display:none;position:absolute;top:0;bottom:0;width:2.5px;background:rgba(200,200,200,0.9);border-radius:1px;z-index:3;transition:left 0.5s cubic-bezier(.4,0,.2,1)"></div>
           </div>
           <div id="workoutBonusRow" style="display:none;margin-top:8px;align-items:center;justify-content:space-between">
-            <span style="font-size:12px;color:#7C3AED;font-weight:500">🏋️ 筋トレボーナス</span>
-            <span style="font-size:13px;font-weight:700;color:#7C3AED" id="workoutBonusCal">+0 kcal</span>
+            <span style="font-size:12px;color:var(--purple);font-weight:500">🏋️ 筋トレボーナス</span>
+            <span style="font-size:13px;font-weight:700;color:var(--purple)" id="workoutBonusCal">+0 kcal</span>
           </div>
           <div id="workoutBonusDetail" style="display:none;font-size:10px;color:var(--text3);text-align:right;margin-top:1px"></div>
           <div id="workoutBonusRemain" style="display:none;font-size:11px;color:var(--text3);margin-top:3px;text-align:right"></div>
@@ -436,7 +436,7 @@
           <span class="leg" id="legIntake"><span class="leg-sq" style="background:var(--green)"></span>摂取</span>
           <span class="leg" id="legGoal"><span class="leg-sq" style="background:var(--border);border:1px dashed var(--blue)"></span>目標</span>
           <span class="leg"><span style="font-size:12px">🏋️</span>筋トレ実施日</span>
-          <span class="leg" id="legCheat"><span class="leg-sq" style="background:#7C3AED"></span>チートデイ（計画）</span>
+          <span class="leg" id="legCheat"><span class="leg-sq" style="background:var(--purple)"></span>チートデイ（計画）</span>
         </div>
         <div style="position:relative;" id="calChartWrap"><canvas id="calChart"></canvas></div>
       </div>
@@ -444,7 +444,7 @@
       <div class="chart-card">
         <div class="chart-title">体重推移</div>
         <div class="chart-legend">
-          <span class="leg"><span class="leg-sq" style="background:#7C3AED"></span>実測</span>
+          <span class="leg"><span class="leg-sq" style="background:var(--purple)"></span>実測</span>
           <span class="leg"><span class="leg-sq" style="background:#0EA5E9"></span>7日移動平均</span>
           <span class="leg"><span class="leg-sq" style="background:#F59E0B"></span>理論値</span>
         </div>
@@ -1356,7 +1356,7 @@ function renderCheatActionArea(data){
   if(data.cheatDay){
     const label=data.cheatDay==='unlimited'?'🎉 無制限デイ設定中':'🍕 チートデイ設定中';
     area.style.display='block';
-    area.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;gap:8px"><span>${label}</span><button onclick="cancelCheatDay()" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;white-space:nowrap">取り消す</button></div>`;
+    area.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--purple);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;gap:8px"><span>${label}</span><button onclick="cancelCheatDay()" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;white-space:nowrap">取り消す</button></div>`;
   }else{
     const rewards=loadRewards();
     const hasDays=rewards.cheat>0||rewards.bonusCheat>0||rewards.unlimited>0;
@@ -1997,7 +1997,7 @@ function renderWeekSummary(){
 
     const barsHtml=w.dayDetails.map((d,i)=>{
       const pct=Math.min(d.cal/maxCal*100,100);
-      const barColor=loadMode()==='free'?(d.cal===0?'var(--border)':'#7BA7D9'):(d.cal===0?'var(--border)':d.isCheat?(d.cal>d.dynamicGoal?'var(--red)':'#7C3AED'):d.cal>d.dynamicGoal*1.2?'var(--red)':d.cal>d.dynamicGoal?'var(--amber)':'var(--green)');
+      const barColor=loadMode()==='free'?(d.cal===0?'var(--border)':'#7BA7D9'):(d.cal===0?'var(--border)':d.isCheat?(d.cal>d.dynamicGoal?'var(--red)':'var(--purple)'):d.cal>d.dynamicGoal*1.2?'var(--red)':d.cal>d.dynamicGoal?'var(--amber)':'var(--green)');
       const goalPct=Math.min(d.dynamicGoal/maxCal*100,100);
       return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">`+
         `<div style="font-size:8px;color:var(--text3);height:14px;display:flex;align-items:flex-end">${d.cal>0?d.cal:''}</div>`+
@@ -2009,7 +2009,7 @@ function renderWeekSummary(){
 
     // 週合計のボーナス合計
     const totalBonus=w.dayDetails.reduce((s,d)=>s+d.wkBonus,0);
-    const bonusTxt=totalBonus>0?`<span style="font-size:9px;color:#7C3AED;margin-left:4px">+${totalBonus}kcal運動</span>`:'';
+    const bonusTxt=totalBonus>0?`<span style="font-size:9px;color:var(--purple);margin-left:4px">+${totalBonus}kcal運動</span>`:'';
 
     html+=`<div style="margin-bottom:${wi<weeks.length-1?'16':'0'}px">`+
       `<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">`+
@@ -2080,7 +2080,7 @@ function renderCharts(){
       // v41: フリーモードでは達成度による色分けをせず、中立色で統一
       colors.push('#7BA7D9');
     }else if(dayData.cheatDay==='unlimited'){
-      colors.push('#7C3AED');
+      colors.push('#7C3AED'); // Chart.jsのcanvas描画に渡す値のためCSS変数(var())は解決されない。リテラルのまま維持
     }else if(dayData.cheatDay==='cheat'){
       colors.push('#7C3AED');
     }else{
@@ -2886,14 +2886,27 @@ function getWeekStartKey(dateKey){
   dt.setDate(dt.getDate()-dt.getDay());
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
 }
+// v59: totalWorkoutBonusを追加（バックログ#19）。運動ボーナスは日次カード（getEffectiveWorkoutGoal）と
+// 同じロジックを流用して週合計し、getWeekStatus等の週次判定・表示側で目標カロリーに加算する。
+// 食事記録の有無に関わらず（食事を記録し忘れた日でも運動していればボーナスは発生する）その日の運動記録から算出する。
 function calcWeekTotals(weekStartKey){
   const [y,m,d]=weekStartKey.split('-').map(Number);
   const start=new Date(y,m-1,d);
   const goals=loadGoals();
-  let totalCal=0,totalProtein=0,recordedDays=0,bigOverageDays=0;
+  const prof=loadProfileData();const bw=prof&&prof.weight?prof.weight:70;
+  const today=new Date();today.setHours(0,0,0,0);
+  let totalCal=0,totalProtein=0,recordedDays=0,bigOverageDays=0,totalWorkoutBonus=0;
   for(let i=0;i<7;i++){
     const dd=new Date(start);dd.setDate(start.getDate()+i);
     const key=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
+    const wkData=safeParse(localStorage.getItem('diet_workout_'+key),[]);
+    if(wkData.length){
+      const workoutCal=calcWorkoutCal(wkData,bw);
+      if(workoutCal>0){
+        const offset=Math.round((dd.getTime()-today.getTime())/86400000);
+        totalWorkoutBonus+=getEffectiveWorkoutGoal(offset,workoutCal).bonus;
+      }
+    }
     const s=localStorage.getItem('diet_day_'+key);
     if(!s)continue;
     const data=safeParse(s,null);
@@ -2912,13 +2925,13 @@ function calcWeekTotals(weekStartKey){
     totalCal+=calContribution;
     totalProtein+=t.p;
   }
-  return{totalCal,totalProtein,recordedDays,bigOverageDays};
+  return{totalCal,totalProtein,recordedDays,bigOverageDays,totalWorkoutBonus};
 }
 function getWeekStatus(weekStartKey){
   const goals=loadGoals();
   const wt=calcWeekTotals(weekStartKey);
   if(wt.recordedDays===0)return 'none';
-  const weekGoalCal=goals.cal*7;
+  const weekGoalCal=goals.cal*7+wt.totalWorkoutBonus; // v59: 運動ボーナスを週次判定にも反映
   const weekGoalProtein=goals.protein*7;
   const calOk=wt.totalCal<=weekGoalCal;
   const proteinOk=wt.totalProtein>=weekGoalProtein;
@@ -3040,12 +3053,14 @@ function renderStamp(){
   const goals=loadGoals();
   const thisWeekKey=getWeekStartKey(getKey(0));
   const wt=calcWeekTotals(thisWeekKey);
-  const weekGoalCal=goals.cal*7;
+  const weekGoalCal=goals.cal*7+wt.totalWorkoutBonus; // v59: 運動ボーナスを反映
   const weekRemain=weekGoalCal-wt.totalCal;
+  const wkBonusRow=wt.totalWorkoutBonus>0?`<div class="streak-row"><span class="streak-label">運動ボーナス（今週合計）</span><span class="streak-val" style="color:var(--purple)">+${wt.totalWorkoutBonus} kcal</span></div>`:'';
   if(mode==='free'){
     document.getElementById('streakCard').innerHTML=`
       <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🍃 フリーモードで運用中</div>
       <div class="streak-row"><span class="streak-label">今週の残り</span><span class="streak-val" style="color:${weekRemain>=0?'var(--green-dark)':'var(--red-dark)'}">${weekRemain>=0?weekRemain+'kcal':'+'+Math.abs(weekRemain)+'kcal超過'}</span></div>
+      ${wkBonusRow}
       <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">良い日・悪い日を分けず、週単位でゆるやかに管理しています。ご褒美や連続記録の概念は使いません。</div>
     `;
     document.getElementById('cheatCard').innerHTML='';
@@ -3067,6 +3082,7 @@ function renderStamp(){
     <div class="streak-row"><span class="streak-label">現在の連続達成</span><span class="streak-val green">${streak}週</span></div>
     <div class="streak-row"><span class="streak-label">完全達成の連続</span><span class="streak-val ${perfectStreak>=2?'green':''}">⭐ ${perfectStreak}週</span></div>
     <div class="streak-row"><span class="streak-label">今週の残り</span><span class="streak-val" style="color:${weekRemain>=0?'var(--green-dark)':'var(--red-dark)'}">${weekRemain>=0?weekRemain+'kcal':'+'+Math.abs(weekRemain)+'kcal超過'}</span></div>
+    ${wkBonusRow}
     <div class="streak-row"><span class="streak-label">通常チート／ボーナス</span><span class="streak-val" style="color:var(--amber)">${cheatGrantedThisWeek?'今週分は達成済み':'今週達成でGET'}</span></div>
     <div class="streak-row"><span class="streak-label">次の無制限デイまで</span><span class="streak-val">🎉 あと${nextUnlimitedWeeks}週</span></div>
   `;
@@ -3095,9 +3111,9 @@ function openDayDetail(offset){
   const goals=loadGoals();
   let html=`<div style="font-size:13px;color:var(--text3);margin-bottom:10px">${ds.main} ${ds.sub}</div>`;
   if(data.cheatDay==='unlimited'){
-    html+=`<div style="background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px">🎉 無制限デイ</div>`;
+    html+=`<div style="background:var(--purple);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px">🎉 無制限デイ</div>`;
   }else if(data.cheatDay==='cheat'){
-    html+=`<div style="background:#7C3AED;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px">🍕 チートデイ${data.cheatCalLimit!=null?`（上限 ${data.cheatCalLimit} kcal）`:''}</div>`;
+    html+=`<div style="background:var(--purple);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:10px">🍕 チートデイ${data.cheatCalLimit!=null?`（上限 ${data.cheatCalLimit} kcal）`:''}</div>`;
   }
   if(t.cal===0&&data.weight==null&&!data.comment&&!wkData.length){
     html+=`<div style="font-size:13px;color:var(--text3);padding:12px 0">この日の記録はありません</div>`;
@@ -3191,7 +3207,7 @@ function renderStampCalendar(){
       cls+=' '+(mode==='free'?'none':(status==='none'?'none':status));
       if(isInProgress)cls+=' inprogress';
       if(wt.recordedDays>0){
-        const remain=weekGoalCal-wt.totalCal;
+        const remain=weekGoalCal+wt.totalWorkoutBonus-wt.totalCal; // v59: 運動ボーナスを反映
         diffHtml=`<span class="week-diff" style="color:${remain>=0?'var(--green-dark)':'var(--red-dark)'}">${remain>=0?remain+'kcal残':'+'+Math.abs(remain)+'kcal超'}</span>`;
       }
       // その週のバッジ（チート/無制限/運動）を集計
@@ -3225,15 +3241,16 @@ function openWeekDetail(weekStartKey){
   const start=new Date(wy,wm-1,wd);
   const end=new Date(start);end.setDate(start.getDate()+6);
   const goals=loadGoals();
-  const weekGoalCal=goals.cal*7,weekGoalProtein=goals.protein*7;
   const wt=calcWeekTotals(weekStartKey);
+  const weekGoalCal=goals.cal*7+wt.totalWorkoutBonus,weekGoalProtein=goals.protein*7; // v59: 運動ボーナスを反映
   const status=getWeekStatus(weekStartKey);
   const remain=weekGoalCal-wt.totalCal;
   const fmt=dt=>`${dt.getMonth()+1}/${dt.getDate()}`;
   const statusLabel={perfect:'⭐ 完全達成',achieved:'🌸 達成',failed:'💔 未達成',none:'記録なし'}[status]||'';
+  const weekGoalLabel=wt.totalWorkoutBonus>0?`${weekGoalCal}（運動+${wt.totalWorkoutBonus}）`:`${weekGoalCal}`;
   let html=`<div style="font-size:13px;color:var(--text3);margin-bottom:10px">${fmt(start)}〜${fmt(end)}の週</div>`;
   html+=`<div class="macro-grid" style="margin-bottom:10px">`+
-    `<div class="macro-card"><div class="macro-val ok">${wt.totalCal}kcal</div><div class="macro-label">週合計（目標${weekGoalCal}）</div></div>`+
+    `<div class="macro-card"><div class="macro-val ok">${wt.totalCal}kcal</div><div class="macro-label">週合計（目標${weekGoalLabel}）</div></div>`+
     `<div class="macro-card"><div class="macro-val ok">${Math.round(wt.totalProtein*10)/10}g</div><div class="macro-label">たんぱく質（目標${weekGoalProtein}g）</div></div>`+
     `<div class="macro-card"><div class="macro-val ok">${statusLabel}</div><div class="macro-label">${remain>=0?'残り'+remain+'kcal':'超過'+Math.abs(remain)+'kcal'}</div></div>`+
     `</div>`;
@@ -3283,6 +3300,31 @@ const PRESET_UNILATERAL=['ワンハンドロー','ダンベルカール','イン
 // カスタム種目のCRUD
 function loadCustomExercises(){return safeParse(localStorage.getItem('diet_custom_exercises'),[]);}
 function saveCustomExercises(data){localStorage.setItem('diet_custom_exercises',JSON.stringify(data));}
+function genExerciseId(){return'cex_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+
+// v59: 種目のID化（バックログ#18・開発者指摘）。カスタム種目を名前だけで参照していると、
+// リネーム・削除で過去の「前回記録」「推移グラフ」が実質見えなくなる。カスタム種目にid（初回起動時に付与）を持たせ、
+// 記録（diet_workout_）側にもexerciseIdをスナップショットすることで、リネーム後も同一種目として追跡できるようにする。
+// 既存データは削除・変換せず「idフィールドの追記」のみで行う一括バックフィル（初回のみ、以後は冪等なため毎回実行しても無害）。
+// 移行前から既に名前が変わっていた過去ログまでは遡って救えない（対応関係を復元する手がかりがないため）。
+function migrateCustomExerciseIds(){
+  const customs=loadCustomExercises();
+  if(!customs.length)return;
+  let changed=false;
+  customs.forEach(c=>{if(!c.id){c.id=genExerciseId();changed=true;}});
+  if(changed)saveCustomExercises(customs);
+  const nameToId={};
+  customs.forEach(c=>{nameToId[c.name]=c.id;});
+  Object.keys(localStorage).filter(k=>k.startsWith('diet_workout_')).forEach(key=>{
+    const data=safeParse(localStorage.getItem(key),[]);
+    let dayChanged=false;
+    data.forEach(ex=>{
+      if(ex.type==='cardio'||ex.exerciseId)return;
+      if(nameToId[ex.name]){ex.exerciseId=nameToId[ex.name];dayChanged=true;}
+    });
+    if(dayChanged)localStorage.setItem(key,JSON.stringify(data));
+  });
+}
 
 // 体重種目かどうかを判定
 function isBodyweightEx(name){
@@ -3312,6 +3354,7 @@ function getAllExercises(){
 
 let selMuscle='',selExercise='',workoutChartInst=null,workoutGraphMode='best';
 let selPrevData=null; // 選択中の種目の前回記録（ワンタップ複製用）
+let selExerciseId=null; // 選択中のカスタム種目のid（プリセットならnull）
 let pendingSets=[];
 let cexMuscle='胸'; // カスタム種目登録時の選択部位
 let cexEditName=null; // 編集モード時の元の種目名（nullなら新規追加）
@@ -3352,7 +3395,8 @@ function saveCustomExercise(){
     if(idx===-1)return;
     // 名前変更時の重複チェック
     if(name!==cexEditName&&customs.find(e=>e.name===name)){alert('同じ名前の種目がすでに登録されています');return;}
-    customs[idx]={name,muscle:cexMuscle,bodyweight,unilateral};
+    // v59: idはリネームをまたいで保持する（過去記録との紐付けを維持するため）
+    customs[idx]={id:customs[idx].id||genExerciseId(),name,muscle:cexMuscle,bodyweight,unilateral};
     saveCustomExercises(customs);
     document.getElementById('customExOverlay').classList.remove('open');
     selMuscle=cexMuscle;selExercise=name;
@@ -3360,7 +3404,7 @@ function saveCustomExercise(){
   }else{
     // 新規追加モード
     if(customs.find(e=>e.name===name)){alert('同じ名前の種目がすでに登録されています');return;}
-    customs.push({name,muscle:cexMuscle,bodyweight,unilateral});
+    customs.push({id:genExerciseId(),name,muscle:cexMuscle,bodyweight,unilateral});
     saveCustomExercises(customs);
     document.getElementById('customExOverlay').classList.remove('open');
     selMuscle=cexMuscle;selExercise=name;
@@ -3372,7 +3416,7 @@ function deleteCustomExercise(name){
   if(!confirm(`「${name}」を削除しますか？\n過去の記録はそのまま残ります。`))return;
   const customs=loadCustomExercises().filter(e=>e.name!==name);
   saveCustomExercises(customs);
-  if(selExercise===name){selExercise='';}
+  if(selExercise===name){selExercise='';selExerciseId=null;}
   renderWorkoutModalExercises();
 }
 
@@ -3518,10 +3562,12 @@ function getBestSet(sets,isBW){
   return sets.reduce((best,s)=>(s.weight||0)>(best.weight||0)?s:best,sets[0]);
 }
 
-function getPrevWorkout(exName){
+// v59: exIdが渡された場合はID優先マッチング（idを持たない旧レコードのみ名前でフォールバック）。
+// これによりカスタム種目をリネームしても過去記録（前回記録・推移グラフ）が引き続き見つかる。
+function getPrevWorkout(exName,exId){
   for(let i=1;i<=60;i++){
     const data=loadWorkoutDay(-i);
-    const found=data.find(e=>e.name===exName);
+    const found=data.find(e=>exId?(e.exerciseId===exId||(!e.exerciseId&&e.name===exName)):e.name===exName);
     if(found&&found.sets&&found.sets.length)return{date:getKey(-i),daysAgo:i,sets:found.sets,unilateral:found.unilateral||false,bodyweight:found.bodyweight};
   }
   return null;
@@ -3586,7 +3632,7 @@ function wkGoToStep2(){
 function wkModalBack(){wkGoToStep1();}
 
 function openWorkoutModal(){
-  selMuscle='';selExercise='';pendingSets=[];selPrevData=null;
+  selMuscle='';selExercise='';pendingSets=[];selPrevData=null;selExerciseId=null;
   wkGoToStep1();
   document.getElementById('muscleGroupWrap').innerHTML=Object.keys(getAllExercises()).map(g=>`<button class="muscle-chip" onclick="selectMuscleGroup(this,'${g}')">${g}</button>`).join('');
   document.getElementById('exerciseWrap').innerHTML='';
@@ -3602,6 +3648,8 @@ function selectMuscleGroup(btn,group){
 
 function selectExercise(btn,ex){
   selExercise=ex;pendingSets=[];
+  const customObj=loadCustomExercises().find(e=>e.name===ex);
+  selExerciseId=customObj?customObj.id:null;
   document.querySelectorAll('.exercise-chip').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');
   const isBW=isBodyweightEx(ex);
   const isUni=isUnilateralEx(ex);
@@ -3611,7 +3659,7 @@ function selectExercise(btn,ex){
   document.getElementById('selectedExerciseLabel').textContent=ex+(isUni?' (片手)':'');
   document.getElementById('workoutCalHint').textContent='';
   document.getElementById('wk_rpe').value='';
-  const prev=getPrevWorkout(ex);
+  const prev=getPrevWorkout(ex,selExerciseId);
   selPrevData=prev;
   const prevEl=document.getElementById('prevWorkoutInfo');
   if(prev){
@@ -3652,7 +3700,7 @@ function deleteCustomExerciseFromForm(){
   if(!confirm(`「${selExercise}」を削除しますか？\n過去の記録はそのまま残ります。`))return;
   const customs=loadCustomExercises().filter(e=>e.name!==selExercise);
   saveCustomExercises(customs);
-  selExercise='';
+  selExercise='';selExerciseId=null;
   wkGoToStep1();
   document.getElementById('customExDeleteRow').style.display='none';
   renderWorkoutModalExercises();
@@ -3719,11 +3767,15 @@ function saveWorkout(){
   const rpeRaw=parseInt(document.getElementById('wk_rpe').value);
   const rpe=(rpeRaw>=1&&rpeRaw<=10)?rpeRaw:null;
   const data=loadWorkoutDay(currentDay);
-  const existing=data.find(e=>e.name===selExercise);
-  if(existing){existing.sets.push(...pendingSets);existing.unilateral=isUni;existing.bodyweight=isBW;if(rpe!=null)existing.rpe=rpe;}
-  else{
+  const existing=data.find(e=>selExerciseId?(e.exerciseId===selExerciseId||(!e.exerciseId&&e.name===selExercise)):e.name===selExercise);
+  if(existing){
+    existing.sets.push(...pendingSets);existing.unilateral=isUni;existing.bodyweight=isBW;
+    if(rpe!=null)existing.rpe=rpe;
+    if(selExerciseId)existing.exerciseId=selExerciseId; // v59: 未タグの旧レコードに追記時点でIDを補完
+  }else{
     const entry={name:selExercise,muscle:selMuscle,unilateral:isUni,bodyweight:isBW,sets:pendingSets};
     if(rpe!=null)entry.rpe=rpe;
+    if(selExerciseId)entry.exerciseId=selExerciseId;
     data.push(entry);
   }
   saveWorkoutDay(currentDay,data);
@@ -3790,10 +3842,10 @@ function renderWorkoutTab(){
     calCard.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">🏋️ 今日の運動消費</div>
       <div class="result-row"><span class="result-label">運動消費</span><span class="result-val" style="color:var(--amber)">${totalCal} kcal</span></div>
       <div style="font-size:10px;color:var(--text3);margin:-4px 0 6px">${detail}</div>
-      <div class="result-row"><span class="result-label">ボーナス加算（×0.5）</span><span class="result-val" style="color:#7C3AED">${bonusText}</span></div>
+      <div class="result-row"><span class="result-label">ボーナス加算（×0.5）</span><span class="result-val" style="color:var(--purple)">${bonusText}</span></div>
       <div class="result-row"><span class="result-label">食事摂取</span><span class="result-val">${foodCal} kcal</span></div>
       <div class="result-row"><span class="result-label">実質残りカロリー</span>${isCheatOrUnlimited?'<span class="result-val" style="color:var(--text3)">チートデイ中は集計対象外</span>':`<span class="result-val ${effectiveRemain>=0?'green':'red'}">${effectiveRemain} kcal</span>`}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:4px">※週次判定（達成タブ）には運動ボーナスは反映されません</div>`;
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">※週次判定（達成タブ）にも運動ボーナスが反映されます</div>`;
   }else{
     calCard.innerHTML='<div style="font-size:12px;color:var(--text3)">種目を追加するとカロリーが表示されます</div>';
   }
@@ -3806,7 +3858,7 @@ function renderWorkoutTab(){
       if(ex.type==='cardio')return'';
       const isBW=ex.bodyweight!=null?ex.bodyweight:isBodyweightEx(ex.name);
       const exCal=calcWorkoutCal([ex],bw);
-      const prev=getPrevWorkout(ex.name);
+      const prev=getPrevWorkout(ex.name,ex.exerciseId);
       let badge='';
       if(prev&&prev.sets.length){
         // v57: ベストセット比較（1セットの最大値のみ）から総負荷量（全セット合計）比較へ変更。
@@ -3844,7 +3896,12 @@ function renderWorkoutTab(){
   // グラフセレクト
   const sel=document.getElementById('workoutGraphSelect');
   const allEx=[...new Set(Object.values(getAllExercises()).flat())];
-  const hasRecord=ex=>{for(let i=0;i<89;i++){const d=loadWorkoutDay(-i);if(d.find(e=>e.name===ex&&e.type!=='cardio'))return true;}return false;};
+  const customsForRecord=loadCustomExercises();
+  const hasRecord=ex=>{
+    const exId=(customsForRecord.find(c=>c.name===ex)||{}).id;
+    for(let i=0;i<89;i++){const d=loadWorkoutDay(-i);if(d.find(e=>e.type!=='cardio'&&(exId?(e.exerciseId===exId||(!e.exerciseId&&e.name===ex)):e.name===ex)))return true;}
+    return false;
+  };
   const withRec=allEx.filter(e=>hasRecord(e));
   const withoutRec=allEx.filter(e=>!hasRecord(e));
   const sorted=[...withRec,...withoutRec];
@@ -3864,11 +3921,12 @@ function setWorkoutGraphMode(mode,btn){
 
 function renderWorkoutGraph(){
   const ex=document.getElementById('workoutGraphSelect').value;
+  const exId=(loadCustomExercises().find(c=>c.name===ex)||{}).id;
   const isBWDefault=isBodyweightEx(ex);
   const labels=[],vals=[];
   for(let i=89;i>=0;i--){
     const data=loadWorkoutDay(-i);
-    const found=data.find(e=>e.name===ex&&e.type!=='cardio');
+    const found=data.find(e=>e.type!=='cardio'&&(exId?(e.exerciseId===exId||(!e.exerciseId&&e.name===ex)):e.name===ex));
     if(found&&found.sets&&found.sets.length){
       // v57: 記録当時のbodyweightスナップショットを優先（種目定義を後から変更しても過去のグラフが変わらないように）
       const isBW=found.bodyweight!=null?found.bodyweight:isBWDefault;
@@ -3890,7 +3948,7 @@ function renderWorkoutGraph(){
   }
   const isBestMode=workoutGraphMode==='best';
   const yLabel=isBestMode?(isBWDefault?'回':'kg'):'kg';
-  const lineColor=isBestMode?'#D97706':'#7C3AED';
+  const lineColor=isBestMode?'#D97706':'#7C3AED'; // Chart.jsのcanvas描画に渡す値のためCSS変数は使わない
   const fillColor=isBestMode?'rgba(217,119,6,0.1)':'rgba(124,58,237,0.1)';
   workoutChartInst=new Chart(document.getElementById('workoutChart'),{
     type:'line',
@@ -3995,6 +4053,7 @@ function sanitizeStoredNumbers(){
   localStorage.setItem('diet_float_sanitized','1');
 }
 sanitizeStoredNumbers();
+migrateCustomExerciseIds();
 
 render();
 checkBlankGapBanner();

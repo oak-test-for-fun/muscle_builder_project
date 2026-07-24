@@ -631,6 +631,9 @@
       <!-- 今日の消費カロリーサマリー -->
       <div class="card card-pad" id="workoutCalCard" style="margin-bottom:8px"></div>
 
+      <!-- 今週の部位別トレーニング状況 -->
+      <div class="card card-pad" id="workoutWeekCard" style="margin-bottom:8px"></div>
+
       <!-- 種目別グラフ（上部） -->
       <div class="section-title" style="margin-top:4px">種目別 推移グラフ</div>
       <div class="chart-card">
@@ -750,17 +753,23 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div class="sheet-title" style="margin-bottom:0">🏋️ 種目を追加</div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button id="wkBackBtn" onclick="wkModalBack()" style="display:none;background:none;border:none;font-size:20px;color:var(--text2);cursor:pointer;padding:0 4px 0 0;line-height:1">‹</button>
+        <div class="sheet-title" style="margin-bottom:0">🏋️ 種目を追加</div>
+      </div>
       <button onclick="document.getElementById('workoutOverlay').classList.remove('open')" style="background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:0 4px;line-height:1">×</button>
     </div>
-    <!-- 部位選択 -->
-    <div class="section-sep">部位</div>
-    <div class="quick-wrap" id="muscleGroupWrap"></div>
-    <!-- 種目選択 -->
-    <div class="section-sep">種目</div>
-    <div class="quick-wrap" id="exerciseWrap"></div>
-    <button onclick="openCustomExerciseModal()" style="font-size:12px;color:var(--green);font-weight:500;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;margin-bottom:4px">＋ カスタム種目を追加</button>
-    <!-- 入力フォーム -->
+    <!-- STEP1: 部位・種目選択 -->
+    <div id="wkStep1">
+      <!-- 部位選択 -->
+      <div class="section-sep">部位</div>
+      <div class="quick-wrap" id="muscleGroupWrap"></div>
+      <!-- 種目選択 -->
+      <div class="section-sep">種目</div>
+      <div class="quick-wrap" id="exerciseWrap"></div>
+      <button onclick="openCustomExerciseModal()" style="font-size:12px;color:var(--green);font-weight:500;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;margin-bottom:4px">＋ カスタム種目を追加</button>
+    </div>
+    <!-- STEP2: セット入力フォーム -->
     <div id="workoutForm" style="display:none">
       <div style="font-size:13px;font-weight:600;color:var(--text);margin:10px 0 6px" id="selectedExerciseLabel"></div>
       <!-- 前回記録 -->
@@ -788,6 +797,10 @@
         <button onclick="addSet()" style="padding:10px 12px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:42px">＋追加</button>
       </div>
       <div class="calc-hint" id="workoutCalHint"></div>
+      <div style="margin-bottom:10px">
+        <div class="field-label" style="margin-top:0">きつさ（RPE 1〜10・任意）</div>
+        <input type="number" id="wk_rpe" min="1" max="10" placeholder="例：8">
+      </div>
       <button class="add-btn" onclick="saveWorkout()">記録する</button>
       <div id="customExDeleteRow" style="display:none;margin-top:8px;text-align:center">
         <button onclick="deleteCustomExerciseFromForm()" style="background:none;border:none;color:var(--red-dark);font-size:12px;cursor:pointer;text-decoration:underline;padding:4px">この種目を削除する</button>
@@ -3298,6 +3311,7 @@ function getAllExercises(){
 }
 
 let selMuscle='',selExercise='',workoutChartInst=null,workoutGraphMode='best';
+let selPrevData=null; // 選択中の種目の前回記録（ワンタップ複製用）
 let pendingSets=[];
 let cexMuscle='胸'; // カスタム種目登録時の選択部位
 let cexEditName=null; // 編集モード時の元の種目名（nullなら新規追加）
@@ -3463,7 +3477,7 @@ function renderWorkoutModalExercises(){
       const isBW=isBodyweightEx(selExercise);
       document.getElementById('setWeightWrap').style.display=isBW?'none':'block';
       document.getElementById('selectedExerciseLabel').textContent=selExercise;
-      document.getElementById('workoutForm').style.display='block';
+      wkGoToStep2();
       renderSetList();
     }
   }
@@ -3521,9 +3535,59 @@ function calcExerciseVolume(sets,isBW,isUni){
   },0);
 }
 
-function openWorkoutModal(){
-  selMuscle='';selExercise='';pendingSets=[];
+// 今週（日曜始まり）の部位別トレーニング集計。ボリューム指標は種目間で単位が異なる（自重＝レップ数／ウェイト＝重量×レップ）ため、
+// 部位横断で合算しても意味を持つcalcWorkoutCal（kcal）を共通指標として採用する。
+function calcWorkoutWeekSummary(){
+  const prof=loadProfileData();const bw=prof&&prof.weight?prof.weight:70;
+  const today=new Date();
+  const sunday=new Date(today);
+  sunday.setDate(today.getDate()-today.getDay());
+  sunday.setHours(0,0,0,0);
+  const summary={};
+  Object.keys(EXERCISES).forEach(m=>{summary[m]={sets:0,cal:0};});
+  for(let d=0;d<7;d++){
+    const dd=new Date(sunday);dd.setDate(sunday.getDate()+d);
+    if(dd>today)break;
+    const key=`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
+    const data=safeParse(localStorage.getItem('diet_workout_'+key),[]);
+    data.forEach(ex=>{
+      if(ex.type==='cardio')return;
+      const m=ex.muscle;
+      if(!summary[m])summary[m]={sets:0,cal:0};
+      summary[m].sets+=(ex.sets||[]).length;
+      summary[m].cal+=calcWorkoutCal([ex],bw);
+    });
+  }
+  return summary;
+}
+
+function renderWorkoutWeekSummary(){
+  const summary=calcWorkoutWeekSummary();
+  const card=document.getElementById('workoutWeekCard');
+  const rows=Object.keys(EXERCISES).map(m=>{
+    const s=summary[m]||{sets:0,cal:0};
+    const valText=s.sets>0?`${s.sets}セット・${s.cal}kcal`:'記録なし';
+    return`<div class="result-row"><span class="result-label">${m}</span><span class="result-val" style="${s.sets>0?'':'color:var(--text3)'}">${valText}</span></div>`;
+  }).join('');
+  card.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">📊 今週の部位別トレーニング（日曜〜）</div>${rows}`;
+}
+
+// 種目追加モーダルの2段階ナビゲーション（部位・種目選択→セット入力）
+function wkGoToStep1(){
   document.getElementById('workoutForm').style.display='none';
+  document.getElementById('wkStep1').style.display='block';
+  document.getElementById('wkBackBtn').style.display='none';
+}
+function wkGoToStep2(){
+  document.getElementById('wkStep1').style.display='none';
+  document.getElementById('workoutForm').style.display='block';
+  document.getElementById('wkBackBtn').style.display='inline-flex';
+}
+function wkModalBack(){wkGoToStep1();}
+
+function openWorkoutModal(){
+  selMuscle='';selExercise='';pendingSets=[];selPrevData=null;
+  wkGoToStep1();
   document.getElementById('muscleGroupWrap').innerHTML=Object.keys(getAllExercises()).map(g=>`<button class="muscle-chip" onclick="selectMuscleGroup(this,'${g}')">${g}</button>`).join('');
   document.getElementById('exerciseWrap').innerHTML='';
   document.getElementById('workoutOverlay').classList.add('open');
@@ -3546,7 +3610,9 @@ function selectExercise(btn,ex){
   document.getElementById('wk_unilateral').checked=isUni;
   document.getElementById('selectedExerciseLabel').textContent=ex+(isUni?' (片手)':'');
   document.getElementById('workoutCalHint').textContent='';
+  document.getElementById('wk_rpe').value='';
   const prev=getPrevWorkout(ex);
+  selPrevData=prev;
   const prevEl=document.getElementById('prevWorkoutInfo');
   if(prev){
     // 前回記録時点の体重種目フラグを優先（種目定義を後から変更しても前回表示が変わらないように）
@@ -3555,7 +3621,7 @@ function selectExercise(btn,ex){
       const txt=prevIsBW?`${s.reps}回`:`${s.weight}kg × ${s.reps}回`;
       return`セット${i+1}：${txt}`;
     }).join('　');
-    prevEl.textContent=`前回（${prev.date}・${prev.daysAgo}日前）　${lines}`;
+    prevEl.innerHTML=`前回（${prev.date}・${prev.daysAgo}日前）　${lines}<button onclick="duplicatePrevSets()" style="display:block;margin-top:6px;padding:6px 10px;background:var(--green-light);color:var(--green-dark);border:0.5px solid var(--green);border-radius:var(--radius-xs);font-size:11px;font-weight:600;cursor:pointer">＋ 前回と同じ内容を複製</button>`;
     const s=prev.sets[0];
     if(!isBW)document.getElementById('wk_weight').value=s.weight||'';
     document.getElementById('wk_reps').value=s.reps||'';
@@ -3565,11 +3631,21 @@ function selectExercise(btn,ex){
     document.getElementById('wk_reps').value='';
   }
   renderSetList();
-  document.getElementById('workoutForm').style.display='block';
+  wkGoToStep2();
   updateSetCalHint();
   // カスタム種目なら削除ボタンを表示
   const isCustom=loadCustomExercises().some(e=>e.name===ex);
   document.getElementById('customExDeleteRow').style.display=isCustom?'block':'none';
+}
+
+// 前回のセット内容（全セット）を一括で入力中セットに複製する
+function duplicatePrevSets(){
+  if(!selPrevData||!selPrevData.sets||!selPrevData.sets.length)return;
+  if(pendingSets.length>0&&!confirm('現在入力中のセットを前回の内容で置き換えますか？'))return;
+  const isUni=selPrevData.unilateral||false;
+  pendingSets=selPrevData.sets.map(s=>({weight:s.weight||0,reps:s.reps||0,unilateral:isUni}));
+  if(!isBodyweightEx(selExercise))document.getElementById('wk_unilateral').checked=isUni;
+  renderSetList();
 }
 
 function deleteCustomExerciseFromForm(){
@@ -3577,7 +3653,7 @@ function deleteCustomExerciseFromForm(){
   const customs=loadCustomExercises().filter(e=>e.name!==selExercise);
   saveCustomExercises(customs);
   selExercise='';
-  document.getElementById('workoutForm').style.display='none';
+  wkGoToStep1();
   document.getElementById('customExDeleteRow').style.display='none';
   renderWorkoutModalExercises();
 }
@@ -3640,11 +3716,18 @@ function saveWorkout(){
   if(!pendingSets.length){alert('セットを追加してください');return;}
   const isBW=isBodyweightEx(selExercise);
   const isUni=!isBW&&document.getElementById('wk_unilateral').checked;
+  const rpeRaw=parseInt(document.getElementById('wk_rpe').value);
+  const rpe=(rpeRaw>=1&&rpeRaw<=10)?rpeRaw:null;
   const data=loadWorkoutDay(currentDay);
   const existing=data.find(e=>e.name===selExercise);
-  if(existing){existing.sets.push(...pendingSets);existing.unilateral=isUni;existing.bodyweight=isBW;}
-  else data.push({name:selExercise,muscle:selMuscle,unilateral:isUni,bodyweight:isBW,sets:pendingSets});
+  if(existing){existing.sets.push(...pendingSets);existing.unilateral=isUni;existing.bodyweight=isBW;if(rpe!=null)existing.rpe=rpe;}
+  else{
+    const entry={name:selExercise,muscle:selMuscle,unilateral:isUni,bodyweight:isBW,sets:pendingSets};
+    if(rpe!=null)entry.rpe=rpe;
+    data.push(entry);
+  }
   saveWorkoutDay(currentDay,data);
+  document.getElementById('wk_rpe').value='';
   document.getElementById('workoutOverlay').classList.remove('open');
   render();renderWorkoutTab();
 }
@@ -3714,6 +3797,7 @@ function renderWorkoutTab(){
   }else{
     calCard.innerHTML='<div style="font-size:12px;color:var(--text3)">種目を追加するとカロリーが表示されます</div>';
   }
+  renderWorkoutWeekSummary();
   // 筋トレリスト
   const list=document.getElementById('workoutList');
   if(!weightData.length){list.innerHTML='<div class="empty-state">今日のトレーニングはまだありません</div>';}
@@ -3741,7 +3825,8 @@ function renderWorkoutTab(){
         return`<div class="set-row"><div><div class="set-info">S${si+1}：${txt}</div><div class="set-detail">${sCal} kcal</div></div><button class="food-del" onclick="deleteSet(${exIdx},${si})">×</button></div>`;
       }).join('');
       const collapseId=`sets-${exIdx}`;
-      return`<div class="workout-block"><div class="workout-header" onclick="toggleSets('${collapseId}',this)"><div><div class="workout-title">${escapeHtml(ex.name)}</div><div class="workout-muscle">${escapeHtml(ex.muscle)}　${ex.sets.length}セット・${exCal}kcal</div></div><div style="display:flex;align-items:center;gap:6px">${badge}<span class="wk-collapse-icon open">▼</span><button class="workout-del" onclick="event.stopPropagation();deleteWorkout(${exIdx})">×</button></div></div><div class="wk-sets-wrap" id="${collapseId}">${setsHtml}</div></div>`;
+      const rpeText=ex.rpe?`　RPE ${ex.rpe}`:'';
+      return`<div class="workout-block"><div class="workout-header" onclick="toggleSets('${collapseId}',this)"><div><div class="workout-title">${escapeHtml(ex.name)}</div><div class="workout-muscle">${escapeHtml(ex.muscle)}　${ex.sets.length}セット・${exCal}kcal${rpeText}</div></div><div style="display:flex;align-items:center;gap:6px">${badge}<span class="wk-collapse-icon open">▼</span><button class="workout-del" onclick="event.stopPropagation();deleteWorkout(${exIdx})">×</button></div></div><div class="wk-sets-wrap" id="${collapseId}">${setsHtml}</div></div>`;
     }).join('');
   }
   // 有酸素リスト
